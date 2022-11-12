@@ -1,5 +1,6 @@
 "./Core/Src/main.o"
 "./Core/Src/stm32f4xx_hal_msp.o"
+"./Core/Src/stm32f4xx_hal_spi.o"
 "./Core/Src/stm32f4xx_hal_timebase_tim.o"
 "./Core/Src/stm32f4xx_it.o"
 "./Core/Src/syscalls.o"
@@ -30,3 +31,6 @@
 "./thirdParty/freeRTOS/timers.o"
 "./thirdParty/freeRTOS/portable/GCC/ARM_CM4F/port.o"
 "./thirdParty/freeRTOS/portable/MemMang/heap_4.o"
+"./thirdParty/lib_ili9341/fonts.o"
+"./thirdParty/lib_ili9341/ili9341.o"
+"./thirdParty/lib_ili9341/ili9341_touch.o"

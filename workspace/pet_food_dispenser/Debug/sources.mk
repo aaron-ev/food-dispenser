@@ -27,4 +27,5 @@ Drivers/STM32F4xx_HAL_Driver/Src \
 thirdParty/freeRTOS \
 thirdParty/freeRTOS/portable/GCC/ARM_CM4F \
 thirdParty/freeRTOS/portable/MemMang \
+thirdParty/lib_ili9341 \
 

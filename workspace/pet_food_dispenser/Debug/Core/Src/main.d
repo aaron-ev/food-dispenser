@@ -24,6 +24,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/dispenser_config.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ramfunc.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
+ ../Core/Inc/stm32f4xx_hal_spi.h \
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
@@ -35,7 +37,9 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/dispenser_config.h \
  C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/portable/GCC/ARM_CM4F/portmacro.h \
  C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/include/mpu_wrappers.h \
  C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/include/task.h \
- C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/include/list.h
+ C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/include/list.h \
+ C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/lib_ili9341/ili9341.h \
+ C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/lib_ili9341/fonts.h
 ../Core/Inc/dispenser_config.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
@@ -63,6 +67,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/dispenser_config.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ramfunc.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h:
+../Core/Inc/stm32f4xx_hal_spi.h:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
@@ -75,3 +81,5 @@ C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispense
 C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/include/mpu_wrappers.h:
 C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/include/task.h:
 C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/include/list.h:
+C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/lib_ili9341/ili9341.h:
+C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/lib_ili9341/fonts.h:

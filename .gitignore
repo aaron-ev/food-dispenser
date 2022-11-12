@@ -1,5 +1,6 @@
-.vscode/*
-workspace/.metadata/*
+.vscode
+workspace/.metadata
+workspace/pet_food_dispenser/Debug/
 *.json
 *.launch
 *.log

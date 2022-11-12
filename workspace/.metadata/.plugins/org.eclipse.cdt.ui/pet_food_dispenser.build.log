@@ -1,17 +1,64 @@
-16:52:31 **** Incremental Build of configuration Debug for project pet_food_dispenser ****
+17:04:00 **** Build of configuration Debug for project pet_food_dispenser ****
 make -j12 all 
-arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F446xx -c -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/lib_ili9341" -I../Core/Inc -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/include" -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/portable/GCC/ARM_CM4F" -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
-arm-none-eabi-gcc -o "pet_food_dispenser.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\U62REFW\main_personal\dispenser_ili3241_2_8\workspace\pet_food_dispenser\STM32F446RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="pet_food_dispenser.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
-Finished building target: pet_food_dispenser.elf
- 
-arm-none-eabi-size   pet_food_dispenser.elf 
-arm-none-eabi-objdump -h -S  pet_food_dispenser.elf  > "pet_food_dispenser.list"
-   text	   data	    bss	    dec	    hex	filename
-  19312	     28	  78932	  98272	  17fe0	pet_food_dispenser.elf
-Finished building: default.size.stdout
- 
-Finished building: pet_food_dispenser.list
- 
+arm-none-eabi-gcc "../thirdParty/lib_ili9341/fonts.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F446xx -c -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/lib_ili9341" -I../Core/Inc -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/include" -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/portable/GCC/ARM_CM4F" -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"thirdParty/lib_ili9341/fonts.d" -MT"thirdParty/lib_ili9341/fonts.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "thirdParty/lib_ili9341/fonts.o"
+arm-none-eabi-gcc "../thirdParty/lib_ili9341/ili9341.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F446xx -c -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/lib_ili9341" -I../Core/Inc -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/include" -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/portable/GCC/ARM_CM4F" -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"thirdParty/lib_ili9341/ili9341.d" -MT"thirdParty/lib_ili9341/ili9341.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "thirdParty/lib_ili9341/ili9341.o"
+arm-none-eabi-gcc "../thirdParty/lib_ili9341/ili9341_touch.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F446xx -c -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/lib_ili9341" -I../Core/Inc -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/include" -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/portable/GCC/ARM_CM4F" -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"thirdParty/lib_ili9341/ili9341_touch.d" -MT"thirdParty/lib_ili9341/ili9341_touch.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "thirdParty/lib_ili9341/ili9341_touch.o"
+arm-none-eabi-gcc "../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F446xx -c -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/lib_ili9341" -I../Core/Inc -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/include" -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/portable/GCC/ARM_CM4F" -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.d" -MT"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o"
+arm-none-eabi-gcc "../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F446xx -c -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/lib_ili9341" -I../Core/Inc -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/include" -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/portable/GCC/ARM_CM4F" -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.d" -MT"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o"
+arm-none-eabi-gcc "../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F446xx -c -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/lib_ili9341" -I../Core/Inc -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/include" -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/portable/GCC/ARM_CM4F" -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.d" -MT"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.o"
+arm-none-eabi-gcc "../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F446xx -c -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/lib_ili9341" -I../Core/Inc -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/include" -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/portable/GCC/ARM_CM4F" -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.d" -MT"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.o"
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:29,
+                 from ../thirdParty/lib_ili9341/ili9341.c:2:
+../Core/Inc/stm32f4xx_hal_conf.h:399:11: fatal error: stm32f4xx_hal_spi.h: No such file or directory
+  399 |  #include "stm32f4xx_hal_spi.h"
+      |           ^~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+arm-none-eabi-gcc "../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F446xx -c -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/lib_ili9341" -I../Core/Inc -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/include" -I"C:/Users/U62REFW/main_personal/dispenser_ili3241_2_8/workspace/pet_food_dispenser/thirdParty/freeRTOS/portable/GCC/ARM_CM4F" -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.d" -MT"Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.o"
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:29,
+                 from ../thirdParty/lib_ili9341/ili9341_touch.c:3:
+../Core/Inc/stm32f4xx_hal_conf.h:399:11: fatal error: stm32f4xx_hal_spi.h: No such file or directory
+  399 |  #include "stm32f4xx_hal_spi.h"
+      |           ^~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+make: *** [thirdParty/lib_ili9341/subdir.mk:25: thirdParty/lib_ili9341/ili9341.o] Error 1
+make: *** Waiting for unfinished jobs....
+make: *** [thirdParty/lib_ili9341/subdir.mk:25: thirdParty/lib_ili9341/ili9341_touch.o] Error 1
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:29,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c:36:
+../Core/Inc/stm32f4xx_hal_conf.h:399:11: fatal error: stm32f4xx_hal_spi.h: No such file or directory
+  399 |  #include "stm32f4xx_hal_spi.h"
+      |           ^~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+make: *** [Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk:64: Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o] Error 1
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:29,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c:81:
+../Core/Inc/stm32f4xx_hal_conf.h:399:11: fatal error: stm32f4xx_hal_spi.h: No such file or directory
+  399 |  #include "stm32f4xx_hal_spi.h"
+      |           ^~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+make: *** [Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk:64: Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o] Error 1
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:29,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c:97:
+../Core/Inc/stm32f4xx_hal_conf.h:399:11: fatal error: stm32f4xx_hal_spi.h: No such file or directory
+  399 |  #include "stm32f4xx_hal_spi.h"
+      |           ^~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+make: *** [Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk:64: Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.o] Error 1
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:29,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c:39:
+../Core/Inc/stm32f4xx_hal_conf.h:399:11: fatal error: stm32f4xx_hal_spi.h: No such file or directory
+  399 |  #include "stm32f4xx_hal_spi.h"
+      |           ^~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+make: *** [Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk:64: Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.o] Error 1
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:29,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c:86:
+../Core/Inc/stm32f4xx_hal_conf.h:399:11: fatal error: stm32f4xx_hal_spi.h: No such file or directory
+  399 |  #include "stm32f4xx_hal_spi.h"
+      |           ^~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+make: *** [Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk:64: Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.o] Error 1
+"make -j12 all" terminated with exit code 2. Build might be incomplete.
 
-16:52:34 Build Finished. 0 errors, 0 warnings. (took 2s.928ms)
+17:04:02 Build Failed. 15 errors, 0 warnings. (took 1s.696ms)
 

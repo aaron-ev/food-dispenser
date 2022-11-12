@@ -1,3 +1,7 @@
-.vscode/*.json
+.vscode/*
 workspace/.metadata/*
+*.json
 *.launch
+*.log
+*.xml
+*.ini

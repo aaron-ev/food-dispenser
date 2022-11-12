@@ -1,0 +1,18 @@
+/*
+ * dispenser_config.h
+ *
+ *  Created on: Nov 12, 2022
+ *      Author: Aaron Escoboza
+ */
+
+#ifndef INC_DISPENSER_CONFIG_H_
+#define INC_DISPENSER_CONFIG_H_
+
+
+
+/* Task priorities */
+#define HEART_BEAT_PRIORITY_TASK 			1
+
+
+
+#endif /* INC_DISPENSER_CONFIG_H_ */

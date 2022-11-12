@@ -20,3 +20,6 @@ Command-line arguments:  -os win32 -ws win32 -arch x86_64
 
 !ENTRY org.eclipse.cdt.core 1 0 2022-11-12 13:50:24.521
 !MESSAGE Indexed 'pet_food_dispenser' (22 sources, 82 headers) in 3.44 sec: 4,990 declarations; 26,422 references; 0 unresolved inclusions; 1 syntax errors; 2 unresolved names (0.0064%)
+
+!ENTRY com.st.stm32cube.ide.mcu.debug.launch 2 0 2022-11-12 15:16:41.151
+!MESSAGE Won't launch debug session since we failed to locate the binary.

@@ -3,31 +3,31 @@
 #include "ili9341.h"
 
 static void ILI9341_Select() {
-    HAL_GPIO_WritePin(ILI9341_CS_GPIO_Port, ILI9341_CS_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ILI9341_CS_PORT, ILI9341_CS_PIN_NUM, GPIO_PIN_RESET);
 }
 
 void ILI9341_Unselect() {
-    HAL_GPIO_WritePin(ILI9341_CS_GPIO_Port, ILI9341_CS_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ILI9341_CS_PORT, ILI9341_CS_PIN_NUM, GPIO_PIN_SET);
 }
 
 static void ILI9341_Reset() {
-    HAL_GPIO_WritePin(ILI9341_RES_GPIO_Port, ILI9341_RES_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ILI9341_RESET_PORT, ILI9341_RESET_PIN_NUM, GPIO_PIN_RESET);
     HAL_Delay(5);
-    HAL_GPIO_WritePin(ILI9341_RES_GPIO_Port, ILI9341_RES_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ILI9341_RESET_PORT, ILI9341_RESET_PIN_NUM, GPIO_PIN_SET);
 }
 
 static void ILI9341_WriteCommand(uint8_t cmd) {
-    HAL_GPIO_WritePin(ILI9341_DC_GPIO_Port, ILI9341_DC_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(&ILI9341_SPI_PORT, &cmd, sizeof(cmd), HAL_MAX_DELAY);
+    HAL_GPIO_WritePin(ILI9341_DC_PORT, ILI9341_DC_PIN_NUM, GPIO_PIN_RESET);
+    HAL_SPI_Transmit(&ILI9341_SPI_HANDLE, &cmd, sizeof(cmd), HAL_MAX_DELAY);
 }
 
 static void ILI9341_WriteData(uint8_t* buff, size_t buff_size) {
-    HAL_GPIO_WritePin(ILI9341_DC_GPIO_Port, ILI9341_DC_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ILI9341_DC_PORT, ILI9341_DC_PIN_NUM, GPIO_PIN_SET);
 
     // split data in small chunks because HAL can't send more then 64K at once
     while(buff_size > 0) {
         uint16_t chunk_size = buff_size > 32768 ? 32768 : buff_size;
-        HAL_SPI_Transmit(&ILI9341_SPI_PORT, buff, chunk_size, HAL_MAX_DELAY);
+        HAL_SPI_Transmit(&ILI9341_SPI_HANDLE, buff, chunk_size, HAL_MAX_DELAY);
         buff += chunk_size;
         buff_size -= chunk_size;
     }
@@ -52,11 +52,69 @@ static void ILI9341_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint
     ILI9341_WriteCommand(0x2C); // RAMWR
 }
 
-void ILI9341_Init() {
+
+void ILI9341_GPIO_Init(void)
+{
+    GPIO_InitTypeDef gpio_def = {0};
+
+    /* Common settings for CS, RESET, DC and LED */
+    gpio_def.Mode = GPIO_MODE_OUTPUT_PP;
+    gpio_def.Pull = GPIO_PULLUP;
+    gpio_def.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+
+    /* Initialize CS */
+    gpio_def.Pin = ILI9341_CS_PIN_NUM;
+    HAL_GPIO_Init(ILI9341_CS_PORT, &gpio_def);
+
+    /* Initialize RESET */
+    gpio_def.Pin = ILI9341_RESET_PIN_NUM;
+    HAL_GPIO_Init(ILI9341_RESET_PORT, &gpio_def);
+
+    /* Initialize DC */
+    gpio_def.Pin = ILI9341_DC_PIN_NUM;
+    HAL_GPIO_Init(ILI9341_RESET_PORT, &gpio_def);
+
+    /* Initialize LED */
+    gpio_def.Pin = ILI9341_LED_PIN_NUM;
+    HAL_GPIO_Init(ILI9341_LED_PORT, &gpio_def);
+
+    /* Initialize SPI pins (MOSI, MISO, CLK)*/
+    gpio_def.Pin = ILI9341_SPI_MOSI_PIN_NUM | ILI9341_SPI_MISO_PIN_NUM | ILI9341_SPI_SCK_PIN_NUM;
+    gpio_def.Mode = GPIO_MODE_AF_PP;
+    gpio_def.Pull = GPIO_NOPULL;
+    gpio_def.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    gpio_def.Alternate = ILI9341_SPI_ALT;
+    HAL_GPIO_Init(ILI9341_SPI_PORT, &gpio_def);
+}
+
+void ILI9341_SPI_Init(void)
+{
+    hspi1.Instance = ILI9341_SPI_MODULE;
+    hspi1.Init.Mode = SPI_MODE_MASTER;
+    hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+    hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+    hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+    hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+    hspi1.Init.NSS = SPI_NSS_SOFT;
+    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+    hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+    hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+    hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+    hspi1.Init.CRCPolynomial = 10;
+    if (HAL_SPI_Init(&hspi1) != HAL_OK)
+    {
+    	/* Do not do nothing */
+    }
+}
+
+void ILI9341_Init() 
+{
+    /* GPIO and SPI low level initialization */
+    ILI9341_GPIO_Init();
+    ILI9341_SPI_Init();
+
     ILI9341_Select();
     ILI9341_Reset();
-
-    // command list is based on https://github.com/martnak/STM32-ILI9341
 
     // SOFTWARE RESET
     ILI9341_WriteCommand(0x01);
@@ -275,10 +333,10 @@ void ILI9341_FillRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint1
     ILI9341_SetAddressWindow(x, y, x+w-1, y+h-1);
 
     uint8_t data[] = { color >> 8, color & 0xFF };
-    HAL_GPIO_WritePin(ILI9341_DC_GPIO_Port, ILI9341_DC_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ILI9341_DC_PORT, ILI9341_DC_PIN_NUM, GPIO_PIN_SET);
     for(y = h; y > 0; y--) {
         for(x = w; x > 0; x--) {
-            HAL_SPI_Transmit(&ILI9341_SPI_PORT, data, sizeof(data), HAL_MAX_DELAY);
+            HAL_SPI_Transmit(&ILI9341_SPI_HANDLE, data, sizeof(data), HAL_MAX_DELAY);
         }
     }
 

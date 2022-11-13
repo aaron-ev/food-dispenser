@@ -17,6 +17,7 @@
 #define DELAY_HEART_BEAT_TASK   500 /* In ms */
 
 /* GPIO definitions */
-#define HEART_BEAT_LED          GPIOA, GPIO_PIN_5
+#define HEART_BEAT_LED_PORT     GPIOA
+#define HEART_BEAT_LED_PIN      GPIO_PIN_5
 
 #endif /* INC_DISPENSER_CONFIG_H_ */

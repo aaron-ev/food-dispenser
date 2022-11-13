@@ -3,37 +3,24 @@
 #include "task.h"
 #include "ili9341.h"
 
-extern SPI_HandleTypeDef hspi1;
+UART_HandleTypeDef huart2;
+SPI_HandleTypeDef hspi1;
 
 void vTaskHeartBeat(void *params)
 {
     while (1)
     {
-        HAL_GPIO_TogglePin(HEART_BEAT_LED);
+        HAL_GPIO_TogglePin(HEART_BEAT_LED_PORT, HEART_BEAT_LED_PIN);
         vTaskDelay(pdMS_TO_TICKS(DELAY_HEART_BEAT_TASK));
     }
 }
-UART_HandleTypeDef huart2;
 
-void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
-static void MX_USART2_UART_Init(void);
+void systemClockConfig(void);
+static void gpioInit(void);
+static void uartInit(void);
+static void displayInit(void);
 
-int main(void)
-{
-    /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-    HAL_Init();
-    /* Configure the system clock */
-    SystemClock_Config();
-    /* Initialize all configured peripherals */
-    MX_GPIO_Init();
-    MX_USART2_UART_Init();
-    /* Create tasks */
-    xTaskCreate(vTaskHeartBeat, "task-heart-beat", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-    vTaskStartScheduler();
-}
-
-void SystemClock_Config(void)
+void systemClockConfig(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
@@ -68,7 +55,7 @@ void SystemClock_Config(void)
     }
 }
 
-static void MX_USART2_UART_Init(void)
+static void uartInit(void)
 {
     huart2.Instance = USART2;
     huart2.Init.BaudRate = 115200;
@@ -85,29 +72,23 @@ static void MX_USART2_UART_Init(void)
     }
 }
 
-static void MX_GPIO_Init(void)
+static void gpioInit(void)
 {
-    GPIO_InitTypeDef GPIO_InitStruct = {0}; 
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
 
     /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-    __HAL_RCC_GPIOH_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-
-    /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);  
-    /*Configure GPIO pin : B1_Pin */
-    GPIO_InitStruct.Pin = B1_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);  
-    /*Configure GPIO pin : LD2_Pin */
-    GPIO_InitStruct.Pin = LD2_Pin;
+    /*Configure GPIO pin : Heart beat led */
+    GPIO_InitStruct.Pin = HEART_BEAT_LED_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(HEART_BEAT_LED_PORT, &GPIO_InitStruct);
+}
+
+static void displayInit(void)
+{
+    ILI9341_Init();
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -125,19 +106,25 @@ void Error_Handler(void)
     }
 }
 
-#ifdef  USE_FULL_ASSERT
-/**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
-void assert_failed(uint8_t *file, uint32_t line)
+
+int main(void)
 {
-  /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+    /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+    HAL_Init();
+    /* Configure the system clock */
+    systemClockConfig();
+    /* Initialize all configured peripherals */
+    gpioInit();
+    /* Initialize UART for debugging purposes*/
+    uartInit();
+    /* Initialize Display */
+    displayInit();
+
+    /* Create tasks */
+    if (xTaskCreate(vTaskHeartBeat, "task-heart-beat", configMINIMAL_STACK_SIZE, NULL, 1, NULL) == NULL);
+    {
+        printf("Error: insufficient memory for heart beat task\n");
+        return 1; 
+    }
+    vTaskStartScheduler();
 }
-#endif /* USE_FULL_ASSERT */

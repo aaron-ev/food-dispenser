@@ -2,24 +2,27 @@
 #include "freeRTOS.h"
 #include "task.h"
 #include "ili9341.h"
+#include <stdio.h>
 
+/****************************************************************************
+*                      Global variables
+*****************************************************************************/
 UART_HandleTypeDef huart2;
 SPI_HandleTypeDef hspi1;
+TaskHandle_t xTaskHeartBeatHandler;
+TaskHandle_t xTaskDisplayHandler;
 
-void vTaskHeartBeat(void *params)
-{
-    while (1)
-    {
-        HAL_GPIO_TogglePin(HEART_BEAT_LED_PORT, HEART_BEAT_LED_PIN);
-        vTaskDelay(pdMS_TO_TICKS(DELAY_HEART_BEAT_TASK));
-    }
-}
-
+/****************************************************************************
+*                       Function prototypes
+*****************************************************************************/
 void systemClockConfig(void);
 static void gpioInit(void);
 static void uartInit(void);
 static void displayInit(void);
 
+/****************************************************************************
+*                       Function definitions
+*****************************************************************************/
 void systemClockConfig(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -106,9 +109,28 @@ void Error_Handler(void)
     }
 }
 
+void vTaskHeartBeat(void *params)
+{
+    while (1)
+    {
+        HAL_GPIO_TogglePin(HEART_BEAT_LED_PORT, HEART_BEAT_LED_PIN);
+        vTaskDelay(pdMS_TO_TICKS(DELAY_HEART_BEAT_TASK));
+    }
+}
+
+void vTaskDisplay(void *params)
+{
+    while (1)
+    {  
+        //TODO: 1. block until there is a new touch point 
+        //      2. implement a FSM to handle the menu 
+    }
+}
+
 
 int main(void)
 {
+	BaseType_t retVal;
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
     /* Configure the system clock */
@@ -121,10 +143,31 @@ int main(void)
     displayInit();
 
     /* Create tasks */
-    if (xTaskCreate(vTaskHeartBeat, "task-heart-beat", configMINIMAL_STACK_SIZE, NULL, 1, NULL) == NULL);
+    retVal = xTaskCreate(vTaskHeartBeat, "task-heart-beat", configMINIMAL_STACK_SIZE, NULL, 1, &xTaskHeartBeatHandler);
+    if (retVal != pdPASS)
     {
         printf("Error: insufficient memory for heart beat task\n");
-        return 1; 
+        goto main_out;
+    }
+
+    retVal = xTaskCreate(vTaskDisplay, "task-display", configMINIMAL_STACK_SIZE, NULL, 2, &xTaskDisplayHandler);
+    if (retVal != pdPASS)
+    {
+        printf("Error: insufficient memory for display task\n");
+        goto main_out;
+
     }
     vTaskStartScheduler();
+
+main_out: 
+  if (xTaskHeartBeatHandler != NULL)
+  {
+    vTaskDelete(xTaskHeartBeatHandler);
+  }
+  if (xTaskDisplayHandler != NULL)
+  {
+    vTaskDelete(xTaskDisplayHandler);
+  }
+  HAL_GPIO_WritePin(HEART_BEAT_LED_PORT, HEART_BEAT_LED_PIN, GPIO_PIN_SET);
+  return 1;
 }

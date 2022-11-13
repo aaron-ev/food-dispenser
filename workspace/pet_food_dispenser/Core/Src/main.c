@@ -1,3 +1,10 @@
+
+/**************************************************************************
+* Author: Aaron Escoboza
+* Description: Pet food dispenser based on STM HAL layer and FreeRTOS.
+* Gihub account: //todo: put the link here 
+**************************************************************************/
+
 #include "dispenser_config.h"
 #include "freeRTOS.h"
 #include "task.h"
@@ -126,7 +133,6 @@ void vTaskDisplay(void *params)
         //      2. implement a FSM to handle the menu 
     }
 }
-
 
 int main(void)
 {

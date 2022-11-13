@@ -9,6 +9,9 @@
 #define INC_DISPENSER_CONFIG_H_
 #include "main.h"
 
+/* Project version */
+#define DISPENSER_VERSION_MAYOR_NUMBER     0
+#define DISPENSER_VERSION_MINOR_NUMBER     1
 
 /* Task priorities */
 #define HEART_BEAT_PRIORITY_TASK        1

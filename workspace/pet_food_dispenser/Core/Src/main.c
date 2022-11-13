@@ -8,7 +8,8 @@
 #include "dispenser_config.h"
 #include "freeRTOS.h"
 #include "task.h"
-#include "ili9341.h"
+#include "tft_ili9341.h"
+#include "testimg.h"
 #include <stdio.h>
 
 /****************************************************************************
@@ -98,7 +99,19 @@ static void gpioInit(void)
 
 static void displayInit(void)
 {
-    ILI9341_Init();
+  tft_ili9341_init();
+}
+
+void display_welcome(void)
+{
+    tft_ili9341_send_str(0, TFT_ILI9341_HEIGHT / 2, "Hello word, I am the display. Changing the background...", Font_16x26, BLUE, WHITE);
+    HAL_Delay(1000);
+    tft_ili9341_fill_screen(WHITE);
+    tft_ili9341_send_str(0, TFT_ILI9341_HEIGHT / 2, "Writing an image...", Font_16x26, BLUE, WHITE);
+    HAL_Delay(1000);
+    ILI9341_DrawImage((TFT_ILI9341_WIDTH - 240) / 2, (TFT_ILI9341_HEIGHT - 240) / 2, 240, 240, (const uint16_t*)test_img_240x240);
+    tft_ili9341_fill_screen(WHITE);
+    tft_ili9341_send_str(0, TFT_ILI9341_HEIGHT / 2, "Display: Ok", Font_16x26, BLUE, WHITE);
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -147,7 +160,7 @@ int main(void)
     uartInit();
     /* Initialize Display */
     displayInit();
-
+    display_welcome();
     /* Create tasks */
     retVal = xTaskCreate(vTaskHeartBeat, "task-heart-beat", configMINIMAL_STACK_SIZE, NULL, 1, &xTaskHeartBeatHandler);
     if (retVal != pdPASS)
@@ -156,7 +169,7 @@ int main(void)
         goto main_out;
     }
 
-    retVal = xTaskCreate(vTaskDisplay, "task-display", configMINIMAL_STACK_SIZE, NULL, 2, &xTaskDisplayHandler);
+    retVal = xTaskCreate(vTaskDisplay, "task-display", configMINIMAL_STACK_SIZE, NULL, 1, &xTaskDisplayHandler);
     if (retVal != pdPASS)
     {
         printf("Error: insufficient memory for display task\n");

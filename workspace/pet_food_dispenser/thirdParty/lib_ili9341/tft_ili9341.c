@@ -8,6 +8,12 @@
 
 typedef enum
 {
+    CLK_DISABLE,
+    CLK_ENABLE
+}eClkState;
+
+typedef enum
+{
     tft_ili9341_spi_8_mode,
     tft_ili9341_spi_16_mode,
 }tft_ili9341_data_size;
@@ -54,6 +60,133 @@ void tft_ili9341_init(void)
     tft_ili9341_lcd_init();
 }
 
+static void tft_ili93241_gpio_clk_enable(GPIO_TypeDef *GPIOx, eClkState clkState)
+{
+
+    if (clkState == CLK_ENABLE)
+    {
+        if ( GPIOx == GPIOA)
+        {
+            __GPIOA_CLK_ENABLE();
+        }
+        else if ( GPIOx == GPIOB)
+        {
+            __GPIOB_CLK_ENABLE();
+        }
+        else if ( GPIOx == GPIOC)
+        {
+            __GPIOC_CLK_ENABLE();
+        }
+        else if ( GPIOx == GPIOE)
+        {
+            __GPIOE_CLK_ENABLE();
+        }
+        else if ( GPIOx == GPIOF)
+        {
+            __GPIOF_CLK_ENABLE();
+        }
+        else if ( GPIOx == GPIOG)
+        {
+            __GPIOG_CLK_ENABLE();
+        }
+        else if ( GPIOx == GPIOH)
+        {
+            __GPIOH_CLK_ENABLE();
+        }
+        else
+        {
+            return;
+        }
+    }
+    else
+    {
+        if ( GPIOx == GPIOA)
+        {
+            __GPIOA_CLK_DISABLE();
+        }
+        else if ( GPIOx == GPIOB)
+        {
+            __GPIOB_CLK_DISABLE();
+        }
+        else if ( GPIOx == GPIOC)
+        {
+            __GPIOC_CLK_DISABLE();
+        }
+        else if ( GPIOx == GPIOE)
+        {
+            __GPIOE_CLK_DISABLE();
+        }
+        else if ( GPIOx == GPIOF)
+        {
+            __GPIOF_CLK_DISABLE();
+        }
+        else if ( GPIOx == GPIOG)
+        {
+            __GPIOG_CLK_DISABLE();
+        }
+        else if ( GPIOx == GPIOH)
+        {
+            __GPIOH_CLK_DISABLE();
+        }
+        else
+        {
+            return;
+        }
+    }
+}
+
+
+static void tft_ili93241_spi_clk_enable(SPI_TypeDef *SPIx, eClkState clkState)
+{
+
+    if (clkState == CLK_ENABLE)
+    {
+        if ( SPIx == SPI1)
+        {
+            __SPI1_CLK_ENABLE();
+        }
+        else if ( SPIx == SPI2 )
+        {
+            __SPI2_CLK_ENABLE();
+        }
+        else if ( SPIx == SPI3 )
+        {
+            __SPI3_CLK_ENABLE();
+        }
+        else if ( SPIx == SPI4 )
+        {
+            __SPI4_CLK_ENABLE();
+        }
+        else
+        {
+            return;
+        }
+    }
+    else
+    {
+        if ( SPIx == SPI1)
+        {
+            __SPI1_CLK_DISABLE();
+        }
+        else if ( SPIx == SPI2 )
+        {
+            __SPI2_CLK_DISABLE();
+        }
+        else if ( SPIx == SPI3 )
+        {
+            __SPI3_CLK_DISABLE();
+        }
+        else if ( SPIx == SPI4 )
+        {
+            __SPI4_CLK_DISABLE();
+        }
+        else
+        {
+            return;
+        }
+    }
+}
+
 static void tft_ili9341_gpio_init(void)
 {
     GPIO_InitTypeDef gpio_def = {0};
@@ -65,18 +198,22 @@ static void tft_ili9341_gpio_init(void)
 
     /* Initialize CS */
     gpio_def.Pin = TFT_CS_PIN_NUM;
+    tft_ili93241_gpio_clk_enable(TFT_CS_PORT, CLK_ENABLE);
     HAL_GPIO_Init(TFT_CS_PORT, &gpio_def);
 
     /* Initialize RESET */
     gpio_def.Pin = TFT_RESET_PIN_NUM;
+    tft_ili93241_gpio_clk_enable(TFT_RESET_PORT, CLK_ENABLE);
     HAL_GPIO_Init(TFT_RESET_PORT, &gpio_def);
 
     /* Initialize DC */
     gpio_def.Pin = TFT_DC_PIN_NUM;
-    HAL_GPIO_Init(TFT_RESET_PORT, &gpio_def);
+    tft_ili93241_gpio_clk_enable(TFT_DC_PORT, CLK_ENABLE);
+    HAL_GPIO_Init(TFT_DC_PORT, &gpio_def);
 
     /* Initialize LED */
     gpio_def.Pin = TFT_LED_PIN_NUM;
+    tft_ili93241_gpio_clk_enable(TFT_LED_PORT, CLK_ENABLE);
     HAL_GPIO_Init(TFT_LED_PORT, &gpio_def);
 
     /* Initialize SPI pins (MOSI, MISO, CLK)*/
@@ -85,6 +222,7 @@ static void tft_ili9341_gpio_init(void)
     gpio_def.Pull = GPIO_NOPULL;
     gpio_def.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     gpio_def.Alternate = TFT_SPI_ALT;
+    tft_ili93241_gpio_clk_enable(TFT_SPI_PORT, CLK_ENABLE);
     HAL_GPIO_Init(TFT_SPI_PORT, &gpio_def);
 }
 
@@ -94,6 +232,7 @@ static void tft_ili9341_spi_init(void)
        high phase (first edge), NSS managed by software and 
        LSB send first. 
     */
+   tft_ili93241_spi_clk_enable(TFT_SPI_MODULE, CLK_ENABLE);
     hspi.Instance = TFT_SPI_MODULE;
     hspi.Init.Mode = SPI_MODE_MASTER;
     hspi.Init.Direction = SPI_DIRECTION_2LINES;

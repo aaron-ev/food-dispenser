@@ -75,9 +75,9 @@
     RESET --> PB5
     DC    --> PB6
     LED   --> PB8
-    MOSI  --> PA7
-    MISO  --> PA6
-    SCK   --> PA5
+    MOSI  --> PC3
+    MISO  --> PC2
+    SCK   --> PC7
 */
 
 /* CS */
@@ -97,10 +97,10 @@
 #define TFT_LED_PIN_NUM                     TFT_PIN8
 
 /* SPI section */
-#define TFT_SPI_PORT                        TFT_GPIOA
-#define TFT_SPI_MOSI_PIN_NUM                TFT_PIN7
-#define TFT_SPI_MISO_PIN_NUM                TFT_PIN6
-#define TFT_SPI_SCK_PIN_NUM                 TFT_PIN5
+#define TFT_SPI_PORT                        TFT_GPIOC
+#define TFT_SPI_MOSI_PIN_NUM                TFT_PIN3
+#define TFT_SPI_MISO_PIN_NUM                TFT_PIN2
+#define TFT_SPI_SCK_PIN_NUM                 TFT_PIN7
 #define TFT_SPI_ALT                         TFT_AF5_SPI1
 #define TFT_SPI_MODULE                      TFT_SPI_MODULE_1
 

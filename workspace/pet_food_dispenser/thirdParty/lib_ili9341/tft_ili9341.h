@@ -102,7 +102,7 @@
 #define TFT_SPI_MISO_PIN_NUM                TFT_PIN2
 #define TFT_SPI_SCK_PIN_NUM                 TFT_PIN7
 #define TFT_SPI_ALT                         TFT_AF5_SPI1
-#define TFT_SPI_MODULE                      TFT_SPI_MODULE_1
+#define TFT_SPI_MODULE                      TFT_SPI_MODULE_2
 
 /************************************************************/
                  /* END OF USER CONFIGURATION */

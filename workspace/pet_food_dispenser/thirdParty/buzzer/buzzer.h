@@ -16,22 +16,16 @@
 
 #define BUZZER_TIM_INSTANCE  TIM4
 
-typedef enum
-{
-    BUZZER_DISABLE,
-    BUZZER_ENABLE
-}BuzzerInitalState;
 
-typedef struct
-{
-    uint32_t freq; /* Buzzer frequency */
-    BuzzerInitalState buzzerState;
-    TIM_HandleTypeDef timerHandler;
-    uint8_t channel;
-}Buzzer;
+#define BUZZER_GPIO_INSTANCE
+#define BUZZER_GPIO_PIN_NUM
+#define BUZZER_GPIO_ALTERNATE
+#define BUZZER_TIMER_INSTANCE           TIM4
+#define BUZZER_TIMER_CHANNEL			   1
+#define BUZZER_FREQUENCY
 
-void buzzerInit(Buzzer *buzzer);
-void buzzerEnable(Buzzer *buzzer);
-void buzzerDisable(Buzzer *buzzer);
+HAL_StatusTypeDef buzzerInit(void);
+HAL_StatusTypeDef buzzerEnable(void);
+HAL_StatusTypeDef buzzerDisable(void);
 
 #endif

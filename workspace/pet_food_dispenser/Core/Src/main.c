@@ -150,9 +150,9 @@ void vTaskDisplay(void *params)
 
 int main(void)
 {
-	BaseType_t retVal;
+    BaseType_t retVal;
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-	HAL_Init();
+    HAL_Init();
     /* Configure the system clock */
     systemClockConfig();
     /* Initialize all configured peripherals */

@@ -1,6 +1,6 @@
 #include "buzzer.h"
 
-static TIM_HandleTypeDef timHandler;
+TIM_HandleTypeDef timHandler;
 
 HAL_StatusTypeDef buzzerInit(void)
 {

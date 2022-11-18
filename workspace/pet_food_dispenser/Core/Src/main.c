@@ -156,7 +156,7 @@ int main(void)
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
     /* Configure the system clock */
-    systemClockConfig();
+//    systemClockConfig();
     /* Initialize all configured peripherals */
     gpioInit();
     /* Initialize UART for debugging purposes*/

@@ -41,7 +41,7 @@ HAL_StatusTypeDef buzzerInit(void)
         return HAL_ERROR;
     }
     /* Interrupt settings */
-    HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+//    HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
     HAL_NVIC_EnableIRQ(TIM2_IRQn);
     HAL_NVIC_SetPriority(TIM2_IRQn, 0, 0);
 

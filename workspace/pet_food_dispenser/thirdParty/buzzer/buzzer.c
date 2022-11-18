@@ -2,6 +2,9 @@
 
 TIM_HandleTypeDef timHandler;
 
+volatile uint32_t pulse1_value = 25000; //to produce 500Hz
+volatile uint32_t ccr;
+
 HAL_StatusTypeDef buzzerInit(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -19,8 +22,7 @@ HAL_StatusTypeDef buzzerInit(void)
     HAL_GPIO_Init(BUZZER_GPIO_INSTANCE, &GPIO_InitStruct);
     /* Timer settings */
     timHandler.Instance = BUZZER_TIMER_INSTANCE;
-    timHandler.Channel = BUZZER_TIMER_CHANNEL;
-    timHandler.Init.Prescaler = TIM_CLOCKDIVISION_DIV1;
+    timHandler.Init.Prescaler = 139;
     timHandler.Init.Period = 0xFFFFFFFF;
     timHandler.Init.CounterMode = TIM_COUNTERMODE_UP;
     if (HAL_TIM_OC_Init(&timHandler) != HAL_OK)
@@ -29,22 +31,23 @@ HAL_StatusTypeDef buzzerInit(void)
     }
     /* Channel settings */
     channelConfig.OCMode = TIM_OCMODE_TOGGLE;
-    channelConfig.OCPolarity = TIM_OCNPOLARITY_HIGH;
-    channelConfig.Pulse = 0;
+    channelConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
+    channelConfig.Pulse = 60000 - 1;
     if (HAL_TIM_OC_ConfigChannel(&timHandler, &channelConfig, BUZZER_TIMER_CHANNEL) != HAL_OK)
     {
         return HAL_ERROR;
     }
     /* Interrupt settings */
-    HAL_NVIC_SetPriority(TIM2_IRQn, 15, 0);
+    HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
     HAL_NVIC_EnableIRQ(TIM2_IRQn);
+    HAL_NVIC_SetPriority(TIM2_IRQn, 0, 0);
 
    return HAL_OK;
 }
 
 HAL_StatusTypeDef buzzerEnable(void)
 {
-    if (HAL_TIM_OC_Start(&timHandler, BUZZER_TIMER_CHANNEL) != HAL_OK)
+    if (HAL_TIM_OC_Start_IT(&timHandler, BUZZER_TIMER_CHANNEL) != HAL_OK)
     {
         return HAL_ERROR;
     }
@@ -53,7 +56,7 @@ HAL_StatusTypeDef buzzerEnable(void)
 
 HAL_StatusTypeDef buzzerDisable(void)
 {
-    if (HAL_TIM_OC_Stop(&timHandler, BUZZER_TIMER_CHANNEL) != HAL_OK)
+    if (HAL_TIM_OC_Stop_IT(&timHandler, BUZZER_TIMER_CHANNEL) != HAL_OK)
     {
         return HAL_ERROR;
     }
@@ -62,5 +65,9 @@ HAL_StatusTypeDef buzzerDisable(void)
 
  void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
  {
-
+	 if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
+	 {
+		 ccr = HAL_TIM_ReadCapturedValue(&timHandler, BUZZER_TIMER_CHANNEL);
+		 __HAL_TIM_SET_COMPARE(htim, BUZZER_TIMER_CHANNEL, (ccr + pulse1_value));
+	 }
  }

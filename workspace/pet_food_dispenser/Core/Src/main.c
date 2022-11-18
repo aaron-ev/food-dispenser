@@ -6,6 +6,7 @@
 **************************************************************************/
 
 #include "dispenser_config.h"
+#include "buzzer.h"
 #include "freeRTOS.h"
 #include "task.h"
 #include "tft_ili9341.h"
@@ -145,6 +146,7 @@ void vTaskDisplay(void *params)
     {  
         //TODO: 1. block until there is a new touch point 
         //      2. implement a FSM to handle the menu 
+    	vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
@@ -162,6 +164,9 @@ int main(void)
     /* Initialize Display */
     displayInit();
     display_welcome();
+    /* Initialize the buzzer */
+    buzzerInit();
+    buzzerEnable();
     /* Create tasks */
     retVal = xTaskCreate(vTaskHeartBeat, "task-heart-beat", configMINIMAL_STACK_SIZE, NULL, 1, &xTaskHeartBeatHandler);
     if (retVal != pdPASS)

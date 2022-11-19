@@ -1,6 +1,6 @@
 
 
-#include "main.h"
+#include <appConfig.h>
 #include "console.h"
 #include "stm32f4xx_hal.h"
 

@@ -5,12 +5,13 @@
 * Gihub account: //todo: put the link here 
 **************************************************************************/
 
-#include <buzzer.h>
-#include <dispenser_config.h>
-#include <display.h>
+#include "appConfig.h"
+#include "buzzer.h"
+#include "display.h"
+#include "console.h"
 #include "FreeRTOS.h"
 #include "timers.h"
-#include "console.h"
+#include "task.h"
 
 TaskHandle_t xTaskHeartBeatHandler;
 extern TaskHandle_t xTaskDisplayHandler;

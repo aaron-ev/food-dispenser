@@ -9,8 +9,8 @@
 #include "buzzer.h"
 #include "buzzer.h"
 #include "display.h"
-#include "../../thirdParty/freeRTOS/include/FreeRTOS.h"
-#include "../../thirdParty/freeRTOS/include/task.h"
+#include "FreeRTOS.h"
+#include "timers.h"
 
 /****************************************************************************
 *                      Global variables

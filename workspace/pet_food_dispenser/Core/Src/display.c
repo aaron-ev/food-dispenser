@@ -2,8 +2,8 @@
 #include "stm32f4xx_hal.h"
 #include "tft_ili9341.h"
 #include "testimg.h"
-#include "../../thirdParty/freeRTOS/include/FreeRTOS.h"
-#include "../../thirdParty/freeRTOS/include/task.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 TaskHandle_t xTaskDisplayHandler;
 
@@ -13,7 +13,7 @@ void vTaskDisplay(void *params)
     {  
         //TODO: 1. block until there is a new touch point 
         //      2. implement a FSM to handle the menu 
-    	vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 

@@ -6,11 +6,12 @@
 **************************************************************************/
 
 #include "dispenser_config.h"
+#include "buzzer.h"
 #include "freeRTOS.h"
 #include "task.h"
 #include "tft_ili9341.h"
 #include "testimg.h"
-#include <stdio.h>
+#include "buzzer.h"
 
 /****************************************************************************
 *                      Global variables
@@ -23,7 +24,7 @@ TaskHandle_t xTaskDisplayHandler;
 /****************************************************************************
 *                       Function prototypes
 *****************************************************************************/
-void systemClockConfig(void);
+void clkInit(void);
 static void gpioInit(void);
 static void uartInit(void);
 static void displayInit(void);
@@ -31,7 +32,7 @@ static void displayInit(void);
 /****************************************************************************
 *                       Function definitions
 *****************************************************************************/
-void systemClockConfig(void)
+void clkInit(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
@@ -136,6 +137,7 @@ void vTaskHeartBeat(void *params)
     {
         HAL_GPIO_TogglePin(HEART_BEAT_LED_PORT, HEART_BEAT_LED_PIN);
         vTaskDelay(pdMS_TO_TICKS(DELAY_HEART_BEAT_TASK));
+        buzzerPlay();
     }
 }
 
@@ -145,16 +147,18 @@ void vTaskDisplay(void *params)
     {  
         //TODO: 1. block until there is a new touch point 
         //      2. implement a FSM to handle the menu 
+    	vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
 int main(void)
 {
-	BaseType_t retVal;
+    BaseType_t retVal;
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-	HAL_Init();
+
+    HAL_Init();
     /* Configure the system clock */
-    systemClockConfig();
+    clkInit();
     /* Initialize all configured peripherals */
     gpioInit();
     /* Initialize UART for debugging purposes*/
@@ -162,18 +166,19 @@ int main(void)
     /* Initialize Display */
     displayInit();
     display_welcome();
+    /* Initialize the buzzer */
+    buzzerInit();
+
     /* Create tasks */
     retVal = xTaskCreate(vTaskHeartBeat, "task-heart-beat", configMINIMAL_STACK_SIZE, NULL, 1, &xTaskHeartBeatHandler);
     if (retVal != pdPASS)
     {
-        printf("Error: insufficient memory for heart beat task\n");
         goto main_out;
     }
 
     retVal = xTaskCreate(vTaskDisplay, "task-display", configMINIMAL_STACK_SIZE, NULL, 1, &xTaskDisplayHandler);
     if (retVal != pdPASS)
     {
-        printf("Error: insufficient memory for display task\n");
         goto main_out;
 
     }

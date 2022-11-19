@@ -17,7 +17,7 @@
 #define HEART_BEAT_PRIORITY_TASK        1
 
 /* Delays*/
-#define DELAY_HEART_BEAT_TASK   500 /* In ms */
+#define DELAY_HEART_BEAT_TASK   1000 /* In ms */
 
 /* GPIO definitions */
 #define HEART_BEAT_LED_PORT     GPIOA

@@ -6,31 +6,19 @@
 **************************************************************************/
 
 #include <buzzer.h>
-#include <buzzer.h>
 #include <dispenser_config.h>
 #include <display.h>
 #include "FreeRTOS.h"
 #include "timers.h"
+#include "console.h"
 
-/****************************************************************************
-*                      Global variables
-*****************************************************************************/
-UART_HandleTypeDef huart2;
-SPI_HandleTypeDef hspi1;
 TaskHandle_t xTaskHeartBeatHandler;
 extern TaskHandle_t xTaskDisplayHandler;
 extern void vTaskDisplay(void *params);
 
-/****************************************************************************
-*                       Function prototypes
-*****************************************************************************/
 void clkInit(void);
 static void heartBeatGpioInit(void);
-static void uartInit(void);
 
-/****************************************************************************
-*                       Function definitions
-*****************************************************************************/
 void clkInit(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -66,23 +54,6 @@ void clkInit(void)
     }
 }
 
-static void uartInit(void)
-{
-    huart2.Instance = USART2;
-    huart2.Init.BaudRate = 115200;
-    huart2.Init.WordLength = UART_WORDLENGTH_8B;
-    huart2.Init.StopBits = UART_STOPBITS_1;
-    huart2.Init.Parity = UART_PARITY_NONE;
-    huart2.Init.Mode = UART_MODE_TX_RX;
-    huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-    huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-
-    if (HAL_UART_Init(&huart2) != HAL_OK)
-    {
-      Error_Handler();
-    }
-}
-
 static void heartBeatGpioInit(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -112,6 +83,13 @@ void Error_Handler(void)
     }
 }
 
+void HAL_MspInit(void)
+{
+    HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+    __HAL_RCC_SYSCFG_CLK_ENABLE();
+    __HAL_RCC_PWR_CLK_ENABLE();
+}
+
 void vTaskHeartBeat(void *params)
 {
     while (1)
@@ -133,10 +111,9 @@ int main(void)
     /* Initialize all configured peripherals */
     heartBeatGpioInit();
     /* Initialize UART for debugging purposes*/
-    uartInit();
+    consoleInit();
     /* Initialize Display */
     display_init();
-    display_welcome();
     /* Initialize the buzzer */
     buzzerInit();
 

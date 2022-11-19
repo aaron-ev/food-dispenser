@@ -14,7 +14,3 @@ void TIM6_DAC_IRQHandler(void)
     HAL_TIM_IRQHandler(&htim6);
 }
 
-void TIM2_IRQHandler(void)
-{
-    HAL_TIM_IRQHandler(&timHandler);
-}

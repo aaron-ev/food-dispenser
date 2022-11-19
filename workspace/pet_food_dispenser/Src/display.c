@@ -7,21 +7,6 @@
 
 TaskHandle_t xTaskDisplayHandler;
 
-void vTaskDisplay(void *params)
-{
-    while (1)
-    {  
-        //TODO: 1. block until there is a new touch point 
-        //      2. implement a FSM to handle the menu 
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }
-}
-
-
-void display_init(void)
-{
-	tft_ili9341_init();
-}
 void display_welcome(void)
 {
     tft_ili9341_send_str(0, TFT_ILI9341_HEIGHT / 2, "Hello word, I am the display. Changing the background...", Font_16x26, BLUE, WHITE);
@@ -34,3 +19,21 @@ void display_welcome(void)
     tft_ili9341_fill_screen(WHITE);
     tft_ili9341_send_str(0, TFT_ILI9341_HEIGHT / 2, "Display: Ok", Font_16x26, BLUE, WHITE);
 }
+
+void display_init(void)
+{
+    tft_ili9341_init();
+}
+
+void vTaskDisplay(void *params)
+{
+    display_init();
+    display_welcome();
+    while (1)
+    {  
+        //TODO: 1. block until there is a new touch point 
+        //      2. implement a FSM to handle the menu 
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
+

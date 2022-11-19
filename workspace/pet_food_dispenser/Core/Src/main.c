@@ -11,7 +11,7 @@
 #include "task.h"
 #include "tft_ili9341.h"
 #include "testimg.h"
-#include <stdio.h>
+#include "buzzer.h"
 
 /****************************************************************************
 *                      Global variables
@@ -24,7 +24,7 @@ TaskHandle_t xTaskDisplayHandler;
 /****************************************************************************
 *                       Function prototypes
 *****************************************************************************/
-void systemClockConfig(void);
+void clkInit(void);
 static void gpioInit(void);
 static void uartInit(void);
 static void displayInit(void);
@@ -32,7 +32,7 @@ static void displayInit(void);
 /****************************************************************************
 *                       Function definitions
 *****************************************************************************/
-void systemClockConfig(void)
+void clkInit(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
@@ -155,9 +155,10 @@ int main(void)
 {
     BaseType_t retVal;
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+
     HAL_Init();
     /* Configure the system clock */
-    systemClockConfig();
+    clkInit();
     /* Initialize all configured peripherals */
     gpioInit();
     /* Initialize UART for debugging purposes*/
@@ -172,14 +173,12 @@ int main(void)
     retVal = xTaskCreate(vTaskHeartBeat, "task-heart-beat", configMINIMAL_STACK_SIZE, NULL, 1, &xTaskHeartBeatHandler);
     if (retVal != pdPASS)
     {
-        printf("Error: insufficient memory for heart beat task\n");
         goto main_out;
     }
 
     retVal = xTaskCreate(vTaskDisplay, "task-display", configMINIMAL_STACK_SIZE, NULL, 1, &xTaskDisplayHandler);
     if (retVal != pdPASS)
     {
-        printf("Error: insufficient memory for display task\n");
         goto main_out;
 
     }

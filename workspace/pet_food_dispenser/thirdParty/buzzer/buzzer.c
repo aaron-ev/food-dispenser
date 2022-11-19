@@ -13,7 +13,7 @@ volatile uint32_t ccr;
 
 TIM_HandleTypeDef timHandler;
 TimerHandle_t buzzerTimHandler;
-static uint32_t buzzerTimPeriod = 1; 		/* ms */
+static uint32_t buzzerTimPeriod = 1;    /* ms */
 static uint32_t callbackCounter = 0;
 
 void buzzerTimCallback(TimerHandle_t xTimer)

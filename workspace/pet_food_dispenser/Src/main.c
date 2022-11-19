@@ -5,10 +5,10 @@
 * Gihub account: //todo: put the link here 
 **************************************************************************/
 
-#include "dispenser_config.h"
-#include "buzzer.h"
-#include "buzzer.h"
-#include "display.h"
+#include <buzzer.h>
+#include <buzzer.h>
+#include <dispenser_config.h>
+#include <display.h>
 #include "FreeRTOS.h"
 #include "timers.h"
 

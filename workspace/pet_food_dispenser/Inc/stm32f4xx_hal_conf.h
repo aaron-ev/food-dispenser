@@ -396,7 +396,7 @@
 #endif /* HAL_SD_MODULE_ENABLED */
 
 #ifdef HAL_SPI_MODULE_ENABLED
- #include "stm32f4xx_hal_spi.h"
+ #include <stm32f4xx_hal_spi.h>
 #endif /* HAL_SPI_MODULE_ENABLED */
 
 #ifdef HAL_TIM_MODULE_ENABLED

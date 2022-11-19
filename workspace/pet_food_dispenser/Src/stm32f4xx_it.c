@@ -1,5 +1,4 @@
 #include "main.h"
-#include "stm32f4xx_it.h"
 
 extern TIM_HandleTypeDef htim6;
 extern TIM_HandleTypeDef timHandler;

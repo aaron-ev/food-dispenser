@@ -137,6 +137,7 @@ void vTaskHeartBeat(void *params)
     {
         HAL_GPIO_TogglePin(HEART_BEAT_LED_PORT, HEART_BEAT_LED_PIN);
         vTaskDelay(pdMS_TO_TICKS(DELAY_HEART_BEAT_TASK));
+        buzzerPlay();
     }
 }
 
@@ -156,7 +157,7 @@ int main(void)
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
     /* Configure the system clock */
-//    systemClockConfig();
+    systemClockConfig();
     /* Initialize all configured peripherals */
     gpioInit();
     /* Initialize UART for debugging purposes*/
@@ -166,7 +167,7 @@ int main(void)
     display_welcome();
     /* Initialize the buzzer */
     buzzerInit();
-    buzzerEnable();
+
     /* Create tasks */
     retVal = xTaskCreate(vTaskHeartBeat, "task-heart-beat", configMINIMAL_STACK_SIZE, NULL, 1, &xTaskHeartBeatHandler);
     if (retVal != pdPASS)

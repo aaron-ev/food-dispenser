@@ -1,13 +1,18 @@
-
 #include "stm32f4xx_hal.h"
 #include "tft_ili9341.h"
 #include "testimg.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "buzzer.h"
 
 TaskHandle_t xTaskDisplayHandler;
 
-void display_welcome(void)
+void displayInit(void)
+{
+    tft_ili9341_init();
+}
+
+void displayWelcome(void)
 {
     tft_ili9341_send_str(0, TFT_ILI9341_HEIGHT / 2, "Hello word, I am the display. Changing the background...", Font_16x26, BLUE, WHITE);
     HAL_Delay(1000);
@@ -20,15 +25,15 @@ void display_welcome(void)
     tft_ili9341_send_str(0, TFT_ILI9341_HEIGHT / 2, "Display: Ok", Font_16x26, BLUE, WHITE);
 }
 
-void display_init(void)
-{
-    tft_ili9341_init();
-}
 
 void vTaskDisplay(void *params)
 {
-    display_init();
-    display_welcome();
+    int i;
+    for (i = 0; i < 2; i++)
+    {
+        buzzerPlay();
+        HAL_Delay(500);
+    }
     while (1)
     {  
         //TODO: 1. block until there is a new touch point 

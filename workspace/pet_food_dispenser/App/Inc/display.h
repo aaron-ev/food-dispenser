@@ -3,6 +3,6 @@
 #ifndef __DISPLAY__H
 #define __DISPLAY__H
 
-void display_init(void);
-
+void displayInit(void);
+void displayWelcome(void);
 #endif

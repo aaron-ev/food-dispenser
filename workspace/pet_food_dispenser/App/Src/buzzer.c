@@ -9,7 +9,7 @@ volatile uint32_t ccr;
 
 #define BUZZER_GPIO_INSTANCE          GPIOA
 #define BUZZER_GPIO_PIN_NUM           GPIO_PIN_1
-#define MAX_PERIOD_COUNTER 500
+#define MAX_PERIOD_COUNTER 250        /* MAX_PERIOD_COUNTER * buzzerTimPeriod = sound time */
 
 TIM_HandleTypeDef timHandler;
 TimerHandle_t buzzerTimHandler;
@@ -58,6 +58,6 @@ HAL_StatusTypeDef buzzerInit(void)
     {
         return HAL_ERROR;
     }
-    buzzerPlay();
+
     return HAL_OK;
 }

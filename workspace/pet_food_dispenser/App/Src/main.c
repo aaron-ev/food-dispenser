@@ -81,6 +81,7 @@ void Error_Handler(void)
     __disable_irq();
     while (1)
     {
+        HAL_GPIO_WritePin(HEART_BEAT_LED_PORT, HEART_BEAT_LED_PIN, GPIO_PIN_RESET);
     }
 }
 
@@ -97,7 +98,6 @@ void vTaskHeartBeat(void *params)
     {
         HAL_GPIO_TogglePin(HEART_BEAT_LED_PORT, HEART_BEAT_LED_PIN);
         vTaskDelay(pdMS_TO_TICKS(DELAY_HEART_BEAT_TASK));
-        buzzerPlay();
     }
 }
 
@@ -114,7 +114,8 @@ int main(void)
     /* Initialize UART for debugging purposes*/
     consoleInit();
     /* Initialize Display */
-    display_init();
+    displayInit();
+    displayWelcome();
     /* Initialize the buzzer */
     buzzerInit();
 
@@ -133,7 +134,7 @@ int main(void)
     }
     vTaskStartScheduler();
 
-main_out: 
+main_out:
   if (xTaskHeartBeatHandler != NULL)
   {
     vTaskDelete(xTaskHeartBeatHandler);
@@ -142,6 +143,5 @@ main_out:
   {
     vTaskDelete(xTaskDisplayHandler);
   }
-  HAL_GPIO_WritePin(HEART_BEAT_LED_PORT, HEART_BEAT_LED_PIN, GPIO_PIN_SET);
-  return 1;
+  Error_Handler();
 }

@@ -7,11 +7,10 @@
 
 #include "dispenser_config.h"
 #include "buzzer.h"
-#include "freeRTOS.h"
-#include "task.h"
-#include "tft_ili9341.h"
-#include "testimg.h"
 #include "buzzer.h"
+#include "display.h"
+#include "../../thirdParty/freeRTOS/include/FreeRTOS.h"
+#include "../../thirdParty/freeRTOS/include/task.h"
 
 /****************************************************************************
 *                      Global variables
@@ -19,15 +18,15 @@
 UART_HandleTypeDef huart2;
 SPI_HandleTypeDef hspi1;
 TaskHandle_t xTaskHeartBeatHandler;
-TaskHandle_t xTaskDisplayHandler;
+extern TaskHandle_t xTaskDisplayHandler;
+extern void vTaskDisplay(void *params);
 
 /****************************************************************************
 *                       Function prototypes
 *****************************************************************************/
 void clkInit(void);
-static void gpioInit(void);
+static void heartBeatGpioInit(void);
 static void uartInit(void);
-static void displayInit(void);
 
 /****************************************************************************
 *                       Function definitions
@@ -84,7 +83,7 @@ static void uartInit(void)
     }
 }
 
-static void gpioInit(void)
+static void heartBeatGpioInit(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
@@ -96,24 +95,6 @@ static void gpioInit(void)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(HEART_BEAT_LED_PORT, &GPIO_InitStruct);
-}
-
-static void displayInit(void)
-{
-  tft_ili9341_init();
-}
-
-void display_welcome(void)
-{
-    tft_ili9341_send_str(0, TFT_ILI9341_HEIGHT / 2, "Hello word, I am the display. Changing the background...", Font_16x26, BLUE, WHITE);
-    HAL_Delay(1000);
-    tft_ili9341_fill_screen(WHITE);
-    tft_ili9341_send_str(0, TFT_ILI9341_HEIGHT / 2, "Writing an image...", Font_16x26, BLUE, WHITE);
-    HAL_Delay(1000);
-    ILI9341_DrawImage((TFT_ILI9341_WIDTH - 240) / 2, (TFT_ILI9341_HEIGHT - 240) / 2, 240, 240, (const uint16_t*)test_img_240x240);
-    HAL_Delay(1000);
-    tft_ili9341_fill_screen(WHITE);
-    tft_ili9341_send_str(0, TFT_ILI9341_HEIGHT / 2, "Display: Ok", Font_16x26, BLUE, WHITE);
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -141,16 +122,6 @@ void vTaskHeartBeat(void *params)
     }
 }
 
-void vTaskDisplay(void *params)
-{
-    while (1)
-    {  
-        //TODO: 1. block until there is a new touch point 
-        //      2. implement a FSM to handle the menu 
-    	vTaskDelay(pdMS_TO_TICKS(1000));
-    }
-}
-
 int main(void)
 {
     BaseType_t retVal;
@@ -160,11 +131,11 @@ int main(void)
     /* Configure the system clock */
     clkInit();
     /* Initialize all configured peripherals */
-    gpioInit();
+    heartBeatGpioInit();
     /* Initialize UART for debugging purposes*/
     uartInit();
     /* Initialize Display */
-    displayInit();
+    display_init();
     display_welcome();
     /* Initialize the buzzer */
     buzzerInit();

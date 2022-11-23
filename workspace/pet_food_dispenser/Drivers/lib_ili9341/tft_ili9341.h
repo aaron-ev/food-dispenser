@@ -4,7 +4,6 @@
 
 #include "stm32f4xx_hal.h"
 #include <stdint.h>
-#include "fonts.h"
 
 /* @GPIO definitions */
 #define TFT_GPIOA                           GPIOA
@@ -53,8 +52,8 @@
 #define  TFT_SPI_MODULE_4                   SPI4
 
 /* Max values of display */
-#define TFT_ILI9341_WIDTH       240
-#define TFT_ILI9341_HEIGHT      320
+#define TFT_ILI9341_MAX_X           240
+#define TFT_ILI9341_MAX_Y           320
 
 /************************************************************/
                  /* BEGIN OF USER CONFIGURATION */
@@ -75,9 +74,9 @@
     RESET --> PB5
     DC    --> PB6
     LED   --> PB8
-    MOSI  --> PC3
-    MISO  --> PC2
-    SCK   --> PC7
+    MOSI  --> PA7
+    MISO  --> PA6
+    SCK   --> PA5
 */
 
 /* CS */
@@ -97,12 +96,12 @@
 #define TFT_LED_PIN_NUM                     TFT_PIN8
 
 /* SPI section */
-#define TFT_SPI_PORT                        TFT_GPIOC
-#define TFT_SPI_MOSI_PIN_NUM                TFT_PIN3
-#define TFT_SPI_MISO_PIN_NUM                TFT_PIN2
-#define TFT_SPI_SCK_PIN_NUM                 TFT_PIN7
+#define TFT_SPI_PORT                        TFT_GPIOA
+#define TFT_SPI_MOSI_PIN_NUM                TFT_PIN7
+#define TFT_SPI_MISO_PIN_NUM                TFT_PIN6
+#define TFT_SPI_SCK_PIN_NUM                 TFT_PIN5
 #define TFT_SPI_ALT                         TFT_AF5_SPI1
-#define TFT_SPI_MODULE                      TFT_SPI_MODULE_2
+#define TFT_SPI_MODULE                      TFT_SPI_MODULE_1
 
 /************************************************************/
                  /* END OF USER CONFIGURATION */
@@ -210,6 +209,8 @@ typedef enum
     BROWN   = 0xBBCA,
 } Color;
 
+#define TFT_ILI9341_WIDTH       240
+#define TFT_ILI9341_HEIGHT      320
 
 /*
  * Function name:
@@ -242,7 +243,5 @@ void tft_ili9341_draw_pixel(uint16_t x, uint16_t y, Color eColor);
 void tft_ili9341_fill_screen(Color eColor);
 
 
-void ILI9341_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t* data);
-void tft_ili9341_send_str(uint16_t x, uint16_t y, const char* str, FontDef font, uint16_t color, uint16_t bgcolor);
 #endif
 

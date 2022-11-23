@@ -3,6 +3,7 @@
 #define __TFT_ILI9341_H
 
 #include "stm32f4xx_hal.h"
+#include "fonts.h"
 #include <stdint.h>
 
 /* @GPIO definitions */

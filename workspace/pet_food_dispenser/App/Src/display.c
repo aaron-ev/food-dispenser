@@ -1,5 +1,6 @@
 #include "stm32f4xx_hal.h"
 #include "tft_ili9341.h"
+#include "tft_ili9341_touch.h"
 #include "testimg.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -31,7 +32,7 @@ void displayTouchInit(void)
 void displayInit(void)
 {
     tft_ili9341_init();
-    displayTouchInit();
+//    displayTouchInit();
 }
 
 void displayWelcome(void)

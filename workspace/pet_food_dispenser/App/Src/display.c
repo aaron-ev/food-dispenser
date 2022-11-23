@@ -7,9 +7,31 @@
 
 TaskHandle_t xTaskDisplayHandler;
 
+void displayTouchInit(void)
+{
+    GPIO_InitTypeDef gpioTouchConfig  = {0};
+
+    /* TOUCH IRQ pin settings */
+    gpioTouchConfig.Pin = ILI9341_TOUCH_IRQ_PIN_NUM;
+    gpioTouchConfig.Mode = GPIO_MODE_IT_FALLING;
+    gpioTouchConfig.Pull = GPIO_NOPULL;
+    gpioTouchConfig.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(ILI9341_TOUCH_IRQ_GPIO_PORT, &gpioTouchConfig);
+
+    /* TOUCH CS pin settings */
+    gpioTouchConfig.Pin = ILI9341_TOUCH_CS_PIN_NUM;
+    gpioTouchConfig.Mode = GPIO_MODE_OUTPUT_PP;
+    HAL_GPIO_Init(ILI9341_TOUCH_CS_GPIO_PORT, &gpioTouchConfig);
+
+    /* Enable interrups */
+    HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+}
+
 void displayInit(void)
 {
     tft_ili9341_init();
+    displayTouchInit();
 }
 
 void displayWelcome(void)

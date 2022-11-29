@@ -108,7 +108,7 @@ int main(void)
 
     HAL_Init();
     /* Configure the system clock */
-    clkInit();
+//    clkInit(); // system CLK = 16 MHz
     /* Initialize all configured peripherals */
     heartBeatGpioInit();
     /* Initialize UART for debugging purposes*/

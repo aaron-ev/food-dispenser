@@ -2,8 +2,8 @@
 
 /* Macros to configure the hardware timer */
 #define BUZZER_TIM_PERIOD 0xFFFFFFFF
-#define BUZZER_TIM_PRESCALER 1
-#define BUZZER_TIM_PULSE_VALUE 2000
+#define BUZZER_TIM_PRESCALER 124
+#define BUZZER_TIM_PULSE_VALUE 64000
 
 /* Timer variables */
 TIM_HandleTypeDef timHandler;

@@ -41,6 +41,12 @@ void Error_Handler(void);
 #define HEART_BEAT_LED_PORT     GPIOA
 #define HEART_BEAT_LED_PIN      GPIO_PIN_5
 
+/* Buzzer settings */
+#define BUZZER_GPIO_INSTANCE       GPIOA
+#define BUZZER_GPIO_PIN            GPIO_PIN_10
+#define BUZZER_TIM_INSTANCE        TIM2
+#define BUZZER_TIM_CHANNEL         TIM_CHANNEL_1
+
 #ifdef __cplusplus
 }
 #endif

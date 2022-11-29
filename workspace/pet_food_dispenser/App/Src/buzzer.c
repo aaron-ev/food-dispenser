@@ -1,61 +1,80 @@
 #include "buzzer.h"
-#include "FreeRTOS.h"
-#include "timers.h"
 
-#define BUZZER_GPIO_INSTANCE          GPIOA
-#define BUZZER_GPIO_PIN_NUM           GPIO_PIN_1
-#define MAX_PERIOD_COUNTER            250   /* MAX_PERIOD_COUNTER * buzzerTimPeriod = sound time */
+/* Macros to configure the hardware timer */
+#define BUZZER_TIM_PERIOD 0xFFFFFFFF
+#define BUZZER_TIM_PRESCALER 1
+#define BUZZER_TIM_PULSE_VALUE 2000
 
-TimerHandle_t buzzerTimHandler;
+/* Timer variables */
+TIM_HandleTypeDef timHandler;
 
-HAL_StatusTypeDef buzzerStart(void)
+HAL_StatusTypeDef buzzerStart(uint32_t channel)
 {
-    BaseType_t retVal;
+    HAL_StatusTypeDef halStatus;
 
-    retVal = xTimerReset(buzzerTimHandler, 0);
-    if (retVal!= pdPASS)
+    halStatus = HAL_TIM_OC_Start_IT(&timHandler, channel);
+    if (halStatus != HAL_OK)
     {
-        return HAL_ERROR;
     }
-    return HAL_OK;
+    return halStatus;
 }
 
-void buzzerStop(void)
+HAL_StatusTypeDef buzzerStop(uint32_t channel)
 {
-    BaseType_t retVal;
+    HAL_StatusTypeDef halStatus;
 
-    retVal = xTimerStop(buzzerTimHandler, 0);
-    if (retVal!= pdPASS)
+    halStatus = HAL_TIM_OC_Start_IT(&timHandler, channel);
+    if (halStatus != HAL_OK)
     {
-        return HAL_ERROR;
     }
-    return HAL_OK;
+    return halStatus;
 }
 
-HAL_StatusTypeDef buzzerInit(uint32_t buzzerTimPeriod, uint32_t pin, GPIO_TypeDef *GPIOx)
+/*
+ * Description: Initialize GPIO and TIMER settings
+ */
+HAL_StatusTypeDef buzzerInit(GPIO_TypeDef *GPIOx, uint32_t pin, TIM_TypeDef *TIMx, uint32_t channel)
 {
     GPIO_InitTypeDef gpioInit = {0};
+    TIM_OC_InitTypeDef timInit;
+    HAL_StatusTypeDef halStatus = HAL_OK;
 
-    /* Clocks enable */
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    /* Pin settings */
+    /* GPIO settings */
     gpioInit.Pin = pin;
     gpioInit.Mode = GPIO_MODE_OUTPUT_PP;
     gpioInit.Pull = GPIO_PULLUP;
     gpioInit.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOx, &gpioInit);
 
-    /* Create a one-shot timer */
-    buzzerTimHandler = xTimerCreate("Buzzer-timer", pdMS_TO_TICKS(buzzerTimPeriod), pdFALSE, 0, buzzerTimCallback);
-    if ( buzzerTimHandler == NULL )
+    /* Timer: Base unit settings */
+    timHandler.Instance = TIMx;
+    timHandler.Init.Period = BUZZER_TIM_PERIOD;
+    timHandler.Init.Prescaler = BUZZER_TIM_PULSE_VALUE;
+    halStatus = HAL_TIM_OC_Init(&timHandler);
+    if (halStatus != HAL_OK)
     {
-        return HAL_ERROR;
     }
 
-    return HAL_OK;
+    /* Timer: Channel settings */
+    timInit.OCMode = TIM_OCMODE_TOGGLE;
+    timInit.OCPolarity = TIM_OCPOLARITY_HIGH;
+    // timInit.Pulse = pulse1_value;
+    timInit.Pulse = BUZZER_TIM_PULSE_VALUE;
+    halStatus = HAL_TIM_OC_ConfigChannel(&timHandler, &timInit, channel);
+    if (halStatus != HAL_OK)
+    {
+    }
+
+    return halStatus;
 }
 
-void buzzerTimCallback(TimerHandle_t xTimer)
+void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 {
-    HAL_GPIO_TogglePin(BUZZER_GPIO_INSTANCE, BUZZER_GPIO_PIN_NUM);
+    static uint32_t ccr;
+
+    if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
+    {
+        ccr = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
+        __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, (ccr + BUZZER_TIM_PULSE_VALUE));
+    }
 }

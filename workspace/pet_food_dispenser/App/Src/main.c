@@ -18,7 +18,7 @@ extern TaskHandle_t xTaskDisplayHandler;
 extern void vTaskDisplay(void *params);
 
 void clkInit(void);
-static void heartBeatGpioInit(void);
+static void heartBeatInit(void);
 
 void clkInit(void)
 {
@@ -55,7 +55,7 @@ void clkInit(void)
     }
 }
 
-static void heartBeatGpioInit(void)
+static void heartBeatInit(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
@@ -110,12 +110,12 @@ int main(void)
     /* Configure the system clock */
 //    clkInit(); // system CLK = 16 MHz
     /* Initialize all configured peripherals */
-    heartBeatGpioInit();
+//    heartBeatInit();
     /* Initialize UART for debugging purposes*/
-    consoleInit();
+//    consoleInit();
     /* Initialize Display */
-    displayInit();
-    displayWelcome();
+//    displayInit();
+//    displayWelcome();
     /* Initialize the buzzer */
     buzzerInit(BUZZER_GPIO_INSTANCE, BUZZER_GPIO_PIN, BUZZER_TIM_INSTANCE, BUZZER_TIM_CHANNEL);
 

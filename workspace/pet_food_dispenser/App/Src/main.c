@@ -110,7 +110,7 @@ int main(void)
     /* Configure the system clock */
 //    clkInit(); // system CLK = 16 MHz
     /* Initialize all configured peripherals */
-//    heartBeatInit();
+    heartBeatInit();
     /* Initialize UART for debugging purposes*/
 //    consoleInit();
     /* Initialize Display */

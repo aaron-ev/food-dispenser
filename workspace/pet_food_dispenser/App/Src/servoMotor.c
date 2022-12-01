@@ -35,7 +35,7 @@ HAL_StatusTypeDef servoMotorInit(GPIO_TypeDef *GPIOx, uint16_t pin, uint8_t chan
     servoMotorGpioInit.Alternate = GPIO_AF1_TIM2;
     HAL_GPIO_Init(GPIOx, &servoMotorGpioInit);
 
-    /*TIMER base unit settings: servo motor */
+    /*TIMER base unit settings: Servo motor */
     servoMotorTimHandler.Instance = SERVO_MOTOR_INSTANCE;
     servoMotorTimHandler.Init.Prescaler = SERVO_MOTOR_TIM_BASE_PRESCALER;
     servoMotorTimHandler.Init.Period = SERVO_MOTOR_TIM_BASE_PERIOD;
@@ -44,7 +44,7 @@ HAL_StatusTypeDef servoMotorInit(GPIO_TypeDef *GPIOx, uint16_t pin, uint8_t chan
     {
     }
 
-    /* TIMER channgel settings: Servo motor */
+    /* TIMER channel settings: Servo motor */
     servoMotorChannelConfing.OCMode = TIM_OCMODE_PWM1;
     servoMotorChannelConfing.OCPolarity = TIM_OCPOLARITY_HIGH;
     servoMotorChannelConfing.Pulse = SERVO_MOTOR_DEGREES_0;

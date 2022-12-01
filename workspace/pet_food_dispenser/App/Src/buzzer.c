@@ -1,4 +1,5 @@
 #include "buzzer.h"
+
 /* Macros to configure the hardware timer */
 #define BUZZER_TIM_PERIOD 0xFFFFFFFF
 
@@ -72,7 +73,6 @@ HAL_StatusTypeDef buzzerInit(GPIO_TypeDef *GPIOx, uint32_t pin, TIM_TypeDef *TIM
 
     return halStatus;
 }
-
 
 void TIM2_IRQHandler(void)
 {

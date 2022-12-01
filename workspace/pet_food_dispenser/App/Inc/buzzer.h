@@ -11,7 +11,9 @@
 
 #ifndef __BUZZER__H
 #define __BUZZER_H
+
 #include "stm32f4xx_hal.h"
+#include "stm32f4xx.h"
 #include "appConfig.h"
 
 HAL_StatusTypeDef buzzerInit(GPIO_TypeDef *GPIOx, uint32_t pin, TIM_TypeDef *sTIMx, uint32_t channel);

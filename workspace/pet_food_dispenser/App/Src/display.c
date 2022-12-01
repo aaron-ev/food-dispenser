@@ -4,6 +4,9 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "buzzer.h"
+#include "appConfig.h"
+
+#define DISPLAY_BEEP_DELAY          100
 
 TaskHandle_t xTaskDisplayHandler;
 
@@ -25,20 +28,27 @@ void displayWelcome(void)
     tft_ili9341_send_str(0, TFT_ILI9341_HEIGHT / 2, "Display: Ok", Font_16x26, BLUE, WHITE);
 }
 
-
-void vTaskDisplay(void *params)
+void displayPlayBeep(uint16_t beepDelay)
 {
     int i;
+
     for (i = 0; i < 2; i++)
     {
-        buzzerPlay();
-        HAL_Delay(500);
-    }
-    while (1)
-    {  
-        //TODO: 1. block until there is a new touch point 
-        //      2. implement a FSM to handle the menu 
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        buzzerStart(BUZZER_TIM_CHANNEL);
+        HAL_Delay(beepDelay);
+        buzzerStop(BUZZER_TIM_CHANNEL);
+        HAL_Delay(beepDelay);
     }
 }
 
+void vTaskDisplay(void *params)
+{
+    displayPlayBeep(DISPLAY_BEEP_DELAY);
+
+    while (1)
+    {
+        //TODO: 1. block until there is a new touch point
+        //      2. implement a FSM to handle the menu
+        vTaskDelay(pdMS_TO_TICKS(500));
+    }
+}

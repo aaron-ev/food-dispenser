@@ -2,7 +2,7 @@
 /**************************************************************************
 * Author: Aaron Escoboza
 * Description: Pet food dispenser based on STM HAL layer and FreeRTOS.
-* Gihub account: //todo: put the link here 
+* Gihub account: //todo: put the link here
 **************************************************************************/
 
 #include "appConfig.h"
@@ -18,7 +18,7 @@ extern TaskHandle_t xTaskDisplayHandler;
 extern void vTaskDisplay(void *params);
 
 void clkInit(void);
-static void heartBeatGpioInit(void);
+static void heartBeatInit(void);
 
 void clkInit(void)
 {
@@ -48,14 +48,14 @@ void clkInit(void)
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;   
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
     {
       Error_Handler();
     }
 }
 
-static void heartBeatGpioInit(void)
+static void heartBeatInit(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
@@ -108,16 +108,16 @@ int main(void)
 
     HAL_Init();
     /* Configure the system clock */
-    clkInit();
+//    clkInit(); // system CLK = 16 MHz
     /* Initialize all configured peripherals */
-    heartBeatGpioInit();
+//    heartBeatInit();
     /* Initialize UART for debugging purposes*/
-    consoleInit();
+//    consoleInit();
     /* Initialize Display */
-    displayInit();
-    displayWelcome();
+//    displayInit();
+//    displayWelcome();
     /* Initialize the buzzer */
-    buzzerInit();
+    buzzerInit(BUZZER_GPIO_INSTANCE, BUZZER_GPIO_PIN, BUZZER_TIM_INSTANCE, BUZZER_TIM_CHANNEL);
 
     /* Create tasks */
     retVal = xTaskCreate(vTaskHeartBeat, "task-heart-beat", configMINIMAL_STACK_SIZE, NULL, 1, &xTaskHeartBeatHandler);

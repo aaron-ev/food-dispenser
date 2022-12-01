@@ -46,5 +46,8 @@ void Error_Handler(void);
 #define BUZZER_TIM_PRESCALER                15           /* tick = 1us*/
 #define BUZZER_TIM_PULSE_VALUE              500          /*freq = 1khz, 1us * 500 * 2 */
 
+/* Servo motor settings */
+#define SERVO_MOTOR_INSTANCE                TIM2
+
 
 #endif /* APP_CONFIG__H */

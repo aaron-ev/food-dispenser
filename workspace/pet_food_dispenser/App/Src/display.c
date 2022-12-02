@@ -1,3 +1,11 @@
+/**
+ ******************************************************************************
+ * @file         display.c
+ * @author       Aaron Escoboza
+ * @brief        Source file for the display feature
+ ******************************************************************************
+ */
+
 #include "stm32f4xx_hal.h"
 #include "tft_ili9341.h"
 #include "testimg.h"
@@ -34,9 +42,9 @@ void displayPlayBeep(uint16_t beepDelay)
 
     for (i = 0; i < 2; i++)
     {
-        buzzerStart(BUZZER_TIM_CHANNEL);
+        buzzerStart();
         HAL_Delay(beepDelay);
-        buzzerStop(BUZZER_TIM_CHANNEL);
+        buzzerStop();
         HAL_Delay(beepDelay);
     }
 }

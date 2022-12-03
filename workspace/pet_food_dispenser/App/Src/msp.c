@@ -23,6 +23,7 @@ void HAL_MspInit(void)
     __HAL_RCC_GPIOC_CLK_ENABLE();
     /*Enable clock for TIMERS being used */
     __HAL_RCC_TIM2_CLK_ENABLE();
+    __HAL_RCC_TIM3_CLK_ENABLE();
     /* Set NVIC priority configuration */
     HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
     /* Enable interrupt for buzzer timer  */
@@ -31,7 +32,7 @@ void HAL_MspInit(void)
 }
 
 /*
- *   GPIO settings for the buzzer.
+ *   GPIO settings: Buzzer.
  */
 void HAL_TIM_OC_MspInit(TIM_HandleTypeDef *timerHandler)
 {
@@ -44,4 +45,18 @@ void HAL_TIM_OC_MspInit(TIM_HandleTypeDef *timerHandler)
     buzzerGpioInit.Speed = GPIO_SPEED_FREQ_LOW;
     buzzerGpioInit.Alternate = BUZZER_GPIO_ALTERNATE;
     HAL_GPIO_Init(BUZZER_GPIO_INSTANCE, &buzzerGpioInit);
+}
+
+/*
+ *   GPIO settings: Servo motor.
+ */
+void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef *timerHandler)
+{
+    GPIO_InitTypeDef servoMotorGpioInit = {0};
+
+    /* GPIO settings: ServoMotor */
+    servoMotorGpioInit.Pin = SERVO_MOTOR_GPIO_PIN;
+    servoMotorGpioInit.Mode = GPIO_MODE_AF_PP;
+    servoMotorGpioInit.Alternate = SERVO_MOTOR_GPIO_ALTERNATE;
+    HAL_GPIO_Init(SERVO_MOTOR_GPIO_INSTANCE, &servoMotorGpioInit);
 }

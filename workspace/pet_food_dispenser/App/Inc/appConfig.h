@@ -38,12 +38,10 @@
 #define HEART_BEAT_PRIORITY_TASK           1
 #define DISPLAY_PRIORITY_TASK              2
 
-/* Delays*/
-#define DELAY_HEART_BEAT_TASK               1000 /* In ms */
-
 /* Heart beat settings */
 #define HEART_BEAT_LED_PORT                 GPIOA
 #define HEART_BEAT_LED_PIN                  GPIO_PIN_5
+#define HEART_BEAT_BLINK_DELAY              500 /* In ms */
 
 /* Buzzer settings */
 #define BUZZER_GPIO_INSTANCE                GPIOA
@@ -51,11 +49,14 @@
 #define BUZZER_GPIO_ALTERNATE               GPIO_AF1_TIM2
 #define BUZZER_TIM_INSTANCE                 TIM2
 #define BUZZER_TIM_CHANNEL                  TIM_CHANNEL_1
-#define BUZZER_TIM_PRESCALER                15           /* tick = 1us*/
-#define BUZZER_TIM_PULSE_VALUE              500          /*freq = 1khz, 1us * 500 * 2 */
+#define BUZZER_TIM_PRESCALER                15  /* tick = 1us*/
+#define BUZZER_TIM_PULSE_VALUE              500 /*freq = 1khz, 1us * 500 * 2 */
 
 /* Servo motor settings */
+#define SERVO_MOTOR_GPIO_INSTANCE           GPIOC
+#define SERVO_MOTOR_GPIO_PIN                GPIO_PIN_6
+#define SERVO_MOTOR_GPIO_ALTERNATE          GPIO_AF2_TIM3
 #define SERVO_MOTOR_TIM_INSTANCE            TIM3
-
+#define SERVO_MOTOR_TIM_CHANNEL             TIM_CHANNEL_1
 
 #endif /* APP_CONFIG__H */

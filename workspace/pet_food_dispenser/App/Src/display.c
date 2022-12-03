@@ -37,50 +37,24 @@ void displayWelcome(void)
     tft_ili9341_send_str(0, TFT_ILI9341_HEIGHT / 2, "Display: Ok", Font_16x26, BLUE, WHITE);
 }
 
-void displayPlayBeep(uint8_t times, uint16_t delay)
-{
-    int i;
-
-    if (times == 0)
-    {
-        return;
-    }
-    if (times == 1)
-    {
-        buzzerStart(BUZZER_TIM_CHANNEL);
-        HAL_Delay(delay);
-        buzzerStop(BUZZER_TIM_CHANNEL);
-        return;
-    }
-    for (i = 0; i < times; i++)
-    {
-        buzzerStart(BUZZER_TIM_CHANNEL);
-        HAL_Delay(delay);
-        buzzerStop(BUZZER_TIM_CHANNEL);
-        HAL_Delay(delay);
-    }
-}
-
 void testServoMotor(void)
 {
     int i;
 
-    servoMotorStart();
-    HAL_Delay(500);
-    for (i = 0; i < 10; i++)
+    for (i = 0; i < 3; i++)
     {
         servoMotorRotate(SERVO_MOTOR_DEGREES_180);
-        displayPlayBeep(1, DISPLAY_BEEP_DELAY);
-        HAL_Delay(500);
+        buzzerBeep(100, 0, 1);
+        HAL_Delay(250);
         servoMotorRotate(SERVO_MOTOR_DEGREES_0);
-        displayPlayBeep(1, DISPLAY_BEEP_DELAY);
-        HAL_Delay(500);
+        buzzerBeep(100, 0 , 1);
+        HAL_Delay(250);
     }
 }
 
 void vTaskDisplay(void *params)
 {
-    displayPlayBeep(2, DISPLAY_BEEP_DELAY);
+    buzzerBeep(100, 100, 2);
     testServoMotor();
 
     while (1)

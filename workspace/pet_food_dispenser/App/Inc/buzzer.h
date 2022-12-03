@@ -12,9 +12,9 @@
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx.h"
 #include "appConfig.h"
+#include "stdint.h"
 
 HAL_StatusTypeDef buzzerInit(void);
-HAL_StatusTypeDef buzzerStart(void);
-HAL_StatusTypeDef buzzerStop(void);
+void buzzerBeep(uint32_t timeOn, uint32_t timeOff, uint32_t times);
 
 #endif

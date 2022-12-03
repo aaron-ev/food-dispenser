@@ -75,3 +75,28 @@ HAL_StatusTypeDef buzzerInit(void)
 
     return halStatus;
 }
+
+/*
+ * Description: Play a tone multiple times. Time in ms.
+ */
+void buzzerBeep(uint32_t timeOn, uint32_t timeOff, uint32_t times)
+{
+    int i;
+
+    /* Protect against 0 */
+    if (times <= 0 || timeOn <= 0)
+    {
+        return;
+    }
+    for ( i = 0; i < times; i++)
+    {
+
+        buzzerStart();
+        HAL_Delay(timeOn);
+        buzzerStop();
+        if (times > 1)
+        {
+            HAL_Delay(timeOff);
+        }
+    }
+}

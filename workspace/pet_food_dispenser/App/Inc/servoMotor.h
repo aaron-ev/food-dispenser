@@ -10,7 +10,6 @@
   ******************************************************************************
   */
 
-
 #ifndef __SERVOMOTOR__H
 #define __SERVOMOTOR_H
 
@@ -23,9 +22,7 @@ typedef enum
     SERVO_MOTOR_DEGREES_180
 }ServoPosition;
 
-HAL_StatusTypeDef servoMotorInit(GPIO_TypeDef *GPIOx, uint32_t pin, uint8_t channel);
+HAL_StatusTypeDef servoMotorInit(void);
 void servoMotorRotate(ServoPosition position);
-void servoMotorStart(void);
-void servoMotorStop(void);
 
 #endif

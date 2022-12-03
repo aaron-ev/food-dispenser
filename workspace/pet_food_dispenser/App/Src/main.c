@@ -17,6 +17,7 @@
 TaskHandle_t xTaskHeartBeatHandler;
 extern TaskHandle_t xTaskDisplayHandler;
 extern void vTaskDisplay(void *params);
+void errorHandler(void);
 
 /*
 *  Initialize the system clocks and clocks derived.
@@ -39,7 +40,7 @@ void clkInit(void)
     RCC_OscInitStruct.PLL.PLLR = 2;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
     {
-        Error_Handler();
+        errorHandler();
     }
 
     /* Initializes the CPU, AHB and APB buses clocks */
@@ -50,7 +51,7 @@ void clkInit(void)
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
     {
-        Error_Handler();
+        errorHandler();
     }
 }
 
@@ -69,7 +70,6 @@ static void heartBeatInit(void)
     HAL_GPIO_Init(HEART_BEAT_LED_PORT, &GPIO_InitStruct);
 }
 
-
 /*
 * Callback to increment the timer for the STM HAL layer.
 */
@@ -84,7 +84,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *timerHandler)
 /*
 * General handler for all the errors. TODO: Handle individual errors.
 */
-void Error_Handler(void)
+void errorHandler(void)
 {
     __disable_irq();
     while (1)
@@ -101,7 +101,7 @@ void vTaskHeartBeat(void *params)
     while (1)
     {
         HAL_GPIO_TogglePin(HEART_BEAT_LED_PORT, HEART_BEAT_LED_PIN);
-        vTaskDelay(pdMS_TO_TICKS(DELAY_HEART_BEAT_TASK));
+        vTaskDelay(pdMS_TO_TICKS(HEART_BEAT_BLINK_DELAY));
     }
 }
 
@@ -110,7 +110,6 @@ int main(void)
     BaseType_t retVal;
     HAL_StatusTypeDef halStatus;
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-
     HAL_Init();
     /* Configure the system clock */
     //    clkInit(); // system CLK = 16 MHz
@@ -121,12 +120,12 @@ int main(void)
     /* Initialize display */
     //    displayInit();
     /* Initialize servomotor */
-    servoMotorInit(GPIOC, GPIO_PIN_6, TIM_CHANNEL_1);
+    servoMotorInit();
     /* Initialize the buzzer */
     halStatus = buzzerInit();
     if (halStatus != HAL_OK)
     {
-        Error_Handler();
+        errorHandler();
     }
 
     /* Heart beat task */
@@ -154,5 +153,5 @@ main_out:
     {
         vTaskDelete(xTaskDisplayHandler);
     }
-    Error_Handler();
+    errorHandler();
 }

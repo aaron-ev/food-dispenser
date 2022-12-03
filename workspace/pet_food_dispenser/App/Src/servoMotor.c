@@ -15,58 +15,59 @@
 #include "servoMotor.h"
 #include "appConfig.h"
 
-#define SERVO_MOTOR_TIM_BASE_PRESCALER          15    /* */
+#define SERVO_MOTOR_TIM_BASE_PRESCALER          15    /* 1us each tick*/
 #define SERVO_MOTOR_TIM_BASE_PERIOD             20000 /* freq = 50 Hz */
 #define SERVO_MOTOR_2MS_SIGNAL                  ((SERVO_MOTOR_TIM_BASE_PERIOD * 10) / 100)
 #define SERVO_MOTOR_1_5MS_SIGNAL                ((SERVO_MOTOR_TIM_BASE_PERIOD * 7.5) / 100)
 #define SERVO_MOTOR_1MS_SIGNAL                  ((SERVO_MOTOR_TIM_BASE_PERIOD * 5) / 100)
+#define SERVO_MOTOR_DELAY                       250
 
+extern void errorHandler(void);
 TIM_HandleTypeDef servoMotorTimHandler = {0};
 
-HAL_StatusTypeDef servoMotorInit(GPIO_TypeDef *GPIOx, uint32_t pin, uint8_t channel)
+static void servoMotorStart(void);
+static void servoMotorStop(void);
+void servoMotorRotate(ServoPosition position);
+
+static void servoMotorStart(void)
 {
-    GPIO_InitTypeDef servoMotorGpioInit = {0};
+    HAL_TIM_PWM_Start(&servoMotorTimHandler, TIM_CHANNEL_1);
+}
+
+static void servoMotorStop(void)
+{
+    HAL_TIM_PWM_Stop(&servoMotorTimHandler, TIM_CHANNEL_1);
+}
+
+HAL_StatusTypeDef servoMotorInit(void)
+{
     TIM_OC_InitTypeDef servoMotorChannelConfing = {0};
     HAL_StatusTypeDef halStatus;
 
-    __HAL_RCC_TIM3_CLK_ENABLE();
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-
-    /* GPIO settings: ServoMotor */
-    servoMotorGpioInit.Pin = pin;
-    servoMotorGpioInit.Mode = GPIO_MODE_AF_PP;
-    servoMotorGpioInit.Alternate = GPIO_AF2_TIM3;
-    HAL_GPIO_Init(GPIOx, &servoMotorGpioInit);
-
-    /*TIMER base unit settings: Servo motor */
+    /* TIMER base unit settings: Servo motor */
     servoMotorTimHandler.Instance = SERVO_MOTOR_TIM_INSTANCE;
     servoMotorTimHandler.Init.Prescaler = SERVO_MOTOR_TIM_BASE_PRESCALER;
     servoMotorTimHandler.Init.Period = SERVO_MOTOR_TIM_BASE_PERIOD;
     halStatus = HAL_TIM_PWM_Init(&servoMotorTimHandler);
     if (halStatus != HAL_OK)
     {
+        errorHandler();
     }
 
     /* TIMER channel settings: Servo motor */
     servoMotorChannelConfing.OCMode = TIM_OCMODE_PWM1;
     servoMotorChannelConfing.OCPolarity = TIM_OCPOLARITY_HIGH;
     servoMotorChannelConfing.Pulse = SERVO_MOTOR_2MS_SIGNAL;
-    halStatus = HAL_TIM_PWM_ConfigChannel(&servoMotorTimHandler, &servoMotorChannelConfing, channel);
+    halStatus = HAL_TIM_PWM_ConfigChannel(&servoMotorTimHandler, &servoMotorChannelConfing, SERVO_MOTOR_TIM_CHANNEL);
     if (halStatus != HAL_OK)
     {
+        errorHandler();
     }
 
+    /* Go to the default state */
+    servoMotorRotate(SERVO_MOTOR_DEGREES_0);
+
     return halStatus;
-}
-
-void servoMotorStart(void)
-{
-    HAL_TIM_PWM_Start(&servoMotorTimHandler, TIM_CHANNEL_1);
-}
-
-void servoMotorStop(void)
-{
-    HAL_TIM_PWM_Stop(&servoMotorTimHandler, TIM_CHANNEL_1);
 }
 
 void servoMotorRotate(ServoPosition position)
@@ -84,4 +85,7 @@ void servoMotorRotate(ServoPosition position)
                                     break;
         default : break;
     }
+    servoMotorStart();
+    HAL_Delay(SERVO_MOTOR_DELAY);
+    servoMotorStop();
 }

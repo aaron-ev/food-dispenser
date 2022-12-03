@@ -1,5 +1,5 @@
-
 /**
+
   ******************************************************************************
   * @file    servomotor.h
   * @author  Aaron Escoboza
@@ -23,7 +23,9 @@ typedef enum
     SERVO_MOTOR_DEGREES_180
 }ServoPosition;
 
-HAL_StatusTypeDef servoMotorInit(GPIO_TypeDef *GPIOx, uint16_t pin, uint8_t channel);
+HAL_StatusTypeDef servoMotorInit(GPIO_TypeDef *GPIOx, uint32_t pin, uint8_t channel);
 void servoMotorRotate(ServoPosition position);
+void servoMotorStart(void);
+void servoMotorStop(void);
 
 #endif

@@ -4,6 +4,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "buzzer.h"
+#include "servoMotor.h"
 #include "appConfig.h"
 
 #define DISPLAY_BEEP_DELAY          100
@@ -28,22 +29,51 @@ void displayWelcome(void)
     tft_ili9341_send_str(0, TFT_ILI9341_HEIGHT / 2, "Display: Ok", Font_16x26, BLUE, WHITE);
 }
 
-void displayPlayBeep(uint16_t beepDelay)
+void displayPlayBeep(uint8_t times, uint16_t delay)
 {
     int i;
 
-    for (i = 0; i < 2; i++)
+    if (times == 0)
+    {
+        return;
+    }
+    if (times == 1)
     {
         buzzerStart(BUZZER_TIM_CHANNEL);
-        HAL_Delay(beepDelay);
+        HAL_Delay(delay);
         buzzerStop(BUZZER_TIM_CHANNEL);
-        HAL_Delay(beepDelay);
+        return;
+    }
+    for (i = 0; i < times; i++)
+    {
+        buzzerStart(BUZZER_TIM_CHANNEL);
+        HAL_Delay(delay);
+        buzzerStop(BUZZER_TIM_CHANNEL);
+        HAL_Delay(delay);
+    }
+}
+
+void testServoMotor(void)
+{
+    int i;
+
+    servoMotorStart();
+    HAL_Delay(500);
+    for (i = 0; i < 10; i++)
+    {
+        servoMotorRotate(SERVO_MOTOR_DEGREES_180);
+        displayPlayBeep(1, DISPLAY_BEEP_DELAY);
+        HAL_Delay(500);
+        servoMotorRotate(SERVO_MOTOR_DEGREES_0);
+        displayPlayBeep(1, DISPLAY_BEEP_DELAY);
+        HAL_Delay(500);
     }
 }
 
 void vTaskDisplay(void *params)
 {
-    displayPlayBeep(DISPLAY_BEEP_DELAY);
+    displayPlayBeep(2, DISPLAY_BEEP_DELAY);
+    testServoMotor();
 
     while (1)
     {

@@ -47,7 +47,7 @@ void Error_Handler(void);
 #define BUZZER_TIM_PULSE_VALUE              500          /*freq = 1khz, 1us * 500 * 2 */
 
 /* Servo motor settings */
-#define SERVO_MOTOR_INSTANCE                TIM2
+#define SERVO_MOTOR_TIM_INSTANCE            TIM3
 
 
 #endif /* APP_CONFIG__H */

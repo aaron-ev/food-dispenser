@@ -7,6 +7,7 @@
 
 #include "appConfig.h"
 #include "buzzer.h"
+#include "servoMotor.h"
 #include "display.h"
 #include "console.h"
 #include "FreeRTOS.h"
@@ -118,6 +119,8 @@ int main(void)
 //    displayWelcome();
     /* Initialize the buzzer */
     buzzerInit(BUZZER_GPIO_INSTANCE, BUZZER_GPIO_PIN, BUZZER_TIM_INSTANCE, BUZZER_TIM_CHANNEL);
+    /* Initialize the servomotor */
+    servoMotorInit(GPIOC, GPIO_PIN_6, TIM_CHANNEL_1);
 
     /* Create tasks */
     retVal = xTaskCreate(vTaskHeartBeat, "task-heart-beat", configMINIMAL_STACK_SIZE, NULL, 1, &xTaskHeartBeatHandler);
@@ -135,13 +138,13 @@ int main(void)
     vTaskStartScheduler();
 
 main_out:
-  if (xTaskHeartBeatHandler != NULL)
-  {
-    vTaskDelete(xTaskHeartBeatHandler);
-  }
-  if (xTaskDisplayHandler != NULL)
-  {
-    vTaskDelete(xTaskDisplayHandler);
-  }
-  Error_Handler();
+    if (xTaskHeartBeatHandler != NULL)
+    {
+        vTaskDelete(xTaskHeartBeatHandler);
+    }
+    if (xTaskDisplayHandler != NULL)
+    {
+        vTaskDelete(xTaskDisplayHandler);
+    }
+    Error_Handler();
 }

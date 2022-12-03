@@ -1,9 +1,9 @@
 
 /**************************************************************************
-* Author: Aaron Escoboza
-* Description: Pet food dispenser based on STM HAL layer and FreeRTOS.
-* Gihub account: //todo: put the link here
-**************************************************************************/
+ * Author: Aaron Escoboza
+ * Description: Pet food dispenser based on STM HAL layer and FreeRTOS.
+ * Gihub account: //todo: put the link here
+ **************************************************************************/
 
 #include "appConfig.h"
 #include "buzzer.h"
@@ -18,9 +18,9 @@ TaskHandle_t xTaskHeartBeatHandler;
 extern TaskHandle_t xTaskDisplayHandler;
 extern void vTaskDisplay(void *params);
 
-void clkInit(void);
-static void heartBeatInit(void);
-
+/*
+*  Initialize the system clocks and clocks derived.
+*/
 void clkInit(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -39,30 +39,29 @@ void clkInit(void)
     RCC_OscInitStruct.PLL.PLLR = 2;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
     {
-      Error_Handler();
+        Error_Handler();
     }
 
-    /** Initializes the CPU, AHB and APB buses clocks
-    */
-    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                                |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+    /* Initializes the CPU, AHB and APB buses clocks */
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
     {
-      Error_Handler();
+        Error_Handler();
     }
 }
 
+/*
+* Function to initialize the heart beat low level settings.
+*/
 static void heartBeatInit(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-    /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    /*Configure GPIO pin : Heart beat led */
+    /* Heart beat: GPIO settings  */
     GPIO_InitStruct.Pin = HEART_BEAT_LED_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -70,13 +69,21 @@ static void heartBeatInit(void)
     HAL_GPIO_Init(HEART_BEAT_LED_PORT, &GPIO_InitStruct);
 }
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+
+/*
+* Callback to increment the timer for the STM HAL layer.
+*/
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *timerHandler)
 {
-  if (htim->Instance == TIM6) {
-    HAL_IncTick();
-  }
+    if (timerHandler->Instance == TIM6)
+    {
+        HAL_IncTick();
+    }
 }
 
+/*
+* General handler for all the errors. TODO: Handle individual errors.
+*/
 void Error_Handler(void)
 {
     __disable_irq();
@@ -86,13 +93,9 @@ void Error_Handler(void)
     }
 }
 
-void HAL_MspInit(void)
-{
-    HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
-    __HAL_RCC_SYSCFG_CLK_ENABLE();
-    __HAL_RCC_PWR_CLK_ENABLE();
-}
-
+/*
+* Task to indicate the freeRTOS app is alive.
+*/
 void vTaskHeartBeat(void *params)
 {
     while (1)
@@ -105,36 +108,41 @@ void vTaskHeartBeat(void *params)
 int main(void)
 {
     BaseType_t retVal;
+    HAL_StatusTypeDef halStatus;
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
 
     HAL_Init();
     /* Configure the system clock */
-//    clkInit(); // system CLK = 16 MHz
-    /* Initialize all configured peripherals */
+    //    clkInit(); // system CLK = 16 MHz
+    /* Initialize heart beat led */
     heartBeatInit();
-    /* Initialize UART for debugging purposes*/
-//    consoleInit();
-    /* Initialize Display */
-//    displayInit();
-//    displayWelcome();
-    /* Initialize the buzzer */
-    buzzerInit(BUZZER_GPIO_INSTANCE, BUZZER_GPIO_PIN, BUZZER_TIM_INSTANCE, BUZZER_TIM_CHANNEL);
-    /* Initialize the servomotor */
+    /* Initialize debug console*/
+    //    consoleInit();
+    /* Initialize display */
+    //    displayInit();
+    /* Initialize servomotor */
     servoMotorInit(GPIOC, GPIO_PIN_6, TIM_CHANNEL_1);
+    /* Initialize the buzzer */
+    halStatus = buzzerInit();
+    if (halStatus != HAL_OK)
+    {
+        Error_Handler();
+    }
 
-    /* Create tasks */
-    retVal = xTaskCreate(vTaskHeartBeat, "task-heart-beat", configMINIMAL_STACK_SIZE, NULL, 1, &xTaskHeartBeatHandler);
+    /* Heart beat task */
+    retVal = xTaskCreate(vTaskHeartBeat, "task-heart-beat", configMINIMAL_STACK_SIZE, NULL, HEART_BEAT_PRIORITY_TASK, &xTaskHeartBeatHandler);
     if (retVal != pdPASS)
     {
         goto main_out;
     }
 
-    retVal = xTaskCreate(vTaskDisplay, "task-display", configMINIMAL_STACK_SIZE, NULL, 1, &xTaskDisplayHandler);
+    /* Display task */
+    retVal = xTaskCreate(vTaskDisplay, "task-display", configMINIMAL_STACK_SIZE, NULL, DISPLAY_PRIORITY_TASK, &xTaskDisplayHandler);
     if (retVal != pdPASS)
     {
         goto main_out;
-
     }
+
     vTaskStartScheduler();
 
 main_out:

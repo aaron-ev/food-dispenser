@@ -1,3 +1,11 @@
+/**
+ ******************************************************************************
+ * @file         display.c
+ * @author       Aaron Escoboza
+ * @brief        Source file for the display feature
+ ******************************************************************************
+ */
+
 #include "stm32f4xx_hal.h"
 #include "tft_ili9341.h"
 #include "testimg.h"

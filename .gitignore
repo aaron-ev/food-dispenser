@@ -6,3 +6,4 @@ workspace/pet_food_dispenser/Debug/
 *.log
 *.xml
 *.ini
+*.cproject

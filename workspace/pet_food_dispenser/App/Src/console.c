@@ -1,9 +1,16 @@
-
+/**
+ ******************************************************************************
+ * @file         console.c
+ * @author       Aaron Escoboza
+ * @brief        Source file for debug console feature
+ ******************************************************************************
+ */
 
 #include <appConfig.h>
 #include "console.h"
 #include "stm32f4xx_hal.h"
 
+extern void Error_Handler(void);
 UART_HandleTypeDef huart2;
 
 void consoleInit(void)
@@ -30,11 +37,10 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     if (huart->Instance == USART2)
     {
       __HAL_RCC_USART2_CLK_ENABLE();
-      __HAL_RCC_GPIOA_CLK_ENABLE();
 
       /* USART2 GPIO Configuration
-      PA2     ------> USART2_TX
-      PA3     ------> USART2_RX
+         PA2     ------> USART2_TX
+         PA3     ------> USART2_RX
       */
       GPIO_InitStruct.Pin = USART_TX_Pin|USART_RX_Pin;
       GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -52,8 +58,8 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
     __HAL_RCC_USART2_CLK_DISABLE();
 
     /* USART2 GPIO Configuration
-    PA2     ------> USART2_TX
-    PA3     ------> USART2_RX
+       PA2     ------> USART2_TX
+       PA3     ------> USART2_RX
     */
     HAL_GPIO_DeInit(GPIOA, USART_TX_Pin|USART_RX_Pin);
   }

@@ -1,0 +1,3 @@
+[submodule "tools/tool-STM32-timer"]
+	path = tools/tool-STM32-timer
+	url = git@github.com:aaron-ev/tool-STM32-timer.git

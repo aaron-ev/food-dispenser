@@ -12,6 +12,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "buzzer.h"
+#include "servoMotor.h"
 #include "appConfig.h"
 
 #define DISPLAY_BEEP_DELAY          100
@@ -36,22 +37,25 @@ void displayWelcome(void)
     tft_ili9341_send_str(0, TFT_ILI9341_HEIGHT / 2, "Display: Ok", Font_16x26, BLUE, WHITE);
 }
 
-void displayPlayBeep(uint16_t beepDelay)
+void testServoMotor(void)
 {
     int i;
 
-    for (i = 0; i < 2; i++)
+    for (i = 0; i < 3; i++)
     {
-        buzzerStart();
-        HAL_Delay(beepDelay);
-        buzzerStop();
-        HAL_Delay(beepDelay);
+        servoMotorRotate(SERVO_MOTOR_DEGREES_180);
+        buzzerBeep(100, 0, 1);
+        HAL_Delay(250);
+        servoMotorRotate(SERVO_MOTOR_DEGREES_0);
+        buzzerBeep(100, 0 , 1);
+        HAL_Delay(250);
     }
 }
 
 void vTaskDisplay(void *params)
 {
-    displayPlayBeep(DISPLAY_BEEP_DELAY);
+    buzzerBeep(100, 100, 2);
+    testServoMotor();
 
     while (1)
     {

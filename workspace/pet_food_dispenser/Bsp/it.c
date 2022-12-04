@@ -68,11 +68,11 @@ void HAL_GPIO_EXTI_Callback(uint16_t pin)
 {
     switch (pin)
     {
-        case BUTTON_ENTER_GPIO_PIN: xTaskNotify(xTaskDisplayHandler, BUTTON_EVENT_ENTER, eSetBits);
+        case BUTTON_ENTER_GPIO_PIN: xTaskNotifyIndexed(xTaskDisplayHandler, BUTTON_INDEX_NOTIFICATION, BUTTON_EVENT_ENTER, eSetBits);
             break;
-        case BUTTON_UP_GPIO_PIN: xTaskNotify(xTaskDisplayHandler, BUTTON_EVENT_UP, eSetBits);
+        case BUTTON_UP_GPIO_PIN: xTaskNotifyIndexed(xTaskDisplayHandler, BUTTON_INDEX_NOTIFICATION, BUTTON_EVENT_UP, eSetBits);
             break;
-        case BUTTON_DOWN_GPIO_PIN: xTaskNotify(xTaskDisplayHandler, BUTTON_EVENT_DOWN, eSetBits);
+        case BUTTON_DOWN_GPIO_PIN: xTaskNotifyIndexed(xTaskDisplayHandler, BUTTON_INDEX_NOTIFICATION, BUTTON_EVENT_DOWN, eSetBits);
             break;
         default:
             break;

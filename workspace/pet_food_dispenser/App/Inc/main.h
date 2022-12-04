@@ -9,6 +9,8 @@
 #ifndef __MAIN__H
 #define __MAIN_H
 
+#define BUTTON_INDEX_NOTIFICATION           1
+
 typedef enum
 {
     BUTTON_EVENT_UP     = (1 << 0),

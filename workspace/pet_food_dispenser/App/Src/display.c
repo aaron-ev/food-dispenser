@@ -6,6 +6,8 @@
  ******************************************************************************
  */
 
+#include "appConfig.h"
+#include "main.h"
 #include "stm32f4xx_hal.h"
 #include "tft_ili9341.h"
 #include "testimg.h"
@@ -13,9 +15,16 @@
 #include "task.h"
 #include "buzzer.h"
 #include "servoMotor.h"
-#include "appConfig.h"
 
 #define DISPLAY_BEEP_DELAY          100
+#define NO_CLEAR_ON_ENTRY           0
+#define CLEAR_ALL_ON_EXIT           0xffffffffUL
+
+typedef enum
+{
+    OPTION_FEED,
+    OPTION_SETTINGS,
+}Options;
 
 TaskHandle_t xTaskDisplayHandler;
 
@@ -52,15 +61,73 @@ void testServoMotor(void)
     }
 }
 
+void feed(void)
+{
+    // TODO: update screen
+    servoMotorRotate(SERVO_MOTOR_DEGREES_180);
+    HAL_Delay(500);
+    servoMotorRotate(SERVO_MOTOR_DEGREES_0);
+}
+
+void displayIniScreen(void)
+{
+    /* Show to recangules: 1. Feed, 2. Settings */
+    /* Show cursos in the first rectangule */
+}
+
 void vTaskDisplay(void *params)
 {
+    uint32_t event;
+    uint8_t cursorPosition = OPTION_FEED;
+
+    displayWelcome();
     buzzerBeep(100, 100, 2);
     testServoMotor();
-
+    displayIniScreen();
     while (1)
     {
-        //TODO: 1. block until there is a new touch point
-        //      2. implement a FSM to handle the menu
-        vTaskDelay(pdMS_TO_TICKS(500));
+        /* Wait until a push button is pressed.
+         * Notification settings: Index > 0, no clear on entry,
+         *                       Clear all events on exit,
+         *                       Block until there is an event.
+        */
+        xTaskNotifyWaitIndexed(BUTTON_INDEX_NOTIFICATION, NO_CLEAR_ON_ENTRY, CLEAR_ALL_ON_EXIT, &event, portMAX_DELAY);
+        if (event & BUTTON_EVENT_ENTER)
+        {
+            if (cursorPosition == OPTION_FEED)
+            {
+                feed();
+            }
+            if (cursorPosition == OPTION_SETTINGS)
+            {
+                //Go to screen for settings
+                //settingsScreen();
+            }
+        }
+        if (event & BUTTON_EVENT_UP)
+        {
+            if (cursorPosition == OPTION_FEED)
+            {
+                //There is no more options above, play a beep
+                buzzerBeep(100, 100, 2);
+            }
+            else
+            {
+                cursorPosition = OPTION_FEED;
+                 // TODO: update screen
+            }
+        }
+        if (event & BUTTON_EVENT_DOWN)
+        {
+            if (cursorPosition == OPTION_SETTINGS)
+            {
+                buzzerBeep(100, 100, 2);
+            }
+            else
+            {
+                cursorPosition = OPTION_SETTINGS;
+                 // TODO: update screen
+            }
+        }
     }
 }

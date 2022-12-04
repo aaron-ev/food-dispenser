@@ -11,7 +11,6 @@
 #include "display.h"
 #include "console.h"
 #include "FreeRTOS.h"
-#include "timers.h"
 #include "task.h"
 
 TaskHandle_t xTaskHeartBeatHandler;
@@ -105,6 +104,33 @@ void vTaskHeartBeat(void *params)
     }
 }
 
+void pushButtonsInit(void)
+{
+    GPIO_InitTypeDef pushButtonsGpioInit = {0};
+
+    /* Push buttons common settings */
+    pushButtonsGpioInit.Mode = GPIO_MODE_IT_FALLING;
+    pushButtonsGpioInit.Pull = GPIO_NOPULL;
+    pushButtonsGpioInit.Speed = GPIO_SPEED_FREQ_LOW;
+    /* Push button UP: GPIO settings */
+    pushButtonsGpioInit.Pin = BUTTON_UP_GPIO_PIN;
+    HAL_GPIO_Init(BUTTON_UP_GPIO_PORT, &pushButtonsGpioInit);
+    /* Push button DOWN: GPIO settings */
+    pushButtonsGpioInit.Pin = BUTTON_DOWN_GPIO_PIN;
+    HAL_GPIO_Init(BUTTON_DOWN_GPIO_PORT, &pushButtonsGpioInit);
+    /* Push button ENTER: GPIO settings */
+    pushButtonsGpioInit.Pin = BUTTON_ENTER_GPIO_PIN;
+    HAL_GPIO_Init(BUTTON_ENTER_GPIO_PORT, &pushButtonsGpioInit);
+
+    /* ENVIC settings */
+     HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+     HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+     HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+     HAL_NVIC_SetPriority(EXTI0_IRQn, 15, 0);
+     HAL_NVIC_SetPriority(EXTI1_IRQn, 15, 0);
+     HAL_NVIC_SetPriority(EXTI2_IRQn, 15, 0);
+}
+
 int main(void)
 {
     BaseType_t retVal;
@@ -112,15 +138,21 @@ int main(void)
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
     /* Configure the system clock */
-    //    clkInit(); // system CLK = 16 MHz
+    // clkInit(); // system CLK = 16 MHz
+    /* Initialize push buttons */
+    pushButtonsInit();
     /* Initialize heart beat led */
-    heartBeatInit();
+//    heartBeatInit();
     /* Initialize debug console*/
-    //    consoleInit();
+    // consoleInit();
     /* Initialize display */
-    //    displayInit();
+    displayInit();
     /* Initialize servomotor */
-    servoMotorInit();
+    halStatus = servoMotorInit();
+    if (halStatus != HAL_OK)
+    {
+        errorHandler();
+    }
     /* Initialize the buzzer */
     halStatus = buzzerInit();
     if (halStatus != HAL_OK)

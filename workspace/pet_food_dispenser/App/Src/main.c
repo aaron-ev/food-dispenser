@@ -105,6 +105,29 @@ void vTaskHeartBeat(void *params)
     }
 }
 
+void pushButtonsInit(void)
+{
+    GPIO_InitTypeDef pushButtonsGpioInit = {0};
+
+    /* Push buttons common settings */
+    pushButtonsGpioInit.Mode = GPIO_MODE_IT_FALLING;
+    pushButtonsGpioInit.Pull = GPIO_NOPULL;
+    pushButtonsGpioInit.Speed = GPIO_SPEED_FREQ_LOW;
+    /* Push button UP: GPIO settings */
+    pushButtonsGpioInit.Pin = BUTTON_UP_GPIO_PIN;
+    HAL_GPIO_Init(BUTTON_UP_GPIO_PORT, &pushButtonsGpioInit);
+    /* Push button DOWN: GPIO settings */
+    pushButtonsGpioInit.Pin = BUTTON_DOWN_GPIO_PIN;
+    HAL_GPIO_Init(BUTTON_DOWN_GPIO_PORT, &pushButtonsGpioInit);
+    /* Push button ENTER: GPIO settings */
+    pushButtonsGpioInit.Pin = BUTTON_ENTER_GPIO_PIN;
+    HAL_GPIO_Init(BUTTON_ENTER_GPIO_PORT, &pushButtonsGpioInit);
+
+    /* TODO: ENVIC settgins */
+    // HAL_NVIC_EnableIRQ();
+    // HAL_NVIC_SetPriority
+}
+
 int main(void)
 {
     BaseType_t retVal;
@@ -112,7 +135,9 @@ int main(void)
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
     /* Configure the system clock */
-    //    clkInit(); // system CLK = 16 MHz
+    // clkInit(); // system CLK = 16 MHz
+    /* Initialize push buttons */
+    pushButtonsInit();
     /* Initialize heart beat led */
     heartBeatInit();
     /* Initialize debug console*/

@@ -59,4 +59,12 @@
 #define SERVO_MOTOR_TIM_INSTANCE            TIM3
 #define SERVO_MOTOR_TIM_CHANNEL             TIM_CHANNEL_1
 
+/* Push buttons setting */
+#define BUTTON_UP_GPIO_PORT                 GPIOC
+#define BUTTON_UP_GPIO_PIN                  GPIO_PIN_0
+#define BUTTON_DOWN_GPIO_PORT               GPIOC
+#define BUTTON_DOWN_GPIO_PIN                GPIO_PIN_1
+#define BUTTON_ENTER_GPIO_PORT              GPIOB
+#define BUTTON_ENTER_GPIO_PIN               GPIO_PIN_0
+
 #endif /* APP_CONFIG__H */

@@ -82,27 +82,27 @@
 
 /* CS */
 #define TFT_CS_PORT                         TFT_GPIOB
-#define TFT_CS_PIN_NUM                      TFT_PIN3
+#define TFT_CS_PIN_NUM                      TFT_PIN6
 
 /* Reset */
-#define TFT_RESET_PORT                      TFT_GPIOB
-#define TFT_RESET_PIN_NUM                   TFT_PIN5
+#define TFT_RESET_PORT                      TFT_GPIOC
+#define TFT_RESET_PIN_NUM                   TFT_PIN7
 
 /* DC */
-#define TFT_DC_PORT                         TFT_GPIOB
-#define TFT_DC_PIN_NUM                      TFT_PIN6
+#define TFT_DC_PORT                         TFT_GPIOA
+#define TFT_DC_PIN_NUM                      TFT_PIN9
 
 /* LED */
 #define TFT_LED_PORT                        TFT_GPIOB
 #define TFT_LED_PIN_NUM                     TFT_PIN8
 
 /* SPI section */
-#define TFT_SPI_PORT                        TFT_GPIOC
-#define TFT_SPI_MOSI_PIN_NUM                TFT_PIN3
-#define TFT_SPI_MISO_PIN_NUM                TFT_PIN2
-#define TFT_SPI_SCK_PIN_NUM                 TFT_PIN7
+#define TFT_SPI_PORT                        TFT_GPIOA
+#define TFT_SPI_MOSI_PIN_NUM                TFT_PIN7
+#define TFT_SPI_MISO_PIN_NUM                TFT_PIN6
+#define TFT_SPI_SCK_PIN_NUM                 TFT_PIN5
 #define TFT_SPI_ALT                         TFT_AF5_SPI1
-#define TFT_SPI_MODULE                      TFT_SPI_MODULE_2
+#define TFT_SPI_MODULE                      TFT_SPI_MODULE_1
 
 /************************************************************/
                  /* END OF USER CONFIGURATION */

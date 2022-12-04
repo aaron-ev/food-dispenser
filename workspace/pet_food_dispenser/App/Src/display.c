@@ -6,6 +6,8 @@
  ******************************************************************************
  */
 
+#include "appConfig.h"
+#include "main.h"
 #include "stm32f4xx_hal.h"
 #include "tft_ili9341.h"
 #include "testimg.h"
@@ -13,8 +15,6 @@
 #include "task.h"
 #include "buzzer.h"
 #include "servoMotor.h"
-#include "appConfig.h"
-#include "main.h"
 
 #define DISPLAY_BEEP_DELAY          100
 #define NO_CLEAR_ON_ENTRY           0
@@ -80,9 +80,10 @@ void vTaskDisplay(void *params)
     uint32_t event;
     uint8_t cursorPosition = OPTION_FEED;
 
+    displayWelcome();
     buzzerBeep(100, 100, 2);
     testServoMotor();
-    // displayIniScreen();
+    displayIniScreen();
     while (1)
     {
         /* Wait until a push button is pressed.

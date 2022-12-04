@@ -11,7 +11,6 @@
 #include "display.h"
 #include "console.h"
 #include "FreeRTOS.h"
-#include "timers.h"
 #include "task.h"
 
 TaskHandle_t xTaskHeartBeatHandler;
@@ -123,9 +122,13 @@ void pushButtonsInit(void)
     pushButtonsGpioInit.Pin = BUTTON_ENTER_GPIO_PIN;
     HAL_GPIO_Init(BUTTON_ENTER_GPIO_PORT, &pushButtonsGpioInit);
 
-    /* TODO: ENVIC settgins */
-    // HAL_NVIC_EnableIRQ();
-    // HAL_NVIC_SetPriority
+    /* ENVIC settings */
+     HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+     HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+     HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+     HAL_NVIC_SetPriority(EXTI0_IRQn, 15, 0);
+     HAL_NVIC_SetPriority(EXTI1_IRQn, 15, 0);
+     HAL_NVIC_SetPriority(EXTI2_IRQn, 15, 0);
 }
 
 int main(void)
@@ -139,13 +142,17 @@ int main(void)
     /* Initialize push buttons */
     pushButtonsInit();
     /* Initialize heart beat led */
-    heartBeatInit();
+//    heartBeatInit();
     /* Initialize debug console*/
-    //    consoleInit();
+    // consoleInit();
     /* Initialize display */
-    //    displayInit();
+    displayInit();
     /* Initialize servomotor */
-    servoMotorInit();
+    halStatus = servoMotorInit();
+    if (halStatus != HAL_OK)
+    {
+        errorHandler();
+    }
     /* Initialize the buzzer */
     halStatus = buzzerInit();
     if (halStatus != HAL_OK)

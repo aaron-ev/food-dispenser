@@ -6,11 +6,11 @@
  ******************************************************************************
  */
 
-#include "stm32f4xx_hal.h"
 #include "appConfig.h"
+#include "main.h"
+#include "stm32f4xx_hal.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "main.h"
 
 extern TIM_HandleTypeDef buzzerTimHandler;
 extern TaskHandle_t xTaskDisplayHandler;
@@ -66,15 +66,18 @@ void EXTI2_IRQHandler(void)
  */
 void HAL_GPIO_EXTI_Callback(uint16_t pin)
 {
-    switch (pin)
+    BaseType_t  pxHigherPriorityTaskWoken = pdFALSE;
+
+    if (pin == BUTTON_ENTER_GPIO_PIN)
     {
-        case BUTTON_ENTER_GPIO_PIN: xTaskNotifyIndexed(xTaskDisplayHandler, BUTTON_INDEX_NOTIFICATION, BUTTON_EVENT_ENTER, eSetBits);
-            break;
-        case BUTTON_UP_GPIO_PIN: xTaskNotifyIndexed(xTaskDisplayHandler, BUTTON_INDEX_NOTIFICATION, BUTTON_EVENT_UP, eSetBits);
-            break;
-        case BUTTON_DOWN_GPIO_PIN: xTaskNotifyIndexed(xTaskDisplayHandler, BUTTON_INDEX_NOTIFICATION, BUTTON_EVENT_DOWN, eSetBits);
-            break;
-        default:
-            break;
+        xTaskNotifyIndexedFromISR(xTaskDisplayHandler, BUTTON_INDEX_NOTIFICATION, BUTTON_EVENT_ENTER, eSetBits, &pxHigherPriorityTaskWoken);
+    }
+    if (pin == BUTTON_UP_GPIO_PIN)
+    {
+        xTaskNotifyIndexedFromISR(xTaskDisplayHandler, BUTTON_INDEX_NOTIFICATION, BUTTON_EVENT_UP, eSetBits, &pxHigherPriorityTaskWoken);
+    }
+    if (pin == BUTTON_DOWN_GPIO_PIN)
+    {
+        xTaskNotifyIndexedFromISR(xTaskDisplayHandler, BUTTON_INDEX_NOTIFICATION, BUTTON_EVENT_DOWN, eSetBits, &pxHigherPriorityTaskWoken);
     }
 }

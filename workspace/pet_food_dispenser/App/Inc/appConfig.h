@@ -9,8 +9,6 @@
 #ifndef APP_CONFIG__H
 #define APP_CONFIG__H
 
-#include "stm32f4xx_hal.h"
-
 /* Private defines -----------------------------------------------------------*/
 #define B1_Pin                             GPIO_PIN_13
 #define B1_GPIO_Port                       GPIOC
@@ -64,7 +62,7 @@
 #define BUTTON_ENTER_GPIO_PIN               GPIO_PIN_0
 #define BUTTON_UP_GPIO_PORT                 GPIOC
 #define BUTTON_UP_GPIO_PIN                  GPIO_PIN_1
-#define BUTTON_DOWN_GPIO_PORT               GPIOA
+#define BUTTON_DOWN_GPIO_PORT               GPIOC
 #define BUTTON_DOWN_GPIO_PIN                GPIO_PIN_2
 
 #endif /* APP_CONFIG__H */

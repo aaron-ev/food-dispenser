@@ -1,0 +1,7 @@
+../App/Src/main.c:24:6:clkInit	88	static
+../App/Src/main.c:62:13:heartBeatInit	32	static
+../App/Src/main.c:77:6:HAL_TIM_PeriodElapsedCallback	16	static
+../App/Src/main.c:88:6:errorHandler	8	static,ignoring_inline_asm
+../App/Src/main.c:100:6:vTaskHeartBeat	16	static
+../App/Src/main.c:110:6:pushButtonsInit	32	static
+../App/Src/main.c:137:5:main	24	static

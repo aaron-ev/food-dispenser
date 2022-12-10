@@ -1,0 +1,11 @@
+../App/Src/main.c:28:6:clkInit	88	static
+../App/Src/main.c:66:13:heartBeatInit	32	static
+../App/Src/main.c:81:6:HAL_TIM_PeriodElapsedCallback	16	static
+../App/Src/main.c:92:6:errorHandler	8	static,ignoring_inline_asm
+../App/Src/main.c:104:6:vTaskHeartBeat	16	static
+../App/Src/main.c:113:6:pushButtonsInit	32	static
+../App/Src/main.c:140:6:dispenserBeep	32	static
+../App/Src/main.c:162:6:testBspBuzzer	8	static
+../App/Src/main.c:170:6:testBspServoMotor	16	static
+../App/Src/main.c:185:6:testBsp	8	static
+../App/Src/main.c:191:5:main	24	static

@@ -7,3 +7,4 @@ workspace/pet_food_dispenser/Debug/
 *.xml
 *.ini
 *.cproject
+workspace/pet_food_dispenser_STM32F401CCU6/Debug/

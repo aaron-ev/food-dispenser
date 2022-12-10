@@ -145,7 +145,6 @@ void dispenserBeep(uint32_t timeOn, uint32_t timeOff, uint32_t times)
     {
         return;
     }
-
     for ( i = 0; i < times; i++)
     {
 
@@ -174,10 +173,8 @@ void testBspServoMotor(void)
     for (i = 0; i < 3; i++)
     {
         servoMotorRotate(SERVO_MOTOR_DEGREES_180);
-        dispenserBeep(100, 0, 1);
         HAL_Delay(250);
         servoMotorRotate(SERVO_MOTOR_DEGREES_0);
-        dispenserBeep(100, 0, 1);
         HAL_Delay(250);
     }
 }

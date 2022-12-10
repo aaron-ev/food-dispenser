@@ -15,6 +15,7 @@
 #include "stdint.h"
 
 HAL_StatusTypeDef buzzerInit(void);
-void buzzerBeep(uint32_t timeOn, uint32_t timeOff, uint32_t times);
+HAL_StatusTypeDef buzzerStart(void);
+HAL_StatusTypeDef buzzerStop(void);
 
 #endif

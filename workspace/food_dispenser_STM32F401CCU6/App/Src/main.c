@@ -5,6 +5,7 @@
  * Github account: https://github.com/aaron-ev
  **************************************************************************/
 
+#include "main.h"
 #include "appConfig.h"
 #include "buzzer.h"
 #include "servoMotor.h"
@@ -19,6 +20,7 @@ TaskHandle_t xTaskHeartBeatHandler;
 extern TaskHandle_t xTaskDisplayHandler;
 extern void vTaskDisplay(void *params);
 void errorHandler(void);
+DispenserSettings dispenserSettings;
 
 /*
 *  Initialize the system clocks and clocks derived.
@@ -135,12 +137,34 @@ void pushButtonsInit(void)
      HAL_NVIC_SetPriority(EXTI2_IRQn, 15, 0);
 }
 
+void dispenserBeep(uint32_t timeOn, uint32_t timeOff, uint32_t times)
+{
+    int i;
+
+    if (times <= 0 || timeOn <= 0 || dispenserSettings.sound == DISPENSER_SOUND_OFF)
+    {
+        return;
+    }
+
+    for ( i = 0; i < times; i++)
+    {
+
+        buzzerStart();
+        HAL_Delay(timeOn);
+        buzzerStop();
+        if (times > 1)
+        {
+            HAL_Delay(timeOff);
+        }
+    }
+}
+
 void testBspBuzzer(void)
 {
-    buzzerBeep(300, 300, 4);
-    buzzerBeep(200, 200, 3);
-    buzzerBeep(100, 100, 2);
-    buzzerBeep(50, 0, 1);
+    dispenserBeep(300, 300, 4);
+    dispenserBeep(200, 200, 3);
+    dispenserBeep(100, 100, 2);
+    dispenserBeep(50, 0, 1);
 }
 
 void testBspServoMotor(void)
@@ -192,7 +216,13 @@ int main(void)
     {
         errorHandler();
     }
+    /* Initialize default dispenser settings */
+    dispenserSettings.portions = 1;
+    dispenserSettings.sound = DISPENSER_SOUND_ON;
+    /* Double beep to indicate all the initializations have finished */
+    dispenserBeep(100, 100, 2);
 
+    /* Test BSP layer */
     #if (TEST_BSP == 1)
         testBsp();
     #endif

@@ -2,7 +2,7 @@
 /**************************************************************************
  * Author: Aaron Escoboza
  * Description: Pet food dispenser based on STM HAL layer and FreeRTOS.
- * Gihub account: //todo: put the link here
+ * Github account: https://github.com/aaron-ev
  **************************************************************************/
 
 #include "appConfig.h"
@@ -135,13 +135,12 @@ void pushButtonsInit(void)
      HAL_NVIC_SetPriority(EXTI2_IRQn, 15, 0);
 }
 
-
 void testBspBuzzer(void)
 {
-    dispenserBeep(300, 300, 4);
-    dispenserBeep(200, 200, 3);
-    dispenserBeep(100, 100, 2);
-    dispenserBeep(50, 0, 1);
+    buzzerBeep(300, 300, 4);
+    buzzerBeep(200, 200, 3);
+    buzzerBeep(100, 100, 2);
+    buzzerBeep(50, 0, 1);
 }
 
 void testBspServoMotor(void)
@@ -151,10 +150,10 @@ void testBspServoMotor(void)
     for (i = 0; i < 3; i++)
     {
         servoMotorRotate(SERVO_MOTOR_DEGREES_180);
-        dispenserBeep(100, 0, 1);
+        buzzerBeep(100, 0, 1);
         HAL_Delay(250);
         servoMotorRotate(SERVO_MOTOR_DEGREES_0);
-        dispenserBeep(100, 0, 1);
+        buzzerBeep(100, 0, 1);
         HAL_Delay(250);
     }
 }
@@ -193,22 +192,23 @@ int main(void)
     {
         errorHandler();
     }
+
     #if (TEST_BSP == 1)
         testBsp();
     #endif
+
     /* Heart beat task */
     retVal = xTaskCreate(vTaskHeartBeat, "task-heart-beat", configMINIMAL_STACK_SIZE, NULL, HEART_BEAT_PRIORITY_TASK, &xTaskHeartBeatHandler);
     if (retVal != pdPASS)
     {
         goto main_out;
     }
-
     /* Display task */
-//    retVal = xTaskCreate(vTaskDisplay, "task-display", configMINIMAL_STACK_SIZE, NULL, DISPLAY_PRIORITY_TASK, &xTaskDisplayHandler);
-//    if (retVal != pdPASS)
-//    {
-//        goto main_out;
-//    }
+    retVal = xTaskCreate(vTaskDisplay, "task-display", configMINIMAL_STACK_SIZE, NULL, DISPLAY_PRIORITY_TASK, &xTaskDisplayHandler);
+    if (retVal != pdPASS)
+    {
+        goto main_out;
+    }
 
     vTaskStartScheduler();
 

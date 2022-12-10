@@ -13,6 +13,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#define TEST_BSP 1
+
 TaskHandle_t xTaskHeartBeatHandler;
 extern TaskHandle_t xTaskDisplayHandler;
 extern void vTaskDisplay(void *params);
@@ -103,7 +105,6 @@ void vTaskHeartBeat(void *params)
     {
         HAL_GPIO_TogglePin(HEART_BEAT_LED_PORT, HEART_BEAT_LED_PIN);
         vTaskDelay(pdMS_TO_TICKS(HEART_BEAT_BLINK_DELAY));
-        buzzerBeep(100, 100, 2);
     }
 }
 
@@ -134,6 +135,36 @@ void pushButtonsInit(void)
      HAL_NVIC_SetPriority(EXTI2_IRQn, 15, 0);
 }
 
+
+void testBspBuzzer(void)
+{
+    dispenserBeep(300, 300, 4);
+    dispenserBeep(200, 200, 3);
+    dispenserBeep(100, 100, 2);
+    dispenserBeep(50, 0, 1);
+}
+
+void testBspServoMotor(void)
+{
+    int i;
+
+    for (i = 0; i < 3; i++)
+    {
+        servoMotorRotate(SERVO_MOTOR_DEGREES_180);
+        dispenserBeep(100, 0, 1);
+        HAL_Delay(250);
+        servoMotorRotate(SERVO_MOTOR_DEGREES_0);
+        dispenserBeep(100, 0, 1);
+        HAL_Delay(250);
+    }
+}
+
+void testBsp(void)
+{
+    testBspBuzzer();
+    testBspServoMotor();
+}
+
 int main(void)
 {
     BaseType_t retVal;
@@ -143,7 +174,7 @@ int main(void)
     /* Configure the system clock */
     // clkInit(); // system CLK = 16 MHz
     /* Initialize push buttons */
-    pushButtonsInit();
+//    pushButtonsInit();
     /* Initialize heart beat led */
     heartBeatInit();
     /* Initialize debug console*/
@@ -162,7 +193,9 @@ int main(void)
     {
         errorHandler();
     }
-
+    #if (TEST_BSP == 1)
+        testBsp();
+    #endif
     /* Heart beat task */
     retVal = xTaskCreate(vTaskHeartBeat, "task-heart-beat", configMINIMAL_STACK_SIZE, NULL, HEART_BEAT_PRIORITY_TASK, &xTaskHeartBeatHandler);
     if (retVal != pdPASS)

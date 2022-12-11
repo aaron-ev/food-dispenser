@@ -7,7 +7,7 @@
  */
 
 #ifndef __MAIN__H
-#define __MAIN_H
+#define __MAIN__H
 
 #include <stdint.h>
 #include <stdio.h>

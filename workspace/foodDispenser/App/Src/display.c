@@ -8,14 +8,7 @@
 
 #include "main.h"
 #include "appConfig.h"
-#include "stm32f4xx_hal.h"
-#include "tft_ili9341.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "timers.h"
-#include "buzzer.h"
-#include "servoMotor.h"
-#include "msp.h"
+#include "bsp.h"
 
 #define DISPLAY_BEEP_DELAY                       100
 #define NO_CLEAR_ON_ENTRY                        0
@@ -209,9 +202,9 @@ BaseType_t displayBackLightInit(void)
     return status;
 }
 
-void displayInit(void)
+BaseType_t displayInit(void)
 {
-    BaseType_t status;
+    BaseType_t status = pdTRUE;
 
     /* Initialize the hardware and display with default settings */
     tft_ili9341_init();
@@ -230,11 +223,12 @@ void displayInit(void)
     displayShowIniScreen();
     /* Initialize the backlight */
     status = displayBackLightInit();
-    if (status != pdFALSE)
+    if (status != pdTRUE)
     {
         errorHandler();
     }
     displaySettings.backlightState = BACKLIGHT_ON;
+    return status;
 }
 
 void feed(uint8_t portions)

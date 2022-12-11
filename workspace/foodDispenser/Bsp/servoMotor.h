@@ -11,7 +11,7 @@
   */
 
 #ifndef __SERVOMOTOR__H
-#define __SERVOMOTOR_H
+#define __SERVOMOTOR__H
 
 #include "stm32f4xx_hal.h"
 

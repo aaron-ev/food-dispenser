@@ -1,8 +1,0 @@
-../App/Src/display.c:53:6:displayShowIniScreen	40	static
-../App/Src/display.c:74:6:displayInit	8	static
-../App/Src/display.c:81:6:displayWelcome	24	static
-../App/Src/display.c:94:6:feed	24	static
-../App/Src/display.c:112:9:getIndex	24	static
-../App/Src/display.c:131:6:displayShowSettingsScreen	48	static
-../App/Src/display.c:164:6:screenSettings	32	static
-../App/Src/display.c:224:6:vTaskDisplay	40	static

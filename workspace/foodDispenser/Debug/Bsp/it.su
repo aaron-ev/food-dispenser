@@ -1,7 +1,0 @@
-../Bsp/it.c:22:6:TIM2_IRQHandler	8	static
-../Bsp/it.c:30:6:HAL_TIM_OC_DelayElapsedCallback	16	static
-../Bsp/it.c:44:6:EXTI0_IRQHandler	8	static
-../Bsp/it.c:52:6:EXTI1_IRQHandler	8	static
-../Bsp/it.c:60:6:EXTI2_IRQHandler	8	static
-../Bsp/it.c:68:6:HAL_GPIO_EXTI_Callback	32	static
-../Bsp/it.c:90:6:TIM1_BRK_TIM9_IRQHandler	8	static

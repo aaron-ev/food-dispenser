@@ -1,3 +1,0 @@
-../Bsp/console.c:16:6:consoleInit	8	static
-../Bsp/console.c:33:6:HAL_UART_MspInit	40	static
-../Bsp/console.c:54:6:HAL_UART_MspDeInit	16	static

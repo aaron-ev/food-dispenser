@@ -47,7 +47,7 @@
 #define BUZZER_GPIO_ALTERNATE               GPIO_AF1_TIM2
 #define BUZZER_TIM_INSTANCE                 TIM2
 #define BUZZER_TIM_CHANNEL                  TIM_CHANNEL_1
-#define BUZZER_TIM_PRESCALER                15  /* tick = 1us*/
+#define BUZZER_TIM_PRESCALER                40  /* tick = 1us*/
 #define BUZZER_TIM_PULSE_VALUE              500 /*freq = 1khz, 1us * 500 * 2 */
 
 /* Servo motor settings */
@@ -59,11 +59,11 @@
 
 /* Push buttons setting */
 #define BUTTON_ENTER_GPIO_PORT              GPIOA
-#define BUTTON_ENTER_GPIO_PIN               GPIO_PIN_13
+#define BUTTON_ENTER_GPIO_PIN               GPIO_PIN_2
 #define BUTTON_UP_GPIO_PORT                 GPIOA
-#define BUTTON_UP_GPIO_PIN                  GPIO_PIN_14
+#define BUTTON_UP_GPIO_PIN                  GPIO_PIN_3
 #define BUTTON_DOWN_GPIO_PORT               GPIOA
-#define BUTTON_DOWN_GPIO_PIN                GPIO_PIN_15
+#define BUTTON_DOWN_GPIO_PIN                GPIO_PIN_4
 
 #define DISPENSER_MAX_PORTIONS			5
 #endif /* APP_CONFIG__H */

@@ -14,7 +14,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#define TEST_BSP 1
+#define TEST_BSP            0
 
 TaskHandle_t xTaskHeartBeatHandler;
 extern TaskHandle_t xTaskDisplayHandler;
@@ -39,7 +39,7 @@ void clkInit(void)
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
     RCC_OscInitStruct.PLL.PLLM = 8;
-    RCC_OscInitStruct.PLL.PLLN = 64;
+    RCC_OscInitStruct.PLL.PLLN = 80;
     RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
     RCC_OscInitStruct.PLL.PLLQ = 4;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
@@ -115,7 +115,7 @@ void pushButtonsInit(void)
     GPIO_InitTypeDef pushButtonsGpioInit = {0};
 
     /* Push buttons common settings */
-    pushButtonsGpioInit.Mode = GPIO_MODE_IT_FALLING;
+    pushButtonsGpioInit.Mode = GPIO_MODE_IT_RISING;
     pushButtonsGpioInit.Pull = GPIO_NOPULL;
     pushButtonsGpioInit.Speed = GPIO_SPEED_FREQ_LOW;
     /* Push button UP: GPIO settings */
@@ -127,14 +127,6 @@ void pushButtonsInit(void)
     /* Push button ENTER: GPIO settings */
     pushButtonsGpioInit.Pin = BUTTON_ENTER_GPIO_PIN;
     HAL_GPIO_Init(BUTTON_ENTER_GPIO_PORT, &pushButtonsGpioInit);
-
-    /* ENVIC settings */
-     HAL_NVIC_EnableIRQ(EXTI0_IRQn);
-     HAL_NVIC_EnableIRQ(EXTI1_IRQn);
-     HAL_NVIC_EnableIRQ(EXTI2_IRQn);
-     HAL_NVIC_SetPriority(EXTI0_IRQn, 15, 0);
-     HAL_NVIC_SetPriority(EXTI1_IRQn, 15, 0);
-     HAL_NVIC_SetPriority(EXTI2_IRQn, 15, 0);
 }
 
 void dispenserBeep(uint32_t timeOn, uint32_t timeOff, uint32_t times)
@@ -160,9 +152,9 @@ void dispenserBeep(uint32_t timeOn, uint32_t timeOff, uint32_t times)
 
 void testBspBuzzer(void)
 {
-	dispenserBeep(300, 300, 4);
-	dispenserBeep(200, 200, 3);
-	dispenserBeep(100, 100, 2);
+    dispenserBeep(300, 300, 4);
+    dispenserBeep(200, 200, 3);
+    dispenserBeep(100, 100, 2);
     dispenserBeep(50, 0, 1);
 }
 
@@ -181,7 +173,7 @@ void testBspServoMotor(void)
 
 void testBsp(void)
 {
-    testBspBuzzer();
+//    testBspBuzzer();
     testBspServoMotor();
 }
 
@@ -192,15 +184,15 @@ int main(void)
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
     /* Configure the system clock */
-    // clkInit(); // system CLK = 16 MHz
+    clkInit(); // system CLK = 16 MHz
     /* Initialize push buttons */
-//    pushButtonsInit();
+    pushButtonsInit();
     /* Initialize heart beat led */
     heartBeatInit();
     /* Initialize debug console*/
     // consoleInit();
     /* Initialize display */
-//    displayInit();
+    displayInit();
     /* Initialize servomotor */
     halStatus = servoMotorInit();
     if (halStatus != HAL_OK)
@@ -213,8 +205,9 @@ int main(void)
     {
         errorHandler();
     }
+    mspEnableBuzzerInterrups();
     /* Initialize default dispenser settings */
-    dispenserSettings.portions = 1;
+    dispenserSettings.portions = 5;
     dispenserSettings.sound = DISPENSER_SOUND_ON;
     /* Double beep to indicate all the initializations have finished */
     dispenserBeep(100, 100, 2);

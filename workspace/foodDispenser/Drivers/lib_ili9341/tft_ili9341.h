@@ -98,9 +98,9 @@
 
 /* SPI section */
 #define TFT_SPI_PORT                        TFT_GPIOB
-#define TFT_SPI_MOSI_PIN_NUM                TFT_PIN14
-#define TFT_SPI_MISO_PIN_NUM                TFT_PIN15
-#define TFT_SPI_SCK_PIN_NUM                 TFT_PIN12
+#define TFT_SPI_MOSI_PIN_NUM                TFT_PIN15
+#define TFT_SPI_MISO_PIN_NUM                TFT_PIN14
+#define TFT_SPI_SCK_PIN_NUM                 TFT_PIN13
 #define TFT_SPI_ALT                         TFT_AF5_SPI2
 #define TFT_SPI_MODULE                      TFT_SPI_MODULE_2
 

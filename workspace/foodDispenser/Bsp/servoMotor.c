@@ -15,7 +15,7 @@
 #include "servoMotor.h"
 #include "appConfig.h"
 
-#define SERVO_MOTOR_TIM_BASE_PRESCALER          15    /* 1us each tick*/
+#define SERVO_MOTOR_TIM_BASE_PRESCALER          40    /* 1us each tick*/
 #define SERVO_MOTOR_TIM_BASE_PERIOD             20000 /* freq = 50 Hz */
 #define SERVO_MOTOR_2MS_SIGNAL                  ((SERVO_MOTOR_TIM_BASE_PERIOD * 10) / 100)
 #define SERVO_MOTOR_1_5MS_SIGNAL                ((SERVO_MOTOR_TIM_BASE_PERIOD * 7.5) / 100)
@@ -31,12 +31,12 @@ void servoMotorRotate(ServoPosition position);
 
 static void servoMotorStart(void)
 {
-    HAL_TIM_PWM_Start(&servoMotorTimHandler, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&servoMotorTimHandler, SERVO_MOTOR_TIM_CHANNEL);
 }
 
 static void servoMotorStop(void)
 {
-    HAL_TIM_PWM_Stop(&servoMotorTimHandler, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Stop(&servoMotorTimHandler, SERVO_MOTOR_TIM_CHANNEL);
 }
 
 HAL_StatusTypeDef servoMotorInit(void)
@@ -74,13 +74,13 @@ void servoMotorRotate(ServoPosition position)
 {
     switch (position)
     {
-        case SERVO_MOTOR_DEGREES_0: __HAL_TIM_SET_COMPARE(&servoMotorTimHandler, TIM_CHANNEL_1,
+        case SERVO_MOTOR_DEGREES_0: __HAL_TIM_SET_COMPARE(&servoMotorTimHandler, SERVO_MOTOR_TIM_CHANNEL,
                                                           SERVO_MOTOR_2MS_SIGNAL);
                                     break;
-        case SERVO_MOTOR_DEGREES_90: __HAL_TIM_SET_COMPARE(&servoMotorTimHandler, TIM_CHANNEL_1,
+        case SERVO_MOTOR_DEGREES_90: __HAL_TIM_SET_COMPARE(&servoMotorTimHandler, SERVO_MOTOR_TIM_CHANNEL,
                                                            SERVO_MOTOR_1_5MS_SIGNAL);
                                     break;
-        case SERVO_MOTOR_DEGREES_180: __HAL_TIM_SET_COMPARE(&servoMotorTimHandler, TIM_CHANNEL_1,
+        case SERVO_MOTOR_DEGREES_180: __HAL_TIM_SET_COMPARE(&servoMotorTimHandler, SERVO_MOTOR_TIM_CHANNEL,
                                                             SERVO_MOTOR_1MS_SIGNAL);
                                     break;
         default : break;

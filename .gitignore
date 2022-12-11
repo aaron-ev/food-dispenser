@@ -1,10 +1,9 @@
 .vscode
 workspace/.metadata
-workspace/pet_food_dispenser/Debug/
+workspace/foodDispenser/Debug/
 *.json
 *.launch
 *.log
 *.xml
 *.ini
 *.cproject
-workspace/pet_food_dispenser_STM32F401CCU6/Debug/

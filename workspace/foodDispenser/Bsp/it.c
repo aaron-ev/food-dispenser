@@ -41,7 +41,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *timerHandler)
 /*
  * Interrupt handler for push button ENTER.
  */
-void EXTI0_IRQHandler(void)
+void EXTI2_IRQHandler(void)
 {
     HAL_GPIO_EXTI_IRQHandler(BUTTON_ENTER_GPIO_PIN);
 }
@@ -49,7 +49,7 @@ void EXTI0_IRQHandler(void)
 /*
  * Interrupt handler for push button UP.
  */
-void EXTI1_IRQHandler(void)
+void EXTI3_IRQHandler(void)
 {
     HAL_GPIO_EXTI_IRQHandler(BUTTON_UP_GPIO_PIN);
 }
@@ -57,7 +57,7 @@ void EXTI1_IRQHandler(void)
 /*
  * Interrupt handler for push button DOWN.
  */
-void EXTI2_IRQHandler(void)
+void EXTI4_IRQHandler(void)
 {
     HAL_GPIO_EXTI_IRQHandler(BUTTON_DOWN_GPIO_PIN);
 }

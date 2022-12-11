@@ -12,5 +12,6 @@
 
 void mspEnableBuzzerInterrupts(void);
 void mspEnableButtonInterrupts(void);
+void mspDisableButtonInterrupts(void);
 
 #endif

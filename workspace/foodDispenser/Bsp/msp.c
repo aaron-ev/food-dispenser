@@ -8,6 +8,7 @@
 
 #include "stm32f4xx_hal.h"
 #include "appConfig.h"
+#include "msp.h"
 
 /*
  *   Enable clocks and set NVIC settings.
@@ -27,6 +28,9 @@ void HAL_MspInit(void)
     __HAL_RCC_SPI1_CLK_ENABLE();
     /* Set NVIC priority configuration */
     HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+    HAL_NVIC_SetPriority(EXTI2_IRQn, 15, 0);
+    HAL_NVIC_SetPriority(EXTI3_IRQn, 15, 0);
+    HAL_NVIC_SetPriority(EXTI4_IRQn, 15, 0);
 }
 
 /*
@@ -64,13 +68,17 @@ void mspEnableButtonInterrupts(void)
     HAL_NVIC_EnableIRQ(EXTI2_IRQn);
     HAL_NVIC_EnableIRQ(EXTI3_IRQn);
     HAL_NVIC_EnableIRQ(EXTI4_IRQn);
-    HAL_NVIC_SetPriority(EXTI2_IRQn, 15, 0);
-    HAL_NVIC_SetPriority(EXTI3_IRQn, 15, 0);
-    HAL_NVIC_SetPriority(EXTI4_IRQn, 15, 0);
 }
 
-void mspEnableBuzzerInterrups(void)
+void mspEnableBuzzerInterrupts(void)
 {
     HAL_NVIC_SetPriority(TIM2_IRQn, 15, 0);
     HAL_NVIC_EnableIRQ(TIM2_IRQn);
+}
+
+void mspDisableButtonInterrupts(void)
+{
+    HAL_NVIC_DisableIRQ(EXTI2_IRQn);
+    HAL_NVIC_DisableIRQ(EXTI3_IRQn);
+    HAL_NVIC_DisableIRQ(EXTI4_IRQn);
 }

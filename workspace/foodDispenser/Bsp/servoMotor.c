@@ -25,16 +25,16 @@
 extern void errorHandler(void);
 TIM_HandleTypeDef servoMotorTimHandler = {0};
 
-static void servoMotorStart(void);
-static void servoMotorStop(void);
+void servoMotorStart(void);
+void servoMotorStop(void);
 void servoMotorRotate(ServoPosition position);
 
-static void servoMotorStart(void)
+void servoMotorStart(void)
 {
     HAL_TIM_PWM_Start(&servoMotorTimHandler, SERVO_MOTOR_TIM_CHANNEL);
 }
 
-static void servoMotorStop(void)
+void servoMotorStop(void)
 {
     HAL_TIM_PWM_Stop(&servoMotorTimHandler, SERVO_MOTOR_TIM_CHANNEL);
 }
@@ -86,6 +86,6 @@ void servoMotorRotate(ServoPosition position)
         default : break;
     }
     servoMotorStart();
-    HAL_Delay(SERVO_MOTOR_DELAY);
-    servoMotorStop();
+//    HAL_Delay(SERVO_MOTOR_DELAY);
+//    servoMotorStop();
 }

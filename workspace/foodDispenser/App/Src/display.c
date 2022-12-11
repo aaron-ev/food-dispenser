@@ -9,6 +9,7 @@
 #include "main.h"
 #include "appConfig.h"
 #include "bsp.h"
+#include "guiImages.h"
 
 #define DISPLAY_BEEP_DELAY                       100
 #define NO_CLEAR_ON_ENTRY                        0
@@ -17,8 +18,7 @@
 #define DISPLAY_FEED_DELAY                       500
 #define DISPLAY_RECT_INDICATOR_SIZE              20
 
-/* Backlight settings */
-#define DISPLAY_BACKLIGHT_DEFAULT_PERIOD           10000 /* 10s until backlight is off */
+/* Backlight macros*/
 #define BACKLIGHT_NOT_WAIT                         0
 #define BACKLIGHT_TIMER_ID                         1
 
@@ -102,11 +102,13 @@ TimerHandle_t xBackLightTimerHandler;
 void displayBacklightOn(void)
 {
     HAL_GPIO_WritePin(TFT_LED_PORT, TFT_LED_PIN_NUM, GPIO_PIN_SET);
+    displaySettings.backlightState = BACKLIGHT_ON;
 }
 
 void displayBackLightOff(void)
 {
     HAL_GPIO_WritePin(TFT_LED_PORT, TFT_LED_PIN_NUM, GPIO_PIN_RESET);
+    displaySettings.backlightState = BACKLIGHT_OFF;
 }
 
 BaseType_t displayRestartBacklightTimer(void)
@@ -140,7 +142,7 @@ void displayShowIniScreen(void)
     /* Option to change the settings */
     tft_ili9341_fill_rectangle(displaySettings.screenInit.settings.x, displaySettings.screenInit.settings.y,
                                displaySettings.screenInit.settings.w, displaySettings.screenInit.settings.h, BLUE);
-    tft_ili9341_send_str(displaySettings.screenInit.settings.x + 10, displaySettings.screenInit.settings.y + 10,
+    tft_ili9341_send_str(displaySettings.screenInit.settings.x + 25, displaySettings.screenInit.settings.y + 10,
                          "Settings", Font_16x26, WHITE, BLUE);
     displaySetRecIndicatior(displaySettings.screenInit.feed.x, displaySettings.screenInit.feed.y,
                             displaySettings.screenInit.feed.h, GREEN);
@@ -157,7 +159,7 @@ void displayShowSettingsScreen(void)
     tft_ili9341_fill_rectangle(SCREEN_SETTINGS_PORTIONS_X, SCREEN_SETTINGS_PORTIONS_Y,
                                SCREEN_SETTINGS_PORTIONS_W, SCREEN_SETTINGS_PORTIONS_H, BLUE);
     tft_ili9341_send_str(SCREEN_SETTINGS_PORTIONS_X + 75, SCREEN_SETTINGS_PORTIONS_Y + 20,
-                        buff, Font_16x26, WHITE, ORANGE);
+                        buff, Font_16x26, WHITE, BLUE);
     /* Sound option */
     tft_ili9341_fill_rectangle(SCREEN_SETTINGS_SOUND_X, SCREEN_SETTINGS_SOUND_Y, SCREEN_SETTINGS_SOUND_W,
                                SCREEN_SETTINGS_SOUND_H, BLUE);
@@ -170,12 +172,13 @@ void displayShowSettingsScreen(void)
     /* Back option */
     tft_ili9341_fill_rectangle(SCREEN_SETTINGS_BACK_X, SCREEN_SETTINGS_BACK_Y, SCREEN_SETTINGS_BACK_W,
                                SCREEN_SETTINGS_BACK_H, ORANGE);
+    tft_ili9341_send_str(SCREEN_SETTINGS_BACK_X + 60, SCREEN_SETTINGS_BACK_Y + 20,
+                        "Back", Font_16x26, WHITE, ORANGE);
 }
 
 void backLightCallback(TimerHandle_t xTimer)
 {
-    displayBacklightOn();
-    displaySettings.backlightState = BACKLIGHT_OFF;
+    displayBackLightOff();
 }
 
 BaseType_t displayBackLightInit(void)
@@ -197,15 +200,12 @@ BaseType_t displayBackLightInit(void)
         status = pdFALSE;
     }
     displayBacklightOn();
-    displaySettings.backlightState = BACKLIGHT_ON;
 
     return status;
 }
 
-BaseType_t displayInit(void)
+void displayInit(void)
 {
-    BaseType_t status = pdTRUE;
-
     /* Initialize the hardware and display with default settings */
     tft_ili9341_init();
     displaySettings.backgroundColor = BLACK;
@@ -214,27 +214,21 @@ BaseType_t displayInit(void)
     displaySettings.screenInit.feed.y = TFT_ILI9341_HEIGHT / 2 - 60;
     displaySettings.screenInit.feed.w = TFT_ILI9341_WIDTH - (2 * displaySettings.screenInit.feed.x);
     displaySettings.screenInit.feed.h = 2 * displaySettings.screenInit.feed.x;
-    displaySettings.screenInit.settings.x = TFT_ILI9341_WIDTH / 2 - 20;
+    displaySettings.screenInit.settings.x = 30;
     displaySettings.screenInit.settings.y = TFT_ILI9341_HEIGHT - 70;
-    displaySettings.screenInit.settings.w = TFT_ILI9341_WIDTH / 2 + 20;
+    displaySettings.screenInit.settings.w = TFT_ILI9341_WIDTH - (2 * displaySettings.screenInit.settings.x);
     displaySettings.screenInit.settings.h = 40;
-    // ILI9341_DrawImage((TFT_ILI9341_WIDTH - 240) / 2, (TFT_ILI9341_HEIGHT - 240) / 2, 240, 240, (const uint16_t *)snk);
+    // ILI9341_DrawImage((TFT_ILI9341_WIDTH - 240) / 2, (TFT_ILI9341_HEIGHT - 240) / 2, 240, 240, (const uint16_t *)firstScreen);
     /* Show the default screen when it starts */
     displayShowIniScreen();
-    /* Initialize the backlight */
-    status = displayBackLightInit();
-    if (status != pdTRUE)
-    {
-        errorHandler();
-    }
-    displaySettings.backlightState = BACKLIGHT_ON;
-    return status;
+
 }
 
 void feed(uint8_t portions)
 {
     int i;
 
+    mspDisableButtonInterrupts();
     if ((portions == 0) || (portions > DISPENSER_MAX_PORTIONS))
     {
         dispenserBeep(100, 100, 3);
@@ -244,9 +238,15 @@ void feed(uint8_t portions)
     for (i = 0; i < portions; i++)
     {
         servoMotorRotate(SERVO_MOTOR_DEGREES_180);
-        HAL_Delay(DISPLAY_FEED_DELAY);
+        vTaskDelay(pdMS_TO_TICKS(DISPLAY_FEED_DELAY));
+        servoMotorStop();
+        vTaskDelay(pdMS_TO_TICKS(DISPLAY_FEED_DELAY));
         servoMotorRotate(SERVO_MOTOR_DEGREES_0);
+        vTaskDelay(pdMS_TO_TICKS(DISPLAY_FEED_DELAY));
+        servoMotorStop();
+        vTaskDelay(pdMS_TO_TICKS(DISPLAY_FEED_DELAY));
     }
+    mspEnableButtonInterrupts();
 }
 
 void screenSettings(void)
@@ -272,21 +272,30 @@ void screenSettings(void)
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionSelected == OPTION_PORTIONS))
         {
             dispenserSettings.portions++;
-            if (dispenserSettings.portions == DISPENSER_MAX_PORTIONS)
+            if (dispenserSettings.portions > DISPENSER_MAX_PORTIONS)
             {
                 dispenserSettings.portions = 1;
             }
-            // TODO: update screen;
+            sprintf(buff, "%d", dispenserSettings.portions);
+            /* Portion option */
+            tft_ili9341_fill_rectangle(SCREEN_SETTINGS_PORTIONS_X, SCREEN_SETTINGS_PORTIONS_Y,
+                                       SCREEN_SETTINGS_PORTIONS_W, SCREEN_SETTINGS_PORTIONS_H, BLUE);
+            tft_ili9341_send_str(SCREEN_SETTINGS_PORTIONS_X + 75, SCREEN_SETTINGS_PORTIONS_Y + 20,
+                                buff, Font_16x26, WHITE, BLUE);
         }
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionSelected == OPTION_SOUND))
         {
             /* Toggle the sound state*/
             dispenserSettings.sound ^= 1;
             (dispenserSettings.sound == DISPENSER_SOUND_ON) ? sprintf(buff, "ON") : sprintf(buff, "OFF");
+            tft_ili9341_fill_rectangle(SCREEN_SETTINGS_SOUND_X, SCREEN_SETTINGS_SOUND_Y, SCREEN_SETTINGS_SOUND_W,
+                                       SCREEN_SETTINGS_SOUND_H, BLUE);
             tft_ili9341_send_str(SCREEN_SETTINGS_SOUND_X + 75, SCREEN_SETTINGS_SOUND_Y + 20, buff, Font_16x26, WHITE, BLUE);
         }
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionSelected == OPTION_BACK))
         {
+            dispenserBeep(100, 100, 1);
+            displayShowIniScreen();
             break;
         }
         /* Handle button UP event */
@@ -330,9 +339,14 @@ void vTaskDisplay(void *params)
     uint32_t buttonEvent;
     uint8_t cursorPosition = OPTION_FEED;
 
-    /* Enable interrupts */
+    /* Initialize the backlight */
+    status = displayBackLightInit();
+    if (status != pdTRUE)
+    {
+        errorHandler();
+    }
+    /* Enable button interrupts */
     mspEnableButtonInterrupts();
-
     while (1)
     {
         /* Wait until a push button is pressed.
@@ -344,7 +358,12 @@ void vTaskDisplay(void *params)
         status = displayRestartBacklightTimer();
         if (status != pdTRUE)
         {
-            //Backlight could not be restarted
+            errorHandler();
+        }
+        if (displaySettings.backlightState == BACKLIGHT_OFF)
+        {
+            displayBacklightOn();
+            continue;
         }
 
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (cursorPosition == OPTION_FEED))
@@ -360,6 +379,7 @@ void vTaskDisplay(void *params)
         {
             dispenserBeep(100, 100, 3);
             screenSettings();
+            cursorPosition = OPTION_FEED;
         }
         if ((buttonEvent & BUTTON_EVENT_UP) && (cursorPosition == OPTION_FEED))
         {

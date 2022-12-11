@@ -367,7 +367,6 @@ static void tft_ili9341_lcd_init(void)
 
     /* Sleep out and turn on the display */
     tft_ili9341_send_cmd(TFT_CMD_SLEEP_OUT);
-    HAL_GPIO_WritePin(TFT_LED_PORT, TFT_LED_PIN_NUM, GPIO_PIN_SET);
     HAL_Delay(TFT_DELAY_DISPLAY_ON);
     tft_ili9341_send_cmd(TFT_CMD_DISPLAY_ON);
     tft_ili9341_send_cmd(TFT_CMD_MEM_WRITE);

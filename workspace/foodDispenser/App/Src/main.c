@@ -10,7 +10,7 @@
 #include "display.h"
 #include "bsp.h"
 
-#define TEST_BSP            0
+#define TEST_BSP            (0)
 
 TaskHandle_t xTaskHeartBeatHandler;
 extern TaskHandle_t xTaskDisplayHandler;
@@ -89,7 +89,11 @@ void testBspServoMotor(void)
     {
         servoMotorRotate(SERVO_MOTOR_DEGREES_180);
         HAL_Delay(250);
+        servoMotorStop();
+        HAL_Delay(250);
         servoMotorRotate(SERVO_MOTOR_DEGREES_0);
+        HAL_Delay(250);
+        servoMotorStop();
         HAL_Delay(250);
     }
 }
@@ -112,15 +116,12 @@ int main(void)
         errorHandler();
     }
     /* Initialize display */
-    halStatus = displayInit();
-    if (halStatus != HAL_OK)
-    {
-        errorHandler();
-    }
+    displayInit();
     /* Initialize default dispenser settings */
-    dispenserSettings.portions = 5;
+    dispenserSettings.portions = 1;
     dispenserSettings.sound = DISPENSER_SOUND_ON;
     /* Double beep to indicate all the initializations have finished */
+    mspEnableBuzzerInterrupts();
     dispenserBeep(100, 100, 2);
     /* Test BSP layer */
     #if (TEST_BSP == 1)
@@ -129,7 +130,7 @@ int main(void)
 
     /* Heart beat task */
     retVal = xTaskCreate(vTaskHeartBeat, "task-heart-beat", configMINIMAL_STACK_SIZE, NULL, HEART_BEAT_PRIORITY_TASK, &xTaskHeartBeatHandler);
-    if (retVal != pdPASS)
+    if (retVal != pdTRUE)
     {
         goto main_out;
     }

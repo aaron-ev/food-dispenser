@@ -24,5 +24,6 @@ typedef enum
 
 HAL_StatusTypeDef servoMotorInit(void);
 void servoMotorRotate(ServoPosition position);
+void servoMotorStop(void);
 
 #endif

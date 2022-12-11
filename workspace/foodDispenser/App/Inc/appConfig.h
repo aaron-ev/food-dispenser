@@ -65,5 +65,8 @@
 #define BUTTON_DOWN_GPIO_PORT               GPIOA
 #define BUTTON_DOWN_GPIO_PIN                GPIO_PIN_4
 
-#define DISPENSER_MAX_PORTIONS			5
+/* Backlight settings */
+#define DISPLAY_BACKLIGHT_DEFAULT_PERIOD    100000 /* 1m as a default */
+/* Dispenser settings */
+#define DISPENSER_MAX_PORTIONS              5
 #endif /* APP_CONFIG__H */

@@ -11,6 +11,6 @@
 #define __DISPLAY__H
 #include "FreeRTOS.h"
 
-BaseType_t displayInit(void);
+void displayInit(void);
 void displayWelcome(void);
 #endif

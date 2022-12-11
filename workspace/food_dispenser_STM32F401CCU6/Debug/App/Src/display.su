@@ -1,6 +1,0 @@
-../App/Src/display.c:31:6:displayInit	8	static
-../App/Src/display.c:36:6:displayWelcome	24	static
-../App/Src/display.c:49:6:testServoMotor	16	static
-../App/Src/display.c:64:6:feed	8	static
-../App/Src/display.c:72:6:displayIniScreen	4	static
-../App/Src/display.c:78:6:vTaskDisplay	32	static

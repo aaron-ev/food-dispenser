@@ -1,4 +1,0 @@
-../Bsp/servoMotor.c:32:13:servoMotorStart	8	static
-../Bsp/servoMotor.c:37:13:servoMotorStop	8	static
-../Bsp/servoMotor.c:42:19:servoMotorInit	40	static
-../Bsp/servoMotor.c:73:6:servoMotorRotate	16	static

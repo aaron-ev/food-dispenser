@@ -22,68 +22,29 @@
 #define BACKLIGHT_NOT_WAIT                         0
 #define BACKLIGHT_TIMER_ID                         1
 
-/* Coordinates for the settings screen */
-#define SCREEN_SETTINGS_PORTIONS_X         30
-#define SCREEN_SETTINGS_PORTIONS_Y         (TFT_ILI9341_HEIGHT / 2 - 90)
-#define SCREEN_SETTINGS_PORTIONS_W         (TFT_ILI9341_WIDTH - (2 * SCREEN_SETTINGS_PORTIONS_X))
-#define SCREEN_SETTINGS_PORTIONS_H         60
-
-#define SCREEN_SETTINGS_SOUND_X            30
-#define SCREEN_SETTINGS_SOUND_Y            (TFT_ILI9341_HEIGHT / 2 - 20)
-#define SCREEN_SETTINGS_SOUND_W            (TFT_ILI9341_WIDTH - (2 * SCREEN_SETTINGS_SOUND_X))
-#define SCREEN_SETTINGS_SOUND_H            60
-
-#define SCREEN_SETTINGS_BACK_X             30
-#define SCREEN_SETTINGS_BACK_Y             (TFT_ILI9341_HEIGHT - 70)
-#define SCREEN_SETTINGS_BACK_W             (TFT_ILI9341_WIDTH - (2 * SCREEN_SETTINGS_BACK_X))
-#define SCREEN_SETTINGS_BACK_H             60
-
+/* Indicator coordinates */
+#define DISPLAY_INDICATOR_W                 21
+#define DISPLAY_INDICATOR_H                 15
+#define DISPLAY_INDICATOR_FEED_X            (52 - (DISPLAY_INDICATOR_W / 2))
+#define DISPLAY_INDICATOR_FEED_Y            (106 - (DISPLAY_INDICATOR_H / 2))
+#define DISPLAY_INDICATOR_SETTINGS_X        (52 - (DISPLAY_INDICATOR_W / 2))
+#define DISPLAY_INDICATOR_SETTINGS_Y        (237 - (DISPLAY_INDICATOR_H / 2))
 
 /*
 * Available options for the first screen.
 */
 typedef enum
 {
-    OPTION_FEED,
-    OPTION_SETTINGS,
-} screenInitOptions;
-
-/*
-* Available options for the settings screen.
-*/
-typedef enum
-{
     OPTION_PORTIONS,
     OPTION_SOUND,
     OPTION_BACK,
-} screenSettingsOptions;
-
-typedef struct
-{
-    uint16_t x;
-    uint16_t y;
-    uint16_t w;
-    uint16_t h;
-}Rectangle;
-
-typedef struct
-{
-    Rectangle feed;
-    Rectangle settings;
-}ScreenInit;
-
-typedef struct
-{
-    Rectangle portions;
-    Rectangle sound;
-    Rectangle back;
-}ScreenSettings;
+    OPTION_FEED,
+    OPTION_SETTINGS,
+} Options;
 
 typedef struct
 {
     Color backgroundColor;
-    ScreenInit screenInit;
-    ScreenSettings screenSettings;
     uint8_t backlightState;
 }DisplaySettings;
 
@@ -98,6 +59,14 @@ DisplaySettings displaySettings;
 /* freeRTOS handlers */
 TaskHandle_t xTaskDisplayHandler;
 TimerHandle_t xBackLightTimerHandler;
+
+void displayShowProjectVersion(void)
+{
+    char buff[5];
+
+//    sprintf(buff, "v%d.%d", PROJECT_VERSION_MAYOR_NUMBER, PROJECT_VERSION_MINOR_NUMBER);
+//    tft_ili9341_send_str(TFT_ILI9341_WIDTH - 50, TFT_ILI9341_HEIGHT - 20, buff, Font_11x18, BLACK, WHITE);
+}
 
 void displayBacklightOn(void)
 {
@@ -119,61 +88,34 @@ BaseType_t displayRestartBacklightTimer(void)
     if (status != pdPASS)
     {
         status = pdFALSE;
-        //TODO: Print error over a serial port.
+        errorHandler();
     }
     return status;
 }
 
-void displaySetRecIndicatior(uint16_t x, uint16_t y, uint16_t w, Color color)
+void displaySetIndicator(uint8_t option)
 {
-    /* Show cursor in the first rectangle */
-    tft_ili9341_fill_rectangle(x - DISPLAY_RECT_INDICATOR_SIZE, y + (w / 2),
-                               DISPLAY_RECT_INDICATOR_SIZE, DISPLAY_RECT_INDICATOR_SIZE, color);
-}
+    uint16_t xToSet;
+    uint16_t yToSet;
+    uint16_t xToClear;
+    uint16_t yToClear;
 
-void displayShowIniScreen(void)
-{
-    tft_ili9341_fill_screen(displaySettings.backgroundColor);
-    /* Option to feed */
-    tft_ili9341_fill_rectangle(displaySettings.screenInit.feed.x, displaySettings.screenInit.feed.y,
-                               displaySettings.screenInit.feed.w, displaySettings.screenInit.feed.h, ORANGE);
-    tft_ili9341_send_str(displaySettings.screenInit.feed.x + 50, displaySettings.screenInit.feed.y + 20, "Feed",
-                         Font_16x26, WHITE, ORANGE);
-    /* Option to change the settings */
-    tft_ili9341_fill_rectangle(displaySettings.screenInit.settings.x, displaySettings.screenInit.settings.y,
-                               displaySettings.screenInit.settings.w, displaySettings.screenInit.settings.h, BLUE);
-    tft_ili9341_send_str(displaySettings.screenInit.settings.x + 25, displaySettings.screenInit.settings.y + 10,
-                         "Settings", Font_16x26, WHITE, BLUE);
-    displaySetRecIndicatior(displaySettings.screenInit.feed.x, displaySettings.screenInit.feed.y,
-                            displaySettings.screenInit.feed.h, GREEN);
-}
-
-void displayShowSettingsScreen(void)
-{
-    char buff[4];
-
-    sprintf(buff, "%d", dispenserSettings.portions);
-    /* Fill the screen with the background color */
-    tft_ili9341_fill_screen(displaySettings.backgroundColor);
-    /* Portion option */
-    tft_ili9341_fill_rectangle(SCREEN_SETTINGS_PORTIONS_X, SCREEN_SETTINGS_PORTIONS_Y,
-                               SCREEN_SETTINGS_PORTIONS_W, SCREEN_SETTINGS_PORTIONS_H, BLUE);
-    tft_ili9341_send_str(SCREEN_SETTINGS_PORTIONS_X + 75, SCREEN_SETTINGS_PORTIONS_Y + 20,
-                        buff, Font_16x26, WHITE, BLUE);
-    /* Sound option */
-    tft_ili9341_fill_rectangle(SCREEN_SETTINGS_SOUND_X, SCREEN_SETTINGS_SOUND_Y, SCREEN_SETTINGS_SOUND_W,
-                               SCREEN_SETTINGS_SOUND_H, BLUE);
-    /* Show sound state */
-    (dispenserSettings.sound == DISPENSER_SOUND_ON) ? sprintf(buff, "ON") : sprintf(buff, "OFF");
-    tft_ili9341_send_str(SCREEN_SETTINGS_SOUND_X + 75, SCREEN_SETTINGS_SOUND_Y + 20, buff, Font_16x26, WHITE, BLUE);
-    /* Show cursor in the first rectangle */
-    displaySetRecIndicatior(SCREEN_SETTINGS_PORTIONS_X, SCREEN_SETTINGS_PORTIONS_Y, SCREEN_SETTINGS_PORTIONS_H
-                            , GREEN);
-    /* Back option */
-    tft_ili9341_fill_rectangle(SCREEN_SETTINGS_BACK_X, SCREEN_SETTINGS_BACK_Y, SCREEN_SETTINGS_BACK_W,
-                               SCREEN_SETTINGS_BACK_H, ORANGE);
-    tft_ili9341_send_str(SCREEN_SETTINGS_BACK_X + 60, SCREEN_SETTINGS_BACK_Y + 20,
-                        "Back", Font_16x26, WHITE, ORANGE);
+    if (option == OPTION_FEED)
+    {
+        xToSet = DISPLAY_INDICATOR_FEED_X;
+        yToSet = DISPLAY_INDICATOR_FEED_Y;
+        xToClear = DISPLAY_INDICATOR_SETTINGS_X;
+        yToClear = DISPLAY_INDICATOR_SETTINGS_Y;
+    }
+    if (option == OPTION_SETTINGS)
+    {
+        xToSet = DISPLAY_INDICATOR_SETTINGS_X;
+        yToSet = DISPLAY_INDICATOR_SETTINGS_Y;
+        xToClear = DISPLAY_INDICATOR_FEED_X;
+        yToClear = DISPLAY_INDICATOR_FEED_Y;
+    }
+    tft_ili9341_fill_rectangle(xToSet, yToSet, DISPLAY_INDICATOR_W - 1, DISPLAY_INDICATOR_H - 1, GREEN);
+    tft_ili9341_fill_rectangle(xToClear, yToClear, DISPLAY_INDICATOR_W - 1, DISPLAY_INDICATOR_H - 1, WHITE);
 }
 
 void backLightCallback(TimerHandle_t xTimer)
@@ -204,24 +146,17 @@ BaseType_t displayBackLightInit(void)
     return status;
 }
 
+void displayShowInitScreen(void)
+{
+    ILI9341_DrawImage(0, 0 , TFT_ILI9341_WIDTH, TFT_ILI9341_HEIGHT, (const uint16_t *)image);
+    displaySetIndicator(OPTION_FEED);
+    displayShowProjectVersion();
+}
+
 void displayInit(void)
 {
     /* Initialize the hardware and display with default settings */
     tft_ili9341_init();
-    displaySettings.backgroundColor = BLACK;
-    /* Start screen */
-    displaySettings.screenInit.feed.x = 30;
-    displaySettings.screenInit.feed.y = TFT_ILI9341_HEIGHT / 2 - 60;
-    displaySettings.screenInit.feed.w = TFT_ILI9341_WIDTH - (2 * displaySettings.screenInit.feed.x);
-    displaySettings.screenInit.feed.h = 2 * displaySettings.screenInit.feed.x;
-    displaySettings.screenInit.settings.x = 30;
-    displaySettings.screenInit.settings.y = TFT_ILI9341_HEIGHT - 70;
-    displaySettings.screenInit.settings.w = TFT_ILI9341_WIDTH - (2 * displaySettings.screenInit.settings.x);
-    displaySettings.screenInit.settings.h = 40;
-    // ILI9341_DrawImage((TFT_ILI9341_WIDTH - 240) / 2, (TFT_ILI9341_HEIGHT - 240) / 2, 240, 240, (const uint16_t *)firstScreen);
-    /* Show the default screen when it starts */
-    displayShowIniScreen();
-
 }
 
 void feed(uint8_t portions)
@@ -251,85 +186,85 @@ void feed(uint8_t portions)
 
 void screenSettings(void)
 {
-    char buff[4];
-    uint32_t buttonEvent;
-    uint8_t options [] = {OPTION_BACK, OPTION_SOUND, OPTION_PORTIONS};
-    uint8_t minOption= options[0];
-    uint8_t maxOption= options[sizeof(options) - 1];
-    uint8_t index = sizeof(options) - 1; /* Max index by default */
-    uint8_t optionSelected = options[index];
+//    char buff[4];
+//    uint32_t buttonEvent;
+//    uint8_t options [] = {OPTION_BACK, OPTION_SOUND, OPTION_PORTIONS};
+//    uint8_t minOption= options[0];
+//    uint8_t maxOption= options[sizeof(options) - 1];
+//    uint8_t index = sizeof(options) - 1; /* Max index by default */
+//    uint8_t optionSelected = options[index];
 
-    displayShowSettingsScreen();
+    // displayShowSettingsScreen();
     while (1)
     {
-        /* Wait until a push button is pressed.
-         * Notification settings: Index > 0, no clear on entry,
-         *                       Clear all events on exit,
-         *                       Block until there is an event.
-         */
-        xTaskNotifyWaitIndexed(BUTTON_INDEX_NOTIFICATION, NO_CLEAR_ON_ENTRY, CLEAR_ALL_ON_EXIT, &buttonEvent, portMAX_DELAY);
-        /* Handle button ENTER event */
-        if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionSelected == OPTION_PORTIONS))
-        {
-            dispenserSettings.portions++;
-            if (dispenserSettings.portions > DISPENSER_MAX_PORTIONS)
-            {
-                dispenserSettings.portions = 1;
-            }
-            sprintf(buff, "%d", dispenserSettings.portions);
-            /* Portion option */
-            tft_ili9341_fill_rectangle(SCREEN_SETTINGS_PORTIONS_X, SCREEN_SETTINGS_PORTIONS_Y,
-                                       SCREEN_SETTINGS_PORTIONS_W, SCREEN_SETTINGS_PORTIONS_H, BLUE);
-            tft_ili9341_send_str(SCREEN_SETTINGS_PORTIONS_X + 75, SCREEN_SETTINGS_PORTIONS_Y + 20,
-                                buff, Font_16x26, WHITE, BLUE);
-        }
-        if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionSelected == OPTION_SOUND))
-        {
-            /* Toggle the sound state*/
-            dispenserSettings.sound ^= 1;
-            (dispenserSettings.sound == DISPENSER_SOUND_ON) ? sprintf(buff, "ON") : sprintf(buff, "OFF");
-            tft_ili9341_fill_rectangle(SCREEN_SETTINGS_SOUND_X, SCREEN_SETTINGS_SOUND_Y, SCREEN_SETTINGS_SOUND_W,
-                                       SCREEN_SETTINGS_SOUND_H, BLUE);
-            tft_ili9341_send_str(SCREEN_SETTINGS_SOUND_X + 75, SCREEN_SETTINGS_SOUND_Y + 20, buff, Font_16x26, WHITE, BLUE);
-        }
-        if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionSelected == OPTION_BACK))
-        {
-            dispenserBeep(100, 100, 1);
-            displayShowIniScreen();
-            break;
-        }
-        /* Handle button UP event */
-        if (buttonEvent & BUTTON_EVENT_UP && (optionSelected != maxOption))
-        {
-            optionSelected = options[++index];
-        }
-        if (buttonEvent & BUTTON_EVENT_UP && (optionSelected == maxOption))
-        {
-            dispenserBeep(50, 50, 2);
-        }
-        /* Handle button DOWN event */
-        if ((buttonEvent & BUTTON_EVENT_DOWN) && (optionSelected != minOption))
-        {
-            optionSelected = options[--index];
-        }
-        if (buttonEvent & BUTTON_EVENT_DOWN && (optionSelected == minOption))
-        {
-            dispenserBeep(50, 50, 2);
-        }
-        /*Update cursor */
-        tft_ili9341_fill_rectangle(0, 0, 30, TFT_ILI9341_HEIGHT, displaySettings.backgroundColor);
-        if (optionSelected == OPTION_PORTIONS)
-        {
-            displaySetRecIndicatior(SCREEN_SETTINGS_PORTIONS_X, SCREEN_SETTINGS_PORTIONS_Y, SCREEN_SETTINGS_PORTIONS_H, GREEN);
-        }
-        if (optionSelected == OPTION_SOUND)
-        {
-            displaySetRecIndicatior(SCREEN_SETTINGS_SOUND_X, SCREEN_SETTINGS_SOUND_Y, SCREEN_SETTINGS_SOUND_H, GREEN);
-        }
-        if (optionSelected == OPTION_BACK)
-        {
-            displaySetRecIndicatior(SCREEN_SETTINGS_BACK_X, SCREEN_SETTINGS_BACK_Y, SCREEN_SETTINGS_BACK_H, GREEN);
-        }
+        // /* Wait until a push button is pressed.
+        //  * Notification settings: Index > 0, no clear on entry,
+        //  *                       Clear all events on exit,
+        //  *                       Block until there is an event.
+        //  */
+        // xTaskNotifyWaitIndexed(BUTTON_INDEX_NOTIFICATION, NO_CLEAR_ON_ENTRY, CLEAR_ALL_ON_EXIT, &buttonEvent, portMAX_DELAY);
+        // /* Handle button ENTER event */
+        // if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionSelected == OPTION_PORTIONS))
+        // {
+        //     dispenserSettings.portions++;
+        //     if (dispenserSettings.portions > DISPENSER_MAX_PORTIONS)
+        //     {
+        //         dispenserSettings.portions = 1;
+        //     }
+        //     sprintf(buff, "%d", dispenserSettings.portions);
+        //     /* Portion option */
+        //     tft_ili9341_fill_rectangle(SCREEN_SETTINGS_PORTIONS_X, SCREEN_SETTINGS_PORTIONS_Y,
+        //                                SCREEN_SETTINGS_PORTIONS_W, SCREEN_SETTINGS_PORTIONS_H, BLUE);
+        //     tft_ili9341_send_str(SCREEN_SETTINGS_PORTIONS_X + 75, SCREEN_SETTINGS_PORTIONS_Y + 20,
+        //                         buff, Font_16x26, WHITE, BLUE);
+        // }
+        // if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionSelected == OPTION_SOUND))
+        // {
+        //     /* Toggle the sound state*/
+        //     dispenserSettings.sound ^= 1;
+        //     (dispenserSettings.sound == DISPENSER_SOUND_ON) ? sprintf(buff, "ON") : sprintf(buff, "OFF");
+        //     tft_ili9341_fill_rectangle(SCREEN_SETTINGS_SOUND_X, SCREEN_SETTINGS_SOUND_Y, SCREEN_SETTINGS_SOUND_W,
+        //                                SCREEN_SETTINGS_SOUND_H, BLUE);
+        //     tft_ili9341_send_str(SCREEN_SETTINGS_SOUND_X + 75, SCREEN_SETTINGS_SOUND_Y + 20, buff, Font_16x26, WHITE, BLUE);
+        // }
+        // if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionSelected == OPTION_BACK))
+        // {
+        //     dispenserBeep(100, 100, 1);
+        //     displayShowInitScreen();
+        //     break;
+        // }
+        // /* Handle button UP event */
+        // if (buttonEvent & BUTTON_EVENT_UP && (optionSelected != maxOption))
+        // {
+        //     optionSelected = options[++index];
+        // }
+        // if (buttonEvent & BUTTON_EVENT_UP && (optionSelected == maxOption))
+        // {
+        //     dispenserBeep(50, 50, 2);
+        // }
+        // /* Handle button DOWN event */
+        // if ((buttonEvent & BUTTON_EVENT_DOWN) && (optionSelected != minOption))
+        // {
+        //     optionSelected = options[--index];
+        // }
+        // if (buttonEvent & BUTTON_EVENT_DOWN && (optionSelected == minOption))
+        // {
+        //     dispenserBeep(50, 50, 2);
+        // }
+        // /*Update cursor */
+        // tft_ili9341_fill_rectangle(0, 0, 30, TFT_ILI9341_HEIGHT, displaySettings.backgroundColor);
+        // if (optionSelected == OPTION_PORTIONS)
+        // {
+        //     // displaySetRecIndicatior(SCREEN_SETTINGS_PORTIONS_X, SCREEN_SETTINGS_PORTIONS_Y, SCREEN_SETTINGS_PORTIONS_H, GREEN);
+        // }
+        // if (optionSelected == OPTION_SOUND)
+        // {
+        //     // displaySetRecIndicatior(SCREEN_SETTINGS_SOUND_X, SCREEN_SETTINGS_SOUND_Y, SCREEN_SETTINGS_SOUND_H, GREEN);
+        // }
+        // if (optionSelected == OPTION_BACK)
+        // {
+        //     // displaySetRecIndicatior(SCREEN_SETTINGS_BACK_X, SCREEN_SETTINGS_BACK_Y, SCREEN_SETTINGS_BACK_H, GREEN);
+        // }
     }
 }
 
@@ -339,6 +274,9 @@ void vTaskDisplay(void *params)
     uint32_t buttonEvent;
     uint8_t cursorPosition = OPTION_FEED;
 
+    /* Show init screen */
+    displayShowInitScreen();
+    displayBacklightOn();
     /* Initialize the backlight */
     status = displayBackLightInit();
     if (status != pdTRUE)
@@ -347,6 +285,7 @@ void vTaskDisplay(void *params)
     }
     /* Enable button interrupts */
     mspEnableButtonInterrupts();
+
     while (1)
     {
         /* Wait until a push button is pressed.
@@ -373,13 +312,13 @@ void vTaskDisplay(void *params)
             tft_ili9341_fill_screen(BLACK);
             tft_ili9341_send_str(TFT_ILI9341_WIDTH / 4 - 20, TFT_ILI9341_HEIGHT / 2, "Feeding...", Font_16x26, WHITE, BLACK);
             feed(dispenserSettings.portions);
-            displayShowIniScreen();
+            displayShowInitScreen();
+            cursorPosition = OPTION_FEED;
         }
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (cursorPosition == OPTION_SETTINGS))
         {
             dispenserBeep(100, 100, 3);
-            screenSettings();
-            cursorPosition = OPTION_FEED;
+            // screenSettings();
         }
         if ((buttonEvent & BUTTON_EVENT_UP) && (cursorPosition == OPTION_FEED))
         {
@@ -387,19 +326,13 @@ void vTaskDisplay(void *params)
         }
         if ((buttonEvent & BUTTON_EVENT_UP) && (cursorPosition == OPTION_SETTINGS))
         {
-            displaySetRecIndicatior(displaySettings.screenInit.feed.x, displaySettings.screenInit.feed.y,
-                            displaySettings.screenInit.feed.h, GREEN);
-            displaySetRecIndicatior(displaySettings.screenInit.settings.x, displaySettings.screenInit.settings.y,
-                            displaySettings.screenInit.settings.h, displaySettings.backgroundColor);
             dispenserBeep(100, 100, 1);
+            displaySetIndicator(OPTION_FEED);
             cursorPosition = OPTION_FEED;
         }
         if ((buttonEvent & BUTTON_EVENT_DOWN) && (cursorPosition == OPTION_FEED))
         {
-            displaySetRecIndicatior(displaySettings.screenInit.feed.x, displaySettings.screenInit.feed.y,
-                            displaySettings.screenInit.feed.h, displaySettings.backgroundColor);
-            displaySetRecIndicatior(displaySettings.screenInit.settings.x, displaySettings.screenInit.settings.y,
-                            displaySettings.screenInit.settings.h, GREEN);
+            displaySetIndicator(OPTION_SETTINGS);
             dispenserBeep(100, 100, 1);
             cursorPosition = OPTION_SETTINGS;
         }

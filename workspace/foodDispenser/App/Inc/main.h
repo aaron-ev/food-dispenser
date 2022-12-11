@@ -12,6 +12,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
+/* Project version */
+#define PROJECT_VERSION_MAYOR_NUMBER        0
+#define PROJECT_VERSION_MINOR_NUMBER        1
+
 #define BUTTON_INDEX_NOTIFICATION           1
 #define DISPENSER_SOUND_ON                  1
 #define DISPENSER_SOUND_OFF                 0

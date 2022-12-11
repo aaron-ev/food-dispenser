@@ -19,7 +19,6 @@
 TaskHandle_t xTaskHeartBeatHandler;
 extern TaskHandle_t xTaskDisplayHandler;
 extern void vTaskDisplay(void *params);
-void errorHandler(void);
 DispenserSettings dispenserSettings;
 
 /*
@@ -92,9 +91,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *timerHandler)
 void errorHandler(void)
 {
     __disable_irq();
+    HAL_GPIO_WritePin(HEART_BEAT_LED_PORT, HEART_BEAT_LED_PIN, GPIO_PIN_RESET);
     while (1)
     {
-        HAL_GPIO_WritePin(HEART_BEAT_LED_PORT, HEART_BEAT_LED_PIN, GPIO_PIN_RESET);
     }
 }
 
@@ -173,7 +172,7 @@ void testBspServoMotor(void)
 
 void testBsp(void)
 {
-//    testBspBuzzer();
+    testBspBuzzer();
     testBspServoMotor();
 }
 

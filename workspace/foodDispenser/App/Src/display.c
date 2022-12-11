@@ -12,9 +12,9 @@
 #include "tft_ili9341.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "timers.h"
 #include "buzzer.h"
 #include "servoMotor.h"
-#include "cat.h"
 #include "msp.h"
 
 #define DISPLAY_BEEP_DELAY                       100
@@ -22,8 +22,12 @@
 #define CLEAR_ALL_ON_EXIT                        0xffffffffUL
 #define DISPLAY_MAX_SETTINGS_OPTIONS             3
 #define DISPLAY_FEED_DELAY                       500
-#define DISPLAY_RECT_INDICADOR_SIZE              20
+#define DISPLAY_RECT_INDICATOR_SIZE              20
 
+/* Backlight settings */
+#define DISPLAY_BACKLIGHT_DEFAULT_PERIOD           10000 /* 10s until backlight is off */
+#define BACKLIGHT_NOT_WAIT                         0
+#define BACKLIGHT_TIMER_ID                         1
 
 /* Coordinates for the settings screen */
 #define SCREEN_SETTINGS_PORTIONS_X         30
@@ -41,10 +45,6 @@
 #define SCREEN_SETTINGS_BACK_W             (TFT_ILI9341_WIDTH - (2 * SCREEN_SETTINGS_BACK_X))
 #define SCREEN_SETTINGS_BACK_H             60
 
-/* Helper functions */
-uint8_t getIndex(uint8_t option, uint8_t *arr);
-
-extern DispenserSettings dispenserSettings;
 
 /*
 * Available options for the first screen.
@@ -91,10 +91,20 @@ typedef struct
     Color backgroundColor;
     ScreenInit screenInit;
     ScreenSettings screenSettings;
+    uint8_t backlightState;
 }DisplaySettings;
 
+typedef enum
+{
+    BACKLIGHT_ON,
+    BACKLIGHT_OFF,
+}BackLightState;
+
+extern DispenserSettings dispenserSettings;
 DisplaySettings displaySettings;
+/* freeRTOS handlers */
 TaskHandle_t xTaskDisplayHandler;
+TimerHandle_t xBackLightTimerHandler;
 
 void displayBacklightOn(void)
 {
@@ -106,11 +116,24 @@ void displayBackLightOff(void)
     HAL_GPIO_WritePin(TFT_LED_PORT, TFT_LED_PIN_NUM, GPIO_PIN_RESET);
 }
 
+BaseType_t displayRestartBacklightTimer(void)
+{
+    BaseType_t status = pdTRUE;
+
+    status = xTimerReset(xBackLightTimerHandler, BACKLIGHT_NOT_WAIT);
+    if (status != pdPASS)
+    {
+        status = pdFALSE;
+        //TODO: Print error over a serial port.
+    }
+    return status;
+}
+
 void displaySetRecIndicatior(uint16_t x, uint16_t y, uint16_t w, Color color)
 {
     /* Show cursor in the first rectangle */
-    tft_ili9341_fill_rectangle(x - DISPLAY_RECT_INDICADOR_SIZE, y + (w / 2),
-                               DISPLAY_RECT_INDICADOR_SIZE, DISPLAY_RECT_INDICADOR_SIZE, color);
+    tft_ili9341_fill_rectangle(x - DISPLAY_RECT_INDICATOR_SIZE, y + (w / 2),
+                               DISPLAY_RECT_INDICATOR_SIZE, DISPLAY_RECT_INDICATOR_SIZE, color);
 }
 
 void displayShowIniScreen(void)
@@ -156,8 +179,40 @@ void displayShowSettingsScreen(void)
                                SCREEN_SETTINGS_BACK_H, ORANGE);
 }
 
+void backLightCallback(TimerHandle_t xTimer)
+{
+    displayBacklightOn();
+    displaySettings.backlightState = BACKLIGHT_OFF;
+}
+
+BaseType_t displayBackLightInit(void)
+{
+    BaseType_t status = pdTRUE;
+
+    /* Create one-shot timer to handle the backlight */
+    xBackLightTimerHandler = xTimerCreate("backLight-timer", pdMS_TO_TICKS(DISPLAY_BACKLIGHT_DEFAULT_PERIOD), pdFALSE, (void*)BACKLIGHT_TIMER_ID, backLightCallback);
+    if (xBackLightTimerHandler == NULL)
+    {
+        //handler no sufficient memory
+        status = pdFALSE;
+    }
+
+    status = xTimerStart(xBackLightTimerHandler, BACKLIGHT_NOT_WAIT);
+    if (status != pdPASS)
+    {
+        //TODO: Handle error
+        status = pdFALSE;
+    }
+    displayBacklightOn();
+    displaySettings.backlightState = BACKLIGHT_ON;
+
+    return status;
+}
+
 void displayInit(void)
 {
+    BaseType_t status;
+
     /* Initialize the hardware and display with default settings */
     tft_ili9341_init();
     displaySettings.backgroundColor = BLACK;
@@ -170,22 +225,17 @@ void displayInit(void)
     displaySettings.screenInit.settings.y = TFT_ILI9341_HEIGHT - 70;
     displaySettings.screenInit.settings.w = TFT_ILI9341_WIDTH / 2 + 20;
     displaySettings.screenInit.settings.h = 40;
-    ILI9341_DrawImage((TFT_ILI9341_WIDTH - 240) / 2, (TFT_ILI9341_HEIGHT - 240) / 2, 240, 240, (const uint16_t *)snk);
+    // ILI9341_DrawImage((TFT_ILI9341_WIDTH - 240) / 2, (TFT_ILI9341_HEIGHT - 240) / 2, 240, 240, (const uint16_t *)snk);
+    /* Show the default screen when it starts */
     displayShowIniScreen();
+    /* Initialize the backlight */
+    status = displayBackLightInit();
+    if (status != pdFALSE)
+    {
+        errorHandler();
+    }
+    displaySettings.backlightState = BACKLIGHT_ON;
 }
-
-// void displayWelcome(void)
-// {
-//     tft_ili9341_send_str(0, TFT_ILI9341_HEIGHT / 2, "Hello word, I am the display. Changing the background...", Font_16x26, BLUE, WHITE);
-//     HAL_Delay(1000);
-//     tft_ili9341_fill_screen(WHITE);
-//     tft_ili9341_send_str(0, TFT_ILI9341_HEIGHT / 2, "Writing an image...", Font_16x26, BLUE, WHITE);
-//     HAL_Delay(1000);
-// //    ILI9341_DrawImage((TFT_ILI9341_WIDTH - 240) / 2, (TFT_ILI9341_HEIGHT - 240) / 2, 240, 240, (const uint16_t *)test_img_240x240);
-//     HAL_Delay(1000);
-//     tft_ili9341_fill_screen(WHITE);
-//     tft_ili9341_send_str(0, TFT_ILI9341_HEIGHT / 2, "Display: Ok", Font_16x26, BLUE, WHITE);
-// }
 
 void feed(uint8_t portions)
 {
@@ -205,25 +255,6 @@ void feed(uint8_t portions)
     }
 }
 
-uint8_t getIndex(uint8_t option, uint8_t *arr)
-{
-    int i;
-
-    if (sizeof(arr) < 1)
-    {
-        return 0xFF;
-    }
-    for ( i = 0; i < sizeof(arr); i++)
-    {
-        if (arr[i] == arr[option])
-        {
-            break;
-        }
-    }
-
-    return i;
-}
-
 void screenSettings(void)
 {
     char buff[4];
@@ -235,7 +266,6 @@ void screenSettings(void)
     uint8_t optionSelected = options[index];
 
     displayShowSettingsScreen();
-
     while (1)
     {
         /* Wait until a push button is pressed.
@@ -302,10 +332,13 @@ void screenSettings(void)
 
 void vTaskDisplay(void *params)
 {
+    BaseType_t status;
     uint32_t buttonEvent;
     uint8_t cursorPosition = OPTION_FEED;
+
     /* Enable interrupts */
     mspEnableButtonInterrupts();
+
     while (1)
     {
         /* Wait until a push button is pressed.
@@ -314,6 +347,12 @@ void vTaskDisplay(void *params)
          *                       Block until there is an event.
          */
         xTaskNotifyWaitIndexed(BUTTON_INDEX_NOTIFICATION, NO_CLEAR_ON_ENTRY, CLEAR_ALL_ON_EXIT, &buttonEvent, portMAX_DELAY);
+        status = displayRestartBacklightTimer();
+        if (status != pdTRUE)
+        {
+            //Backlight could not be restarted
+        }
+
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (cursorPosition == OPTION_FEED))
         {
             dispenserBeep(100, 100, 1);

@@ -30,5 +30,6 @@ typedef struct
 }DispenserSettings;
 
 void dispenserBeep(uint32_t timeOn, uint32_t timeOff, uint32_t times);
+void errorHandler(void);
 
 #endif

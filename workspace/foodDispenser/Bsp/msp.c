@@ -59,7 +59,6 @@ void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef *timerHandler)
     HAL_GPIO_Init(SERVO_MOTOR_GPIO_INSTANCE, &servoMotorGpioInit);
 }
 
-
 void mspEnableButtonInterrupts(void)
 {
     HAL_NVIC_EnableIRQ(EXTI2_IRQn);

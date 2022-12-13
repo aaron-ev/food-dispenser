@@ -25,6 +25,7 @@ typedef enum
     BUTTON_EVENT_UP     = (1 << 0),
     BUTTON_EVENT_DOWN   = (1 << 1),
     BUTTON_EVENT_ENTER  = (1 << 2),
+    TOUCH_EVENT         = (1 << 3),
 }pushButtonEvent;
 
 typedef struct

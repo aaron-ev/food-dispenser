@@ -39,6 +39,14 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *timerHandler)
 }
 
 /*
+ * Interrupt handler for the TOUCH IRQ
+ */
+void EXTI0_IRQHandler(void)
+{
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+}
+
+/*
  * Interrupt handler for push button ENTER.
  */
 void EXTI2_IRQHandler(void)
@@ -69,6 +77,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t pin)
 {
     BaseType_t  pxHigherPriorityTaskWoken = pdFALSE;
 
+    if (pin == GPIO_PIN_0)
+    {
+        xTaskNotifyIndexedFromISR(xTaskDisplayHandler, BUTTON_INDEX_NOTIFICATION, TOUCH_EVENT, eSetBits, &pxHigherPriorityTaskWoken);
+    }
     if (pin == BUTTON_ENTER_GPIO_PIN)
     {
         xTaskNotifyIndexedFromISR(xTaskDisplayHandler, BUTTON_INDEX_NOTIFICATION, BUTTON_EVENT_ENTER, eSetBits, &pxHigherPriorityTaskWoken);
@@ -81,6 +93,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t pin)
     {
         xTaskNotifyIndexedFromISR(xTaskDisplayHandler, BUTTON_INDEX_NOTIFICATION, BUTTON_EVENT_DOWN, eSetBits, &pxHigherPriorityTaskWoken);
     }
+    HAL_NVIC_DisableIRQ(EXTI0_IRQn);
 }
 
 

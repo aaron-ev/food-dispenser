@@ -10,6 +10,9 @@
 #include "appConfig.h"
 #include "bsp.h"
 #include "guiImages.h"
+#include "ili9341_touch.h"
+
+SPI_HandleTypeDef hspi1;
 
 #define DISPLAY_BEEP_DELAY                       100
 #define NO_CLEAR_ON_ENTRY                        0
@@ -184,6 +187,55 @@ void feed(uint8_t portions)
     mspEnableButtonInterrupts();
 }
 
+
+void touchInit(void)
+{
+    GPIO_InitTypeDef gpio_def = {0};
+
+    /* Initialize SPI pins (MOSI, MISO, CLK)*/
+    gpio_def.Pin = GPIO_PIN_5 | GPIO_PIN_4 | GPIO_PIN_3;
+    gpio_def.Mode = GPIO_MODE_AF_PP;
+    gpio_def.Pull = GPIO_NOPULL;
+    gpio_def.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    gpio_def.Alternate = GPIO_AF5_SPI1;
+    HAL_GPIO_Init(GPIOB, &gpio_def);
+
+    /* Initialize IRQ */
+    gpio_def.Pin = ILI9341_TOUCH_IRQ_Pin;
+    gpio_def.Mode = GPIO_MODE_IT_RISING;
+    gpio_def.Pull = GPIO_NOPULL;
+    gpio_def.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    HAL_GPIO_Init(ILI9341_TOUCH_IRQ_GPIO_Port, &gpio_def);
+
+    /* Initialize IRQ */
+    gpio_def.Pin = ILI9341_TOUCH_CS_Pin;
+    gpio_def.Mode = GPIO_MODE_OUTPUT_PP;
+    gpio_def.Pull = GPIO_NOPULL;
+    gpio_def.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    HAL_GPIO_Init(ILI9341_TOUCH_CS_GPIO_Port, &gpio_def);
+
+    /* SPI1 parameter configuration*/
+    hspi1.Instance = SPI1;
+    hspi1.Init.Mode = SPI_MODE_MASTER;
+    hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+    hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+    hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+    hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+    hspi1.Init.NSS = SPI_NSS_SOFT;
+    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+    hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+    hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+    hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+    hspi1.Init.CRCPolynomial = 10;
+    if (HAL_SPI_Init(&hspi1) != HAL_OK)
+    {
+        errorHandler();
+    }
+    HAL_NVIC_SetPriority(EXTI0_IRQn, 15, 0);
+    HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+}
+
+
 void screenSettings(void)
 {
 //    char buff[4];
@@ -273,7 +325,9 @@ void vTaskDisplay(void *params)
     BaseType_t status;
     uint32_t buttonEvent;
     uint8_t cursorPosition = OPTION_FEED;
+    uint16_t x, y;
 
+    touchInit();
     /* Show init screen */
     displayShowInitScreen();
     displayBacklightOn();
@@ -284,61 +338,86 @@ void vTaskDisplay(void *params)
         errorHandler();
     }
     /* Enable button interrupts */
-    mspEnableButtonInterrupts();
+//    mspEnableButtonInterrupts();
 
     while (1)
     {
-        /* Wait until a push button is pressed.
-         * Notification settings: Index > 0, no clear on entry,
-         *                       Clear all events on exit,
-         *                       Block until there is an event.
-         */
-        xTaskNotifyWaitIndexed(BUTTON_INDEX_NOTIFICATION, NO_CLEAR_ON_ENTRY, CLEAR_ALL_ON_EXIT, &buttonEvent, portMAX_DELAY);
-        status = displayRestartBacklightTimer();
-        if (status != pdTRUE)
-        {
-            errorHandler();
-        }
-        if (displaySettings.backlightState == BACKLIGHT_OFF)
-        {
-            displayBacklightOn();
-            continue;
-        }
+//        int npoints = 0;
+//        while(npoints < 10000) {
+//
+//            if(ILI9341_TouchGetCoordinates(&x, &y)) {
+//                npoints++;
+//            }
+//        }
 
-        if ((buttonEvent & BUTTON_EVENT_ENTER) && (cursorPosition == OPTION_FEED))
+       /* Wait until a push button is pressed.
+        * Notification settings: Index > 0, no clear on entry,
+        *                       Clear all events on exit,
+        *                       Block until there is an event.
+        */
+       xTaskNotifyWaitIndexed(BUTTON_INDEX_NOTIFICATION, NO_CLEAR_ON_ENTRY, CLEAR_ALL_ON_EXIT, &buttonEvent, portMAX_DELAY);
+       status = displayRestartBacklightTimer();
+       if (status != pdTRUE)
+       {
+           errorHandler();
+       }
+       if (displaySettings.backlightState == BACKLIGHT_OFF)
+       {
+           displayBacklightOn();
+           continue;
+       }
+
+        if(ILI9341_TouchGetCoordinates(&x, &y))
         {
-            dispenserBeep(100, 100, 1);
-            /* Update screen with a feed message */
-            tft_ili9341_fill_screen(BLACK);
-            tft_ili9341_send_str(TFT_ILI9341_WIDTH / 4 - 20, TFT_ILI9341_HEIGHT / 2, "Feeding...", Font_16x26, WHITE, BLACK);
-            feed(dispenserSettings.portions);
-            displayShowInitScreen();
-            cursorPosition = OPTION_FEED;
+                                             status = pdTRUE;
         }
-        if ((buttonEvent & BUTTON_EVENT_ENTER) && (cursorPosition == OPTION_SETTINGS))
-        {
-            dispenserBeep(100, 100, 3);
-            // screenSettings();
-        }
-        if ((buttonEvent & BUTTON_EVENT_UP) && (cursorPosition == OPTION_FEED))
-        {
-            dispenserBeep(50, 50, 2);
-        }
-        if ((buttonEvent & BUTTON_EVENT_UP) && (cursorPosition == OPTION_SETTINGS))
-        {
-            dispenserBeep(100, 100, 1);
-            displaySetIndicator(OPTION_FEED);
-            cursorPosition = OPTION_FEED;
-        }
-        if ((buttonEvent & BUTTON_EVENT_DOWN) && (cursorPosition == OPTION_FEED))
-        {
-            displaySetIndicator(OPTION_SETTINGS);
-            dispenserBeep(100, 100, 1);
-            cursorPosition = OPTION_SETTINGS;
-        }
-        if ((buttonEvent & BUTTON_EVENT_DOWN) && (cursorPosition == OPTION_SETTINGS))
-        {
-            dispenserBeep(50, 50, 2);
-        }
+       if ((x >= 10 && x <= 210) && (y <= 300 && y >= 183))
+       {
+           dispenserBeep(100, 100, 1);
+           /* Update screen with a feed message */
+//           tft_ili9341_fill_screen(BLACK);
+//           tft_ili9341_send_str(TFT_ILI9341_WIDTH / 4 - 20, TFT_ILI9341_HEIGHT / 2, "Feeding...", Font_16x26, WHITE, BLACK);
+//           feed(dispenserSettings.portions);
+//           displayShowInitScreen();
+           x = 0;
+           y = 0;
+       }
+       HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+//
+//        if ((buttonEvent & BUTTON_EVENT_ENTER) && (cursorPosition == OPTION_FEED))
+//        {
+//            dispenserBeep(100, 100, 1);
+//            /* Update screen with a feed message */
+//            tft_ili9341_fill_screen(BLACK);
+//            tft_ili9341_send_str(TFT_ILI9341_WIDTH / 4 - 20, TFT_ILI9341_HEIGHT / 2, "Feeding...", Font_16x26, WHITE, BLACK);
+//            feed(dispenserSettings.portions);
+//            displayShowInitScreen();
+//            cursorPosition = OPTION_FEED;
+//        }
+//        if ((buttonEvent & BUTTON_EVENT_ENTER) && (cursorPosition == OPTION_SETTINGS))
+//        {
+//            dispenserBeep(100, 100, 3);
+//            // screenSettings();
+//        }
+//        if ((buttonEvent & BUTTON_EVENT_UP) && (cursorPosition == OPTION_FEED))
+//        {
+//            dispenserBeep(50, 50, 2);
+//        }
+//        if ((buttonEvent & BUTTON_EVENT_UP) && (cursorPosition == OPTION_SETTINGS))
+//        {
+//            dispenserBeep(100, 100, 1);
+//            displaySetIndicator(OPTION_FEED);
+//            cursorPosition = OPTION_FEED;
+//        }
+//        if ((buttonEvent & BUTTON_EVENT_DOWN) && (cursorPosition == OPTION_FEED))
+//        {
+//            displaySetIndicator(OPTION_SETTINGS);
+//            dispenserBeep(100, 100, 1);
+//            cursorPosition = OPTION_SETTINGS;
+//        }
+//        if ((buttonEvent & BUTTON_EVENT_DOWN) && (cursorPosition == OPTION_SETTINGS))
+//        {
+//            dispenserBeep(50, 50, 2);
+//        }
     }
 }

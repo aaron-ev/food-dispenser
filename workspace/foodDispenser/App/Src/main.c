@@ -39,6 +39,8 @@ void errorHandler(void)
     HAL_GPIO_WritePin(HEART_BEAT_LED_PORT, HEART_BEAT_LED_PIN, GPIO_PIN_RESET);
     while (1)
     {
+        consolePrint("Error handler\n");
+        HAL_Delay(1000);
     }
 }
 

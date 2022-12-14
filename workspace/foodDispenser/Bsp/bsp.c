@@ -1,16 +1,19 @@
 /**
-  ******************************************************************************
-  * @file    bsp.c
-  * @author  Aaron Escoboza
-  * @brief   source file to implement init functions
-  ******************************************************************************
-*/
+ ******************************************************************************
+ * @file    bsp.c
+ * @author  Aaron Escoboza
+ * @brief   source file to implement init functions
+ ******************************************************************************
+ */
 
 #include "bsp.h"
+#include "console.h"
+
+UART_HandleTypeDef consoleHandle;
 
 /*
-*  Initialize the system clocks and clocks derived.
-*/
+ *  Initialize the system clocks and clocks derived.
+ */
 void clkInit(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -33,8 +36,7 @@ void clkInit(void)
         errorHandler();
     }
 
-    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                                |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
@@ -66,8 +68,8 @@ void pushButtonsInit(void)
 }
 
 /*
-* Function to initialize the heart beat low level settings.
-*/
+ * Function to initialize the heart beat low level settings.
+ */
 static void heartBeatInit(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -80,6 +82,26 @@ static void heartBeatInit(void)
     HAL_GPIO_Init(HEART_BEAT_LED_PORT, &GPIO_InitStruct);
 }
 
+/*
+ * Function to initialize the console
+ */
+void consoleInit(void)
+{
+    /* GPIO initializations */
+    consoleHandle.Instance = CONSOLE_INSTANCE;
+    consoleHandle.Init.BaudRate = CONSOLE_BAUDRATE;
+    consoleHandle.Init.WordLength = UART_WORDLENGTH_8B;
+    consoleHandle.Init.StopBits = UART_STOPBITS_1;
+    consoleHandle.Init.Parity = UART_PARITY_NONE;
+    consoleHandle.Init.Mode = UART_MODE_TX_RX;
+    consoleHandle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    consoleHandle.Init.OverSampling = UART_OVERSAMPLING_16;
+    if (HAL_UART_Init(&consoleHandle) != HAL_OK)
+    {
+        errorHandler();
+    }
+}
+
 HAL_StatusTypeDef bspInit(void)
 {
     HAL_StatusTypeDef halStatus = HAL_OK;
@@ -87,23 +109,30 @@ HAL_StatusTypeDef bspInit(void)
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
     /* Configure the system clock */
-    clkInit(); // system CLK = 16 MHz
+    clkInit();
+    /* Initialize the console */
+    consoleInit();
     /* Initialize push buttons */
     pushButtonsInit();
+    consolePrint("Push buttons initialized\n");
     /* Initialize heart beat led */
     heartBeatInit();
+    consolePrint("Heart beat initialized\n");
+
     /* Initialize servomotor */
     halStatus = servoMotorInit();
     if (halStatus != HAL_OK)
     {
         errorHandler();
     }
+    consolePrint("Servo motor initialized\n");
     /* Initialize the buzzer */
     halStatus = buzzerInit();
     if (halStatus != HAL_OK)
     {
         errorHandler();
     }
+    consolePrint("Buzzer initialized\n");
 
     return halStatus;
 }

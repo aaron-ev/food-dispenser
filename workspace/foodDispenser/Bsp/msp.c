@@ -26,6 +26,8 @@ void HAL_MspInit(void)
     __HAL_RCC_TIM2_CLK_ENABLE();
     __HAL_RCC_TIM5_CLK_ENABLE();
     __HAL_RCC_SPI1_CLK_ENABLE();
+    /* Enable clock for the dconsole */
+    __HAL_RCC_USART1_CLK_ENABLE();
     /* Set NVIC priority configuration */
     HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
     HAL_NVIC_SetPriority(EXTI2_IRQn, 15, 0);
@@ -81,4 +83,19 @@ void mspDisableButtonInterrupts(void)
     HAL_NVIC_DisableIRQ(EXTI2_IRQn);
     HAL_NVIC_DisableIRQ(EXTI3_IRQn);
     HAL_NVIC_DisableIRQ(EXTI4_IRQn);
+}
+
+void HAL_UART_MspInit(UART_HandleTypeDef* uartHandler)
+{
+    GPIO_InitTypeDef uartGpioInit;
+
+    if (uartHandler->Instance == CONSOLE_INSTANCE)
+    {
+        uartGpioInit.Pin = CONSOLE_TX_PIN | CONSOLE_RX_PIN;
+        uartGpioInit.Mode = GPIO_MODE_AF_PP;
+        uartGpioInit.Pull = GPIO_PULLUP;
+        uartGpioInit.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        uartGpioInit.Alternate = GPIO_AF7_USART1;
+        HAL_GPIO_Init(CONSOLE_GPIO_PORT, &uartGpioInit);
+    }
 }

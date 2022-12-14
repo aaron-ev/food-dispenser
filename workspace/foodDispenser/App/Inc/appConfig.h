@@ -63,6 +63,14 @@
 
 /* Backlight settings */
 #define DISPLAY_BACKLIGHT_DEFAULT_PERIOD    100000 /* 1m as a default */
+
+/* Macros for the debug console */
+#define CONSOLE_INSTANCE                       USART1
+#define CONSOLE_TX_PIN                         GPIO_PIN_9
+#define CONSOLE_RX_PIN                         GPIO_PIN_10
+#define CONSOLE_GPIO_PORT                      GPIOA
+#define CONSOLE_BAUDRATE                       9600
+
 /* Dispenser settings */
 #define DISPENSER_MAX_PORTIONS              5
 #endif /* APP_CONFIG__H */

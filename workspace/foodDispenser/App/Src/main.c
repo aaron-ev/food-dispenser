@@ -9,6 +9,8 @@
 #include "main.h"
 #include "display.h"
 #include "bsp.h"
+#include "console.h"
+#include "string.h"
 
 #define TEST_BSP            (0)
 
@@ -98,10 +100,21 @@ void testBspServoMotor(void)
     }
 }
 
+void testConsole()
+{
+    int i;
+
+    for (i= 0; i < 5; i++)
+    {
+        consolePrint("Hello world!\n");
+    }
+}
+
 void testBsp(void)
 {
-    testBspBuzzer();
-    testBspServoMotor();
+   testBspBuzzer();
+   testBspServoMotor();
+   testConsole();
 }
 
 int main(void)
@@ -111,12 +124,14 @@ int main(void)
 
     /* Initialize low level settings */
     halStatus = bspInit();
+    consolePrint("BSP initialized\n");
     if (halStatus != HAL_OK)
     {
         errorHandler();
     }
     /* Initialize display */
     displayInit();
+    consolePrint("Display initialized\n");
     /* Initialize default dispenser settings */
     dispenserSettings.portions = 1;
     dispenserSettings.sound = DISPENSER_SOUND_ON;

@@ -114,7 +114,7 @@ void testConsole()
 
 void testBsp(void)
 {
-   testBspBuzzer();
+//   testBspBuzzer();
    testBspServoMotor();
    testConsole();
 }

@@ -118,44 +118,44 @@ void displaySetIndicator(uint8_t option)
         optionClearY[0] = DISPLAY_INDICATOR_SETTINGS_Y;
         optionClearX[1] = '\0';
     }
-    if (option == OPTION_SETTINGS)
-    {
-        xToSet = DISPLAY_INDICATOR_SETTINGS_X;
-        yToSet = DISPLAY_INDICATOR_SETTINGS_Y;
-        optionClearX[0] = DISPLAY_INDICATOR_FEED_X;
-        optionClearY[0] = DISPLAY_INDICATOR_FEED_Y;
-        optionClearX[1] = '\0';
-    }
-    if (option == OPTION_PORTIONS)
-    {
-        xToSet = DISPLAY_INDICATOR_PORTIONS_X;
-        yToSet = DISPLAY_INDICATOR_PORTIONS_Y;
-        optionClearX[0] = DISPLAY_INDICATOR_SOUND_X;
-        optionClearY[0] = DISPLAY_INDICATOR_SOUND_Y;
-        optionClearX[1] = DISPLAY_INDICATOR_BACK_X;
-        optionClearY[1] = DISPLAY_INDICATOR_BACK_Y;
-        optionClearX[2] = '\0';
-    }
-    if (option == OPTION_SOUND)
-    {
-        xToSet = DISPLAY_INDICATOR_SOUND_X;
-        yToSet = DISPLAY_INDICATOR_SOUND_Y;
-        optionClearX[0] = DISPLAY_INDICATOR_PORTIONS_X;
-        optionClearY[0] = DISPLAY_INDICATOR_PORTIONS_Y;
-        optionClearX[1] = DISPLAY_INDICATOR_BACK_X;
-        optionClearY[1] = DISPLAY_INDICATOR_BACK_Y;
-        optionClearX[2] = '\0';
-    }
-    if (option == OPTION_BACK)
-    {
-        xToSet = DISPLAY_INDICATOR_BACK_X;
-        yToSet = DISPLAY_INDICATOR_BACK_Y;
-        optionClearX[0] = DISPLAY_INDICATOR_PORTIONS_X;
-        optionClearY[0] = DISPLAY_INDICATOR_PORTIONS_Y;
-        optionClearX[1] = DISPLAY_INDICATOR_SOUND_X;
-        optionClearY[1] = DISPLAY_INDICATOR_SOUND_Y;
-        optionClearX[2] = '\0';
-    }
+//    if (option == OPTION_SETTINGS)
+//    {
+//        xToSet = DISPLAY_INDICATOR_SETTINGS_X;
+//        yToSet = DISPLAY_INDICATOR_SETTINGS_Y;
+//        optionClearX[0] = DISPLAY_INDICATOR_FEED_X;
+//        optionClearY[0] = DISPLAY_INDICATOR_FEED_Y;
+//        optionClearX[1] = '\0';
+//    }
+//    if (option == OPTION_PORTIONS)
+//    {
+//        xToSet = DISPLAY_INDICATOR_PORTIONS_X;
+//        yToSet = DISPLAY_INDICATOR_PORTIONS_Y;
+//        optionClearX[0] = DISPLAY_INDICATOR_SOUND_X;
+//        optionClearY[0] = DISPLAY_INDICATOR_SOUND_Y;
+//        optionClearX[1] = DISPLAY_INDICATOR_BACK_X;
+//        optionClearY[1] = DISPLAY_INDICATOR_BACK_Y;
+//        optionClearX[2] = '\0';
+//    }
+//    if (option == OPTION_SOUND)
+//    {
+//        xToSet = DISPLAY_INDICATOR_SOUND_X;
+//        yToSet = DISPLAY_INDICATOR_SOUND_Y;
+//        optionClearX[0] = DISPLAY_INDICATOR_PORTIONS_X;
+//        optionClearY[0] = DISPLAY_INDICATOR_PORTIONS_Y;
+//        optionClearX[1] = DISPLAY_INDICATOR_BACK_X;
+//        optionClearY[1] = DISPLAY_INDICATOR_BACK_Y;
+//        optionClearX[2] = '\0';
+//    }
+//    if (option == OPTION_BACK)
+//    {
+//        xToSet = DISPLAY_INDICATOR_BACK_X;
+//        yToSet = DISPLAY_INDICATOR_BACK_Y;
+//        optionClearX[0] = DISPLAY_INDICATOR_PORTIONS_X;
+//        optionClearY[0] = DISPLAY_INDICATOR_PORTIONS_Y;
+//        optionClearX[1] = DISPLAY_INDICATOR_SOUND_X;
+//        optionClearY[1] = DISPLAY_INDICATOR_SOUND_Y;
+//        optionClearX[2] = '\0';
+//    }
 
     while (optionClearX != '\0')
     {
@@ -193,16 +193,21 @@ BaseType_t displayBackLightInit(void)
     return status;
 }
 
-void displayShowImage(const uint16_t *image)
+void displayShowImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t* image)
 {
-    ILI9341_DrawImage(0, 0, TFT_ILI9341_WIDTH, TFT_ILI9341_HEIGHT, image);
+    ILI9341_DrawImage(x, y, w, h, image);
 }
 
 void displayShowInitScreen(void)
 {
-    displayShowImage((const uint16_t *)initScreen);
-    displaySetIndicator(OPTION_FEED);
-    displayShowProjectVersion();
+    tft_ili9341_fill_screen(WHITE);
+    displayShowImage(0, BACKGROUND_LEFT_H, BACKGROUND_LEFT_W, BACKGROUND_LEFT_H,
+                     (const uint16_t *)background_left);
+    displayShowImage(TFT_ILI9341_WIDTH - BACKGROUND_RIGHT_W, BACKGROUND_RIGHT_H,
+                     BACKGROUND_RIGHT_W, BACKGROUND_RIGHT_H, (const uint16_t *)background_right);
+    displayShowImage(42, 50, BUTTON_FEED_W, BUTTON_FEED_H, (const uint16_t *)button_feed);
+    displayShowImage(42, 160, BUTTON_SETTINGS_W, BUTTON_SETTINGS_H, (const uint16_t *)button_settings);
+//    displaySetIndicator(OPTION_FEED);
 }
 
 void displayInit(void)
@@ -246,7 +251,7 @@ void screenSettings(void)
     uint8_t index = sizeof(options) - 1; /* Max index by default */
     uint8_t optionSelected = options[index];
 
-    displayShowImage((const uint16_t *)settingsScreen);
+    // displayShowImage((const uint16_t *)settingsScreen);
     while (1)
     {
         /* Wait until a push button is pressed.

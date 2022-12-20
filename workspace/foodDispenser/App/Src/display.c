@@ -11,6 +11,7 @@
 #include "bsp.h"
 #include "images.h"
 #include "ili9341_touch.h"
+#include "console.h"
 
 SPI_HandleTypeDef hspi1;
 
@@ -90,12 +91,14 @@ void displayBacklightOn(void)
 {
     HAL_GPIO_WritePin(TFT_LED_PORT, TFT_LED_PIN_NUM, GPIO_PIN_SET);
     displaySettings.backlightState = BACKLIGHT_ON;
+    PRINT_DEBUG("BACKLIGHT: State: ON\n");
 }
 
 void displayBackLightOff(void)
 {
     HAL_GPIO_WritePin(TFT_LED_PORT, TFT_LED_PIN_NUM, GPIO_PIN_RESET);
     displaySettings.backlightState = BACKLIGHT_OFF;
+    PRINT_DEBUG("BACKLIGHT: State: OFF\n");
 }
 
 BaseType_t displayRestartBacklightTimer(void)
@@ -162,14 +165,15 @@ BaseType_t displayBackLightInit(void)
         // TODO: Handle error
         status = pdFALSE;
     }
+    PRINT_DEBUG("Backlight: Initalized\n");
     displayBacklightOn();
-
     return status;
 }
 
 void displayShowImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t* image)
 {
     ILI9341_DrawImage(x, y, w, h, image);
+    PRINT_DEBUG("Image displayed\n");
 }
 
 void displayShowInitScreen(void)
@@ -182,6 +186,7 @@ void displayShowInitScreen(void)
     displayShowImage(42, 50, BUTTON_FEED_W, BUTTON_FEED_H, (const uint16_t *)button_feed);
     displayShowImage(42, 160, BUTTON_SETTINGS_W, BUTTON_SETTINGS_H, (const uint16_t *)button_settings);
     displaySetIndicator(OPTION_FEED, OPTION_SETTINGS);
+    PRINT_DEBUG("Init screen displayed");
 }
 
 void displayInit(void)
@@ -213,10 +218,12 @@ void feed(uint8_t portions)
         vTaskDelay(pdMS_TO_TICKS(DISPLAY_FEED_DELAY));
     }
     mspEnableButtonInterrupts();
+    PRINT_DEBUG("Feed finished\n");
 }
 
 void screenSettings(void)
 {
+    PRINT_DEBUG("Screen settings function\n");
 //     char buff[4];
 //     uint32_t buttonEvent;
 //     uint8_t options[] = {OPTION_BACK, OPTION_SOUND, OPTION_PORTIONS};
@@ -331,32 +338,38 @@ void vTaskDisplay(void *params)
         /* Handle button events: ENTER, UP and DOWN */
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (cursorIndicator == OPTION_FEED))
         {
+            PRINT_DEBUG("Button ENTER event\n");
             dispenserBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
             feed(dispenserSettings.portions);
         }
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (cursorIndicator == OPTION_SETTINGS))
         {
+            PRINT_DEBUG("Button ENTER event\n");
             dispenserBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 3);
             screenSettings();
         }
         if ((buttonEvent & BUTTON_EVENT_UP) && (cursorIndicator == OPTION_FEED))
         {
+            PRINT_DEBUG("Button UP event\n");
             dispenserBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 2);
         }
         if ((buttonEvent & BUTTON_EVENT_UP) && (cursorIndicator == OPTION_SETTINGS))
         {
+            PRINT_DEBUG("Button UP event \n");
             dispenserBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
             displaySetIndicator(OPTION_FEED, OPTION_SETTINGS);
             cursorIndicator = OPTION_FEED;
         }
         if ((buttonEvent & BUTTON_EVENT_DOWN) && (cursorIndicator == OPTION_FEED))
         {
+            PRINT_DEBUG("Button DOWN event\n");
             dispenserBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
             displaySetIndicator(OPTION_SETTINGS, OPTION_FEED);
             cursorIndicator = OPTION_SETTINGS;
         }
         if ((buttonEvent & BUTTON_EVENT_DOWN) && (cursorIndicator == OPTION_SETTINGS))
         {
+            PRINT_DEBUG("Button DOWN event\n");
             dispenserBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 2);
         }
     }

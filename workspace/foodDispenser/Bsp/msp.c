@@ -8,6 +8,7 @@
 
 #include "stm32f4xx_hal.h"
 #include "appConfig.h"
+#include "main.h"
 #include "msp.h"
 
 /*
@@ -70,6 +71,7 @@ void mspEnableButtonInterrupts(void)
     HAL_NVIC_EnableIRQ(EXTI2_IRQn);
     HAL_NVIC_EnableIRQ(EXTI3_IRQn);
     HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+    PRINT_DEBUG("Button interrupts enabled\n");
 }
 
 void mspEnableBuzzerInterrupts(void)
@@ -83,6 +85,7 @@ void mspDisableButtonInterrupts(void)
     HAL_NVIC_DisableIRQ(EXTI2_IRQn);
     HAL_NVIC_DisableIRQ(EXTI3_IRQn);
     HAL_NVIC_DisableIRQ(EXTI4_IRQn);
+    PRINT_DEBUG("Button interrupts disabled\n");
 }
 
 void HAL_UART_MspInit(UART_HandleTypeDef* uartHandler)

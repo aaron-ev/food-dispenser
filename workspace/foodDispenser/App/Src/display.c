@@ -27,18 +27,8 @@ SPI_HandleTypeDef hspi1;
 #define BACKLIGHT_TIMER_ID 1
 
 /* Indicator coordinates */
-#define DISPLAY_INDICATOR_W 21
-#define DISPLAY_INDICATOR_H 15
-#define DISPLAY_INDICATOR_FEED_X (52 - (DISPLAY_INDICATOR_W / 2))
-#define DISPLAY_INDICATOR_FEED_Y (106 - (DISPLAY_INDICATOR_H / 2))
-#define DISPLAY_INDICATOR_SETTINGS_X (52 - (DISPLAY_INDICATOR_W / 2))
-#define DISPLAY_INDICATOR_SETTINGS_Y (237 - (DISPLAY_INDICATOR_H / 2))
-#define DISPLAY_INDICATOR_PORTIONS_X (48 - (DISPLAY_INDICATOR_H / 2))
-#define DISPLAY_INDICATOR_PORTIONS_Y (122.5 - (DISPLAY_INDICATOR_W / 2))
-#define DISPLAY_INDICATOR_SOUND_X (48 - (DISPLAY_INDICATOR_H / 2))
-#define DISPLAY_INDICATOR_SOUND_Y (125 - (DISPLAY_INDICATOR_W / 2))
-#define DISPLAY_INDICATOR_BACK_X (153 - (DISPLAY_INDICATOR_H / 2))
-#define DISPLAY_INDICATOR_BACK_Y (189 - (DISPLAY_INDICATOR_W / 2))
+#define DISPLAY_INDICATOR_W         (20 - 2)
+#define DISPLAY_INDICATOR_H         (20 - 2)
 
 #define BEEP_DEFAULT_TON            100
 #define BEEP_DEFAULT_TOFF           BEEP_DEFAULT_TON
@@ -125,10 +115,10 @@ void initIndicatorPos(void)
     // indicatorPosition[OPTION_SOUND].y = ;
     // indicatorPosition[OPTION_BACK].x = ;
     // indicatorPosition[OPTION_BACK].y = ;
-    indicatorPosition[OPTION_FEED].x = 100;
-    indicatorPosition[OPTION_FEED].y = 100;
-    indicatorPosition[OPTION_SETTINGS].x = 100;
-    indicatorPosition[OPTION_SETTINGS].y = 100;
+    indicatorPosition[OPTION_FEED].x = 54;
+    indicatorPosition[OPTION_FEED].y = 62;
+    indicatorPosition[OPTION_SETTINGS].x = 54;
+    indicatorPosition[OPTION_SETTINGS].y = 172;
 }
 
 
@@ -173,26 +163,29 @@ BaseType_t displayBackLightInit(void)
 void displayShowImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t* image)
 {
     ILI9341_DrawImage(x, y, w, h, image);
-    PRINT_DEBUG("Image displayed\n");
 }
 
 void displayShowInitScreen(void)
 {
     tft_ili9341_fill_screen(WHITE);
+    /* Left and right background */
     displayShowImage(0, BACKGROUND_LEFT_H, BACKGROUND_LEFT_W, BACKGROUND_LEFT_H,
                      (const uint16_t *)background_left);
     displayShowImage(TFT_ILI9341_WIDTH - BACKGROUND_RIGHT_W, BACKGROUND_RIGHT_H,
                      BACKGROUND_RIGHT_W, BACKGROUND_RIGHT_H, (const uint16_t *)background_right);
+    /* Feed and settings buttons */
     displayShowImage(42, 50, BUTTON_FEED_W, BUTTON_FEED_H, (const uint16_t *)button_feed);
     displayShowImage(42, 160, BUTTON_SETTINGS_W, BUTTON_SETTINGS_H, (const uint16_t *)button_settings);
+    /* Set indicator to default feed option*/
     displaySetIndicator(OPTION_FEED, OPTION_SETTINGS);
-    PRINT_DEBUG("Init screen displayed");
+    PRINT_DEBUG("Display: Default screen displayed\n");
 }
 
 void displayInit(void)
 {
     /* Initialize the hardware and display with default settings */
     tft_ili9341_init();
+    initIndicatorPos();
 }
 
 void feed(uint8_t portions)
@@ -219,6 +212,11 @@ void feed(uint8_t portions)
     }
     mspEnableButtonInterrupts();
     PRINT_DEBUG("Feed finished\n");
+}
+
+void displayPrint(uint16_t x, uint16_t y, const char* str, FontDef font, uint16_t color, uint16_t bgcolor)
+{
+    tft_ili9341_send_str(x, y, str, font, color, bgcolor);
 }
 
 void screenSettings(void)
@@ -340,7 +338,9 @@ void vTaskDisplay(void *params)
         {
             PRINT_DEBUG("Button ENTER event\n");
             dispenserBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
+            displayPrint(70, 250, "Feeding...", Font_11x18, BLACK, WHITE);
             feed(dispenserSettings.portions);
+            tft_ili9341_fill_rectangle(70, 250, 105, 50, WHITE);
         }
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (cursorIndicator == OPTION_SETTINGS))
         {

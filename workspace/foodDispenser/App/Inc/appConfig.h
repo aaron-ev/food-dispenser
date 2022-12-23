@@ -28,10 +28,6 @@
 #define SWO_Pin                            GPIO_PIN_3
 #define SWO_GPIO_Port                      GPIOB
 
-/* Project version */
-#define DISPENSER_VERSION_MAYOR_NUMBER     0
-#define DISPENSER_VERSION_MINOR_NUMBER     1
-
 /* Task priorities */
 #define HEART_BEAT_PRIORITY_TASK           1
 #define DISPLAY_PRIORITY_TASK              2

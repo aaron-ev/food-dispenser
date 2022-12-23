@@ -115,8 +115,9 @@ void testConsole()
 void testBsp(void)
 {
 //   testBspBuzzer();
+   consolePrint("Testing: Servo motor\n");
    testBspServoMotor();
-   testConsole();
+//   testConsole();
 }
 
 int main(void)
@@ -142,7 +143,11 @@ int main(void)
     dispenserBeep(100, 100, 2);
     /* Test BSP layer */
     #if (TEST_BSP == 1)
+        consolePrint(" *** Testing mode *** \n");
         testBsp();
+        consolePrint("Testing: Finished\n");
+        /* Finish the program execution */
+        exit(0);
     #endif
 
     /* Heart beat task */

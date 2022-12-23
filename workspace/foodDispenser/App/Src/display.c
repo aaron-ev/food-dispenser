@@ -233,14 +233,10 @@ void feed(uint8_t portions)
 
     for (i = 0; i < portions; i++)
     {
-        servoMotorRotate(SERVO_MOTOR_DEGREES_180);
-        vTaskDelay(pdMS_TO_TICKS(DISPLAY_FEED_DELAY));
-        servoMotorStop();
-        vTaskDelay(pdMS_TO_TICKS(DISPLAY_FEED_DELAY));
-        servoMotorRotate(SERVO_MOTOR_DEGREES_0);
-        vTaskDelay(pdMS_TO_TICKS(DISPLAY_FEED_DELAY));
-        servoMotorStop();
-        vTaskDelay(pdMS_TO_TICKS(DISPLAY_FEED_DELAY));
+        appServoRotate(SERVO_MOTOR_DEGREES_180, 250);
+        HAL_Delay(500);
+        appServoRotate(SERVO_MOTOR_DEGREES_0, 250);
+        HAL_Delay(500);
     }
     mspEnableButtonInterrupts();
     PRINT_DEBUG("Feed finished\n");

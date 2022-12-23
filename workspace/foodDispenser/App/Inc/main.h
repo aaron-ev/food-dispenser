@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "console.h"
+#include "servoMotor.h"
 
 /* Project version */
 #define PROJECT_VERSION_MAYOR_NUMBER        0
@@ -38,6 +39,7 @@ typedef struct
 }DispenserSettings;
 
 void dispenserBeep(uint32_t timeOn, uint32_t timeOff, uint32_t times);
+void appServoRotate(ServoPosition position, uint32_t halDelay);
 void errorHandler(void);
 
 #endif

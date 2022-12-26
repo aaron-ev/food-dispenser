@@ -25,8 +25,9 @@
 #define BACKLIGHT_TIMER_ID                  1
 
 /* Indicator coordinates */
-#define DISPLAY_INDICATOR_W                 (20 - 2)
-#define DISPLAY_INDICATOR_H                 (20 - 2)
+#define DISPLAY_INDICATOR_STROKE            2
+#define DISPLAY_INDICATOR_W                 20
+#define DISPLAY_INDICATOR_H                 20
 
 #define BEEP_DEFAULT_TON                    100
 #define BEEP_DEFAULT_TOFF                   BEEP_DEFAULT_TON
@@ -35,21 +36,26 @@
 
 /* Macros for the init screen */
 #define DISPLAY_FEED_BUTTON_X               30
-#define DISPLAY_FEED_BUTTON_Y               30
+#define DISPLAY_FEED_BUTTON_Y               60
 #define DISPLAY_SETTINGS_BUTTON_X           30
-#define DISPLAY_SETTINGS_BUTTON_Y           110
+#define DISPLAY_SETTINGS_BUTTON_Y           150
 
 /* Macros for the settings screen */
 #define DISPLAY_PORTIONS_BUTTON_X           10
 #define DISPLAY_PORTIONS_BUTTON_Y           25
-#define DISPLAY_SOUND_BUTTON_X              10
-#define DISPLAY_SOUND_BUTTON_Y              70
-#define DISPLAY_BACK_BUTTON_X               65
-#define DISPLAY_BACK_BUTTON_Y               220
 #define DISPLAY_PORTIONS_VALUE_X            180
 #define DISPLAY_PORTIONS_VALUE_Y            37
+
+#define DISPLAY_SOUND_BUTTON_X              10
+#define DISPLAY_SOUND_BUTTON_Y              70
 #define DISPLAY_SOUND_VALUE_X               170
 #define DISPLAY_SOUND_VALUE_Y               77
+
+#define DISPLAY_BACK_BUTTON_X               65
+#define DISPLAY_BACK_BUTTON_Y               160
+
+#define DISPLAY_POS_FEEDING_X               80
+#define DISPLAY_POS_FEEDING_Y               210
 
 /*
  * Available options for the first screen.
@@ -127,17 +133,17 @@ BaseType_t displayRestartBacklightTimer(void)
 void initIndicatorPos(void)
 {
     /* Default init screen */
-    indicatorPosition[OPTION_FEED].x = DISPLAY_FEED_BUTTON_X + 12;
-    indicatorPosition[OPTION_FEED].y = DISPLAY_FEED_BUTTON_Y + 12;
-    indicatorPosition[OPTION_SETTINGS].x = DISPLAY_SETTINGS_BUTTON_X + 12;
-    indicatorPosition[OPTION_SETTINGS].y = DISPLAY_SETTINGS_BUTTON_Y + 12;
+    indicatorPosition[OPTION_FEED].x = DISPLAY_FEED_BUTTON_X + (DISPLAY_INDICATOR_W / 2) + DISPLAY_INDICATOR_STROKE;
+    indicatorPosition[OPTION_FEED].y = DISPLAY_FEED_BUTTON_Y + (DISPLAY_INDICATOR_H / 2) + DISPLAY_INDICATOR_STROKE;
+    indicatorPosition[OPTION_SETTINGS].x = DISPLAY_SETTINGS_BUTTON_X + (DISPLAY_INDICATOR_W / 2) + DISPLAY_INDICATOR_STROKE;
+    indicatorPosition[OPTION_SETTINGS].y = DISPLAY_SETTINGS_BUTTON_Y + (DISPLAY_INDICATOR_H / 2) + DISPLAY_INDICATOR_STROKE;
     /* Settings screen */
-    indicatorPosition[OPTION_PORTIONS].x = DISPLAY_PORTIONS_BUTTON_X + 11;
-    indicatorPosition[OPTION_PORTIONS].y = DISPLAY_PORTIONS_BUTTON_Y + 12;
-    indicatorPosition[OPTION_SOUND].x = DISPLAY_SOUND_BUTTON_X + 12;
-    indicatorPosition[OPTION_SOUND].y = DISPLAY_SOUND_BUTTON_Y + 12;
-    indicatorPosition[OPTION_BACK].x = DISPLAY_BACK_BUTTON_X + 12;
-    indicatorPosition[OPTION_BACK].y = DISPLAY_BACK_BUTTON_Y + 12;
+    indicatorPosition[OPTION_PORTIONS].x = DISPLAY_PORTIONS_BUTTON_X + (DISPLAY_INDICATOR_W / 2) + DISPLAY_INDICATOR_STROKE;
+    indicatorPosition[OPTION_PORTIONS].y = DISPLAY_PORTIONS_BUTTON_Y + (DISPLAY_INDICATOR_H / 2) + DISPLAY_INDICATOR_STROKE;
+    indicatorPosition[OPTION_SOUND].x = DISPLAY_SOUND_BUTTON_X + (DISPLAY_INDICATOR_W / 2) + DISPLAY_INDICATOR_STROKE;
+    indicatorPosition[OPTION_SOUND].y = DISPLAY_SOUND_BUTTON_Y + (DISPLAY_INDICATOR_H / 2) + DISPLAY_INDICATOR_STROKE;
+    indicatorPosition[OPTION_BACK].x = DISPLAY_BACK_BUTTON_X + (DISPLAY_INDICATOR_W / 2) + DISPLAY_INDICATOR_STROKE;
+    indicatorPosition[OPTION_BACK].y = DISPLAY_BACK_BUTTON_Y + (DISPLAY_INDICATOR_H / 2) + DISPLAY_INDICATOR_STROKE;
 }
 
 
@@ -145,10 +151,10 @@ void displaySetIndicator(Options newPos, Options oldPos)
 {
     /* Clear old position */
     tft_ili9341_fill_rectangle(indicatorPosition[oldPos].x, indicatorPosition[oldPos].y,
-                               DISPLAY_INDICATOR_W, DISPLAY_INDICATOR_H, WHITE);
+                               DISPLAY_INDICATOR_W - DISPLAY_INDICATOR_STROKE, DISPLAY_INDICATOR_H - DISPLAY_INDICATOR_STROKE, WHITE);
     /* Set the new cursor */
     tft_ili9341_fill_rectangle(indicatorPosition[newPos].x, indicatorPosition[newPos].y,
-                               DISPLAY_INDICATOR_W, DISPLAY_INDICATOR_H, GREEN);
+                               DISPLAY_INDICATOR_W - DISPLAY_INDICATOR_STROKE, DISPLAY_INDICATOR_H - DISPLAY_INDICATOR_STROKE, GREEN);
 }
 
 void backLightCallback(TimerHandle_t xTimer)
@@ -186,12 +192,10 @@ void displayShowImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint
 
 void displayBackground(void)
 {
-    /* Left and right background */
-    displayShowImage(0, BACKGROUND_LEFT_H, BACKGROUND_LEFT_W, BACKGROUND_LEFT_H,
-                     (const uint16_t *)background_left);
-    displayShowImage(TFT_ILI9341_WIDTH - BACKGROUND_RIGHT_W, BACKGROUND_RIGHT_H,
-                     BACKGROUND_RIGHT_W, BACKGROUND_RIGHT_H, (const uint16_t *)background_right);
+    displayShowImage(0, TFT_ILI9341_HEIGHT - BACKGROUND_CAT_H, BACKGROUND_CAT_W, BACKGROUND_CAT_H,
+                     (const uint16_t *)background_cat);
 }
+
 void displayShowInitScreen(void)
 {
     /* Feed and settings buttons */
@@ -249,8 +253,7 @@ void displayPrint(uint16_t x, uint16_t y, const char* str, FontDef font, uint16_
 
 void displayCleanScreen(void)
 {
-    tft_ili9341_fill_rectangle(0, 0, TFT_ILI9341_WIDTH, 155, WHITE);
-    tft_ili9341_fill_rectangle(65, 0, 130, TFT_ILI9341_HEIGHT, WHITE);
+    tft_ili9341_fill_rectangle(0, 0, TFT_ILI9341_WIDTH, TFT_ILI9341_HEIGHT - BACKGROUND_CAT_H, WHITE);
 }
 
 void screenSettings(void)
@@ -388,9 +391,9 @@ void vTaskDisplay(void *params)
         {
             PRINT_DEBUG("Button ENTER event\n");
             dispenserBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
-            displayPrint(70, 250, "Feeding...", Font_11x18, BLACK, WHITE);
+            displayPrint(DISPLAY_POS_FEEDING_X, DISPLAY_POS_FEEDING_Y, "Feeding...", Font_11x18, BLACK, WHITE);
             feed(dispenserSettings.portions);
-            tft_ili9341_fill_rectangle(70, 250, 105, 50, WHITE);
+            tft_ili9341_fill_rectangle(DISPLAY_POS_FEEDING_X, DISPLAY_POS_FEEDING_Y, 105, 20, WHITE);
         }
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (cursorIndicator == OPTION_SETTINGS))
         {

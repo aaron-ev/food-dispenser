@@ -23,7 +23,8 @@ typedef enum
 }ServoPosition;
 
 HAL_StatusTypeDef servoMotorInit(void);
-void servoMotorRotate(ServoPosition position);
+void servoMotorStart(void);
 void servoMotorStop(void);
+void servoMotorSetPosition(ServoPosition position);
 
 #endif

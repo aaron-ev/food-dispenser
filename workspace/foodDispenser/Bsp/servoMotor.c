@@ -64,28 +64,19 @@ HAL_StatusTypeDef servoMotorInit(void)
         errorHandler();
     }
 
-    /* Go to the default state */
-    servoMotorRotate(SERVO_MOTOR_DEGREES_0);
-
     return halStatus;
 }
 
-void servoMotorRotate(ServoPosition position)
+void servoMotorSetPosition(ServoPosition position)
 {
-    switch (position)
+    if (position == SERVO_MOTOR_DEGREES_0)
     {
-        case SERVO_MOTOR_DEGREES_0: __HAL_TIM_SET_COMPARE(&servoMotorTimHandler, SERVO_MOTOR_TIM_CHANNEL,
-                                                          SERVO_MOTOR_2MS_SIGNAL);
-                                    break;
-        case SERVO_MOTOR_DEGREES_90: __HAL_TIM_SET_COMPARE(&servoMotorTimHandler, SERVO_MOTOR_TIM_CHANNEL,
-                                                           SERVO_MOTOR_1_5MS_SIGNAL);
-                                    break;
-        case SERVO_MOTOR_DEGREES_180: __HAL_TIM_SET_COMPARE(&servoMotorTimHandler, SERVO_MOTOR_TIM_CHANNEL,
-                                                            SERVO_MOTOR_1MS_SIGNAL);
-                                    break;
-        default : break;
+        __HAL_TIM_SET_COMPARE(&servoMotorTimHandler, SERVO_MOTOR_TIM_CHANNEL,
+                              SERVO_MOTOR_2MS_SIGNAL);
     }
-    servoMotorStart();
-//    HAL_Delay(SERVO_MOTOR_DELAY);
-//    servoMotorStop();
+    if (position == SERVO_MOTOR_DEGREES_180)
+    {
+        __HAL_TIM_SET_COMPARE(&servoMotorTimHandler, SERVO_MOTOR_TIM_CHANNEL,
+                              SERVO_MOTOR_1MS_SIGNAL);
+    }
 }

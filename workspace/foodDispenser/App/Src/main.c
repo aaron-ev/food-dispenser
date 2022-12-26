@@ -85,20 +85,22 @@ void testBspBuzzer(void)
     dispenserBeep(50, 0, 1);
 }
 
+void appServoRotate(ServoPosition position, uint32_t halDelay)
+{
+    servoMotorSetPosition(position);
+    servoMotorStart();
+    HAL_Delay(halDelay);
+    servoMotorStop();
+}
+
 void testBspServoMotor(void)
 {
     int i;
 
     for (i = 0; i < 3; i++)
     {
-        servoMotorRotate(SERVO_MOTOR_DEGREES_180);
-        HAL_Delay(250);
-        servoMotorStop();
-        HAL_Delay(250);
-        servoMotorRotate(SERVO_MOTOR_DEGREES_0);
-        HAL_Delay(250);
-        servoMotorStop();
-        HAL_Delay(250);
+        appServoRotate(SERVO_MOTOR_DEGREES_180, 500);
+        appServoRotate(SERVO_MOTOR_DEGREES_0, 500);
     }
 }
 
@@ -140,6 +142,9 @@ int main(void)
     dispenserSettings.sound = DISPENSER_SOUND_ON;
     /* Double beep to indicate all the initializations have finished */
     mspEnableBuzzerInterrupts();
+
+    /* Set servo motor to default position */
+    appServoRotate(SERVO_MOTOR_DEGREES_0, 250);
     dispenserBeep(100, 100, 2);
     /* Test BSP layer */
     #if (TEST_BSP == 1)

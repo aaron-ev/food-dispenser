@@ -33,7 +33,7 @@ void clkInit(void)
     RCC_OscInitStruct.PLL.PLLQ = 4;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
     {
-        errorHandler();
+        appErrorHandler();
     }
 
     RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
@@ -44,7 +44,7 @@ void clkInit(void)
 
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
     {
-        errorHandler();
+        appErrorHandler();
     }
 }
 
@@ -98,7 +98,7 @@ void consoleInit(void)
     consoleHandle.Init.OverSampling = UART_OVERSAMPLING_16;
     if (HAL_UART_Init(&consoleHandle) != HAL_OK)
     {
-        errorHandler();
+        appErrorHandler();
     }
 }
 
@@ -123,14 +123,14 @@ HAL_StatusTypeDef bspInit(void)
     halStatus = servoMotorInit();
     if (halStatus != HAL_OK)
     {
-        errorHandler();
+        appErrorHandler();
     }
     consolePrint("Servo motor initialized\n");
     /* Initialize the buzzer */
     halStatus = buzzerInit();
     if (halStatus != HAL_OK)
     {
-        errorHandler();
+        appErrorHandler();
     }
     consolePrint("Buzzer initialized\n");
 

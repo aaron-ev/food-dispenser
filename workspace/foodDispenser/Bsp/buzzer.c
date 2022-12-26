@@ -59,7 +59,7 @@ HAL_StatusTypeDef buzzerInit(void)
     halStatus = HAL_TIM_OC_Init(&buzzerTimHandler);
     if (halStatus != HAL_OK)
     {
-        errorHandler();
+        return halStatus;
     }
 
     /* Timer: Channel settings */
@@ -69,7 +69,7 @@ HAL_StatusTypeDef buzzerInit(void)
     halStatus = HAL_TIM_OC_ConfigChannel(&buzzerTimHandler, &timerOCInit, BUZZER_TIM_CHANNEL);
     if (halStatus != HAL_OK)
     {
-        errorHandler();
+        return halStatus;
     }
 
     /* Clear interrupt to not jump to the interrupt handler */

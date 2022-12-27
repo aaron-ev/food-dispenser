@@ -8,6 +8,9 @@
 
 #include "buzzer.h"
 
+/* Timing settings */
+#define BUZZER_TIM_PRESCALER                40  /* tick = 1us*/
+
 /* Macros to configure the hardware timer */
 #define BUZZER_TIM_PERIOD 0xFFFFFFFF
 

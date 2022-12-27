@@ -14,6 +14,8 @@
 #include "appConfig.h"
 #include "stdint.h"
 
+#define BUZZER_TIM_PULSE_VALUE              500 /*freq = 1khz, 1us * 500 * 2 */
+
 HAL_StatusTypeDef buzzerInit(void);
 HAL_StatusTypeDef buzzerStart(void);
 HAL_StatusTypeDef buzzerStop(void);

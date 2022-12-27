@@ -14,10 +14,13 @@
 
 #define TEST_BSP            (0)
 
+/* Global variables */
+DispenserSettings dispenserSettings;
 TaskHandle_t xTaskHeartBeatHandler;
+
+/* Extern functions and global variables */
 extern TaskHandle_t xTaskDisplayHandler;
 extern void vTaskDisplay(void *params);
-DispenserSettings dispenserSettings;
 
 /*
 * Callback to increment the timer for the STM HAL layer.
@@ -56,6 +59,9 @@ void vTaskHeartBeat(void *params)
     }
 }
 
+/*
+* Application beep.
+*/
 void appBeep(uint32_t timeOn, uint32_t timeOff, uint32_t times)
 {
     int i;
@@ -77,6 +83,9 @@ void appBeep(uint32_t timeOn, uint32_t timeOff, uint32_t times)
     }
 }
 
+/*
+* Test the buzzer feature.
+*/
 void testBspBuzzer(void)
 {
     appBeep(300, 300, 4);
@@ -85,6 +94,9 @@ void testBspBuzzer(void)
     appBeep(50, 0, 1);
 }
 
+/*
+* Rotate the servo motor.
+*/
 void appServoRotate(ServoPosition position, uint32_t halDelay)
 {
     servoMotorSetPosition(position);
@@ -93,6 +105,9 @@ void appServoRotate(ServoPosition position, uint32_t halDelay)
     servoMotorStop();
 }
 
+/*
+* Test the servo motor feature.
+*/
 void testBspServoMotor(void)
 {
     int i;
@@ -104,7 +119,10 @@ void testBspServoMotor(void)
     }
 }
 
-void testConsole()
+/*
+* Test the console feature.
+*/
+void testConsole(void)
 {
     int i;
 
@@ -168,20 +186,30 @@ int main(void)
     /* Initialize default dispenser settings */
     dispenserSettings.portions = 1;
     dispenserSettings.sound = DISPENSER_SOUND_ON;
-    /* Set servo motor to default position */
+    /* Set the servo motor to its default position */
     appServoRotate(SERVO_MOTOR_DEGREES_0, 250);
-    /*Double beep to indicate initialization phase is completed */
     mspEnableBuzzerInterrupts();
+    /*Double beep to indicate initialization phase is completed */
     appBeep(100, 100, 2);
 
     /* Heart beat task */
-    retVal = xTaskCreate(vTaskHeartBeat, "task-heart-beat", configMINIMAL_STACK_SIZE, NULL, HEART_BEAT_PRIORITY_TASK, &xTaskHeartBeatHandler);
+    retVal = xTaskCreate(vTaskHeartBeat,
+                         "task-heart-beat",
+                         configMINIMAL_STACK_SIZE,
+                         NULL,
+                         HEART_BEAT_PRIORITY_TASK,
+                         &xTaskHeartBeatHandler);
     if (retVal != pdTRUE)
     {
         goto main_out;
     }
     /* Display task */
-    retVal = xTaskCreate(vTaskDisplay, "task-display", configMINIMAL_STACK_SIZE, NULL, DISP_PRIORITY_TASK, &xTaskDisplayHandler);
+    retVal = xTaskCreate(vTaskDisplay,
+                         "task-display",
+                         configMINIMAL_STACK_SIZE,
+                         NULL,
+                         DISP_PRIORITY_TASK,
+                         &xTaskDisplayHandler);
     if (retVal != pdPASS)
     {
         goto main_out;

@@ -10,11 +10,11 @@
 #define APP_CONFIG__H
 
 /* Dispenser settings */
-#define DISPENSER_MAX_PORTIONS             5
+#define DISPENSER_MAX_PORTIONS              5
 
 /* Task priorities */
-#define HEART_BEAT_PRIORITY_TASK           1
-#define DISP_PRIORITY_TASK              2
+#define HEART_BEAT_PRIORITY_TASK            1
+#define DISP_PRIORITY_TASK                  2
 
 /* Heart beat settings */
 #define HEART_BEAT_LED_PORT                 GPIOC
@@ -27,8 +27,6 @@
 #define BUZZER_GPIO_ALTERNATE               GPIO_AF1_TIM2
 #define BUZZER_TIM_INSTANCE                 TIM2
 #define BUZZER_TIM_CHANNEL                  TIM_CHANNEL_1
-#define BUZZER_TIM_PRESCALER                40  /* tick = 1us*/
-#define BUZZER_TIM_PULSE_VALUE              500 /*freq = 1khz, 1us * 500 * 2 */
 #define BEEP_DEFAULT_TON                    100
 #define BEEP_DEFAULT_TOFF                   BEEP_DEFAULT_TON
 
@@ -48,7 +46,7 @@
 #define BUTTON_DOWN_GPIO_PIN                GPIO_PIN_4
 
 /* Backlight settings */
-#define DISP_BACKLIGHT_DEFAULT_PERIOD    100000 /* 1m as a default */
+#define DISP_BACKLIGHT_DEFAULT_PERIOD       100000 /* 1m as a default settings*/
 
 /* Debug console settings */
 #define CONSOLE_INSTANCE                    USART1

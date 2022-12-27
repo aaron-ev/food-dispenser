@@ -146,6 +146,7 @@ void appFeed(uint8_t portions)
 {
     int i;
 
+    mspDisableButtonInterrupts();
     if ((portions == 0) || (portions > DISPENSER_MAX_PORTIONS))
     {
         return;
@@ -157,6 +158,7 @@ void appFeed(uint8_t portions)
         appServoRotate(SERVO_MOTOR_DEGREES_0, 250);
         HAL_Delay(500);
     }
+    mspEnableButtonInterrupts();
     PRINT_DEBUG("Feed finished\n");
 }
 

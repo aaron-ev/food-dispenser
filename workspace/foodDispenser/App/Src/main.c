@@ -149,11 +149,11 @@ int main(void)
 
     /* Initialize low level settings */
     halStatus = bspInit();
-    consolePrint("BSP: Initialized\n");
     if (halStatus != HAL_OK)
     {
         appErrorHandler();
     }
+    consolePrint("BSP: Initialized\n");
     /* Initialize display */
     dispInit();
     consolePrint("Display: Initialized\n");

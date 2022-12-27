@@ -29,6 +29,8 @@
 #define BUZZER_TIM_CHANNEL                  TIM_CHANNEL_1
 #define BUZZER_TIM_PRESCALER                40  /* tick = 1us*/
 #define BUZZER_TIM_PULSE_VALUE              500 /*freq = 1khz, 1us * 500 * 2 */
+#define BEEP_DEFAULT_TON                    100
+#define BEEP_DEFAULT_TOFF                   BEEP_DEFAULT_TON
 
 /* Servo motor settings */
 #define SERVO_MOTOR_GPIO_INSTANCE           GPIOA

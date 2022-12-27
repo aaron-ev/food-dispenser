@@ -14,7 +14,7 @@ UART_HandleTypeDef consoleHandle;
 /*
  *  Initialize the system clocks and clocks derived.
  */
-void clkInit(void)
+HAL_StatusTypeDef clkInit(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
@@ -33,7 +33,7 @@ void clkInit(void)
     RCC_OscInitStruct.PLL.PLLQ = 4;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
     {
-        appErrorHandler();
+        return HAL_ERROR;
     }
 
     RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
@@ -41,11 +41,12 @@ void clkInit(void)
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
     {
-        appErrorHandler();
+        return HAL_ERROR;
     }
+
+    return HAL_OK;
 }
 
 void pushButtonsInit(void)
@@ -85,7 +86,7 @@ static void heartBeatInit(void)
 /*
  * Function to initialize the console
  */
-void consoleInit(void)
+HAL_StatusTypeDef consoleInit(void)
 {
     /* GPIO initializations */
     consoleHandle.Instance = CONSOLE_INSTANCE;
@@ -98,41 +99,54 @@ void consoleInit(void)
     consoleHandle.Init.OverSampling = UART_OVERSAMPLING_16;
     if (HAL_UART_Init(&consoleHandle) != HAL_OK)
     {
-        appErrorHandler();
+        return HAL_ERROR;
     }
+
+    return HAL_OK;
 }
 
 HAL_StatusTypeDef bspInit(void)
 {
-    HAL_StatusTypeDef halStatus = HAL_OK;
+    HAL_StatusTypeDef halStatus;
 
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-    HAL_Init();
+    halStatus = HAL_Init();
+    if (halStatus != HAL_OK)
+    {
+        return HAL_ERROR;
+    }
     /* Configure the system clock */
-    clkInit();
+    halStatus = clkInit();
+    if (halStatus != HAL_OK)
+    {
+        return HAL_ERROR;
+    }
     /* Initialize the console */
-    consoleInit();
+    halStatus = consoleInit();
+    if (halStatus != HAL_OK)
+    {
+        return HAL_ERROR;
+    }
     /* Initialize push buttons */
     pushButtonsInit();
-    consolePrint("Push buttons initialized\n");
+    consolePrint("BSP: Push buttons initialized\n");
     /* Initialize heart beat led */
     heartBeatInit();
-    consolePrint("Heart beat initialized\n");
-
+    consolePrint("BSP: Heart beat initialized\n");
     /* Initialize servomotor */
     halStatus = servoMotorInit();
     if (halStatus != HAL_OK)
     {
         appErrorHandler();
     }
-    consolePrint("Servo motor initialized\n");
+    consolePrint("BSP: Servo motor initialized\n");
     /* Initialize the buzzer */
     halStatus = buzzerInit();
     if (halStatus != HAL_OK)
     {
         appErrorHandler();
     }
-    consolePrint("Buzzer initialized\n");
+    consolePrint("BSP: Buzzer initialized\n");
 
     return halStatus;
 }

@@ -29,9 +29,6 @@
 #define DISP_INDICATOR_W                 20
 #define DISP_INDICATOR_H                 20
 
-#define BEEP_DEFAULT_TON                 100
-#define BEEP_DEFAULT_TOFF                BEEP_DEFAULT_TON
-
 #define MAX_OPTIONS                      5
 
 /* Macros for the init screen */

@@ -86,7 +86,7 @@ void appBeep(uint32_t timeOn, uint32_t timeOff, uint32_t times)
 /*
 * Test the buzzer feature.
 */
-void testBspBuzzer(void)
+static void testBspBuzzer(void)
 {
     appBeep(300, 300, 4);
     appBeep(200, 200, 3);
@@ -108,7 +108,7 @@ void appServoRotate(ServoPosition position, uint32_t halDelay)
 /*
 * Test the servo motor feature.
 */
-void testBspServoMotor(void)
+static void testBspServoMotor(void)
 {
     int i;
 
@@ -122,7 +122,7 @@ void testBspServoMotor(void)
 /*
 * Test the console feature.
 */
-void testConsole(void)
+static void testConsole(void)
 {
     int i;
 
@@ -132,7 +132,7 @@ void testConsole(void)
     }
 }
 
-void testBsp(void)
+static void testBsp(void)
 {
   consolePrint("Testing: Console\n");
   testConsole();

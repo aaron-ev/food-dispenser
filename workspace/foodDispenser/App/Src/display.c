@@ -13,12 +13,9 @@
 #include "ili9341_touch.h"
 #include "console.h"
 
-#define DISP_BEEP_DELAY                  100
+/* FreeRTOS helper macros */
 #define NO_CLEAR_ON_ENTRY                0
 #define CLEAR_ALL_ON_EXIT                0xffffffffUL
-#define DISP_MAX_SETTINGS_OPTIONS        3
-#define DISP_FEED_DELAY                  500
-#define DISP_RECT_INDICATOR_SIZE         20
 
 /* Backlight macros*/
 #define BACKLIGHT_NOT_WAIT               0

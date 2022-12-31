@@ -12,7 +12,9 @@
 #include "console.h"
 #include "string.h"
 
-#define TEST_BSP            (0)
+#define TEST_BSP                        (0)
+#define APP_POS_FEEDING_X               60
+#define APP_POS_FEEDING_Y               210
 
 /* Global variables */
 DispenserSettings dispenserSettings;
@@ -145,7 +147,9 @@ static void testBsp(void)
 void appFeed(uint8_t portions)
 {
     int i;
+    char buff[15];
 
+    PRINT_DEBUG("APP: Feed started\n");
     mspDisableButtonInterrupts();
     if ((portions == 0) || (portions > DISPENSER_MAX_PORTIONS))
     {
@@ -153,13 +157,18 @@ void appFeed(uint8_t portions)
     }
     for (i = 0; i < portions; i++)
     {
+        sprintf(buff, "Portion (%d)", i + 1);
+        dispPrint(APP_POS_FEEDING_X, APP_POS_FEEDING_Y, buff,
+                  Font_11x18, BLACK, WHITE);
         appServoRotate(SERVO_MOTOR_DEGREES_180, 250);
         HAL_Delay(500);
         appServoRotate(SERVO_MOTOR_DEGREES_0, 250);
         HAL_Delay(500);
     }
+    /* Clean the message on the screen */
+    dispFillRect(APP_POS_FEEDING_X, APP_POS_FEEDING_Y, 200, 20, WHITE);
     mspEnableButtonInterrupts();
-    PRINT_DEBUG("Feed finished\n");
+    PRINT_DEBUG("APP: Feed finished\n");
 }
 
 int main(void)

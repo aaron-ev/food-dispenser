@@ -12,6 +12,7 @@
 #include "images.h"
 #include "ili9341_touch.h"
 #include "console.h"
+#include "display.h"
 
 /* FreeRTOS helper macros */
 #define NO_CLEAR_ON_ENTRY                0
@@ -47,9 +48,6 @@
 
 #define DISP_BACK_BUTTON_X               65
 #define DISP_BACK_BUTTON_Y               160
-
-#define DISP_POS_FEEDING_X               80
-#define DISP_POS_FEEDING_Y               210
 
 /*
  * Available options for all screens.
@@ -103,10 +101,10 @@ static void dispSetOpIndicator(Options newPos, Options oldPos);
 /* Helper functions to handle the backlight */
 static void dispSetBackLightOff(void);
 static void dispSetBacklightOn(void);
+static void dispBackLightCallback(TimerHandle_t xTimer);
 BaseType_t dispBacklightTimInit(void);
 BaseType_t dispBacklightTimStart(void);
 BaseType_t dispBacklightTimReset(void);
-static void dispBackLightCallback(TimerHandle_t xTimer);
 
 /* Helper functions to display images on the screen */
 static void dispShowImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t* image);
@@ -114,12 +112,8 @@ static void dispShowWallPaper(void);
 static void dispShowInitScreen(void);
 static void dispShowSettingsScreen(void);
 
-/* Helper functions to print strings */
-static void dispPrint(uint16_t x, uint16_t y, const char* str, FontDef font, uint16_t color, uint16_t bgcolor);
-
 /* Helper functions to manipulate the screen */
 static void dispCleanScreen(void);
-static void dispFillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
 static void dispFillScreen(Color color);
 
 static void dispShowVersion(void)
@@ -236,7 +230,7 @@ static void dispShowSettingsScreen(void)
     PRINT_DEBUG("Display: Settings screen displayed\n");
 }
 
-static void dispPrint(uint16_t x, uint16_t y, const char* str, FontDef font, uint16_t color, uint16_t bgcolor)
+void dispPrint(uint16_t x, uint16_t y, const char* str, FontDef font, uint16_t color, uint16_t bgcolor)
 {
     tft_ili9341_send_str(x, y, str, font, color, bgcolor);
 }
@@ -246,7 +240,7 @@ static void dispCleanScreen(void)
     tft_ili9341_fill_rectangle(0, 0, TFT_ILI9341_WIDTH, TFT_ILI9341_HEIGHT - BACKGROUND_CAT_H, WHITE);
 }
 
-static void dispFillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color)
+void dispFillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color)
 {
     tft_ili9341_fill_rectangle(x, y, w, h, color);
 }
@@ -303,10 +297,9 @@ static void dispScreenSettings(void)
             dispSetBacklightOn();
             continue;
         }
-        /* Handle button ENTER event */
+        /* Handle Buttons: ENTER event */
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionSelected == OPTION_PORTIONS))
         {
-            PRINT_DEBUG("Button ENTER event. Portions option\n");
             appBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
             dispenserSettings.portions++;
             if (dispenserSettings.portions > DISPENSER_MAX_PORTIONS)
@@ -316,11 +309,14 @@ static void dispScreenSettings(void)
             sprintf(buff, "%d", dispenserSettings.portions);
             /* Display portion value */
             dispPrint(DISP_PORTIONS_VALUE_X, DISP_PORTIONS_VALUE_Y, buff, Font_16x26, BLACK,WHITE);
+            PRINT_DEBUG("Buttons: ENTER event. Portions:");
+            PRINT_DEBUG(buff);
+            PRINT_DEBUG("\n");
         }
         /* Option sound is selected */
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionSelected == OPTION_SOUND))
         {
-            PRINT_DEBUG("Button ENTER event. Sound option\n");
+            PRINT_DEBUG("Buttons: ENTER event. Sound option\n");
             appBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
             /* Toggle sound state*/
             dispenserSettings.sound ^= 1;
@@ -334,14 +330,14 @@ static void dispScreenSettings(void)
             appBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
             break;
         }
-        /* Handle button UP event */
+        /* Handle Buttons: UP event */
         if (buttonEvent & BUTTON_EVENT_UP && (optionSelected != maxOption))
         {
             optionSelected = options[++index];
             dispSetOpIndicator(optionSelected, options[index - 1]);
             appBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
         }
-        /* Handle button DOWN event */
+        /* Handle Buttons: DOWN event */
         if ((buttonEvent & BUTTON_EVENT_DOWN) && (optionSelected != minOption))
         {
             optionSelected = options[--index];
@@ -369,7 +365,7 @@ void vTaskDisplay(void *params)
     {
         appErrorHandler();
     }
-    /* Enable button interrupts after first screen is ready */
+    /* Enable Buttons: Interrupts after first screen is ready */
     mspEnableButtonInterrupts();
     while (1)
     {
@@ -397,16 +393,13 @@ void vTaskDisplay(void *params)
         /* Handle button events: ENTER, UP and DOWN */
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionIndicator == OPTION_FEED))
         {
-            PRINT_DEBUG("Button ENTER event\n");
+            PRINT_DEBUG("Buttons: ENTER event\n");
             appBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
-            dispPrint(DISP_POS_FEEDING_X, DISP_POS_FEEDING_Y, "Feeding...", Font_11x18, BLACK, WHITE);
             appFeed(dispenserSettings.portions);
-            /* Clean user message that is currently feeding */
-            dispFillRect(DISP_POS_FEEDING_X, DISP_POS_FEEDING_Y, 105, 20, WHITE);
         }
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionIndicator == OPTION_SETTINGS))
         {
-            PRINT_DEBUG("Button ENTER event\n");
+            PRINT_DEBUG("Buttons: ENTER event\n");
             appBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
             /* Clean the push buttons icons and only keep the wallpaper before
             *  displaying a screen.
@@ -419,14 +412,14 @@ void vTaskDisplay(void *params)
         }
         if ((buttonEvent & BUTTON_EVENT_UP) && (optionIndicator == OPTION_SETTINGS))
         {
-            PRINT_DEBUG("Button UP event \n");
+            PRINT_DEBUG("Buttons: UP event \n");
             appBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
             dispSetOpIndicator(OPTION_FEED, OPTION_SETTINGS);
             optionIndicator = OPTION_FEED;
         }
         if ((buttonEvent & BUTTON_EVENT_DOWN) && (optionIndicator == OPTION_FEED))
         {
-            PRINT_DEBUG("Button DOWN event\n");
+            PRINT_DEBUG("Buttons: DOWN event\n");
             appBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
             dispSetOpIndicator(OPTION_SETTINGS, OPTION_FEED);
             optionIndicator = OPTION_SETTINGS;

@@ -12,16 +12,19 @@
 #include "console.h"
 #include "string.h"
 
+/* 1 - Enable BSP testing, 0 - Disable BSP testing */
 #define TEST_BSP                        (0)
+
+/* Screen position for a string when feeding */
 #define APP_POS_FEEDING_X               60
 #define APP_POS_FEEDING_Y               210
 
 /* Global variables */
 DispenserSettings dispenserSettings;
 TaskHandle_t xTaskHeartBeatHandler;
-
-/* Extern functions and global variables */
 extern TaskHandle_t xTaskDisplayHandler;
+
+/* Extern task functions */
 extern void vTaskDisplay(void *params);
 
 /*
@@ -62,7 +65,7 @@ void vTaskHeartBeat(void *params)
 }
 
 /*
-* Application beep.
+* Plays a beep.
 */
 void appBeep(uint32_t timeOn, uint32_t timeOff, uint32_t times)
 {
@@ -88,7 +91,7 @@ void appBeep(uint32_t timeOn, uint32_t timeOff, uint32_t times)
 /*
 * Test the buzzer feature.
 */
-static void testBspBuzzer(void)
+static void appTestBspBuzzer(void)
 {
     appBeep(300, 300, 4);
     appBeep(200, 200, 3);
@@ -110,7 +113,7 @@ void appServoRotate(ServoPosition position, uint32_t halDelay)
 /*
 * Test the servo motor feature.
 */
-static void testBspServoMotor(void)
+static void appTestBspServoMotor(void)
 {
     int i;
 
@@ -124,7 +127,7 @@ static void testBspServoMotor(void)
 /*
 * Test the console feature.
 */
-static void testConsole(void)
+static void appTestConsole(void)
 {
     int i;
 
@@ -134,16 +137,22 @@ static void testConsole(void)
     }
 }
 
+/*
+* Test the bsp layer.
+*/
 static void testBsp(void)
 {
   consolePrint("Testing: Console\n");
-  testConsole();
+  appTestConsole();
   consolePrint("Testing: Buzzer\n");
-  testBspBuzzer();
+  appTestBspBuzzer();
   consolePrint("Testing: Servo motor\n");
-  testBspServoMotor();
+  appTestBspServoMotor();
 }
 
+/*
+* Feed the pet based on the portions.
+*/
 void appFeed(uint8_t portions)
 {
     int i;
@@ -155,6 +164,8 @@ void appFeed(uint8_t portions)
     {
         return;
     }
+
+    /* Move the motor */
     for (i = 0; i < portions; i++)
     {
         sprintf(buff, "Portion (%d)", i + 1);
@@ -165,6 +176,7 @@ void appFeed(uint8_t portions)
         appServoRotate(SERVO_MOTOR_DEGREES_0, 250);
         HAL_Delay(500);
     }
+
     /* Clean the message on the screen */
     dispFillRect(APP_POS_FEEDING_X, APP_POS_FEEDING_Y, 200, 20, WHITE);
     mspEnableButtonInterrupts();
@@ -176,17 +188,19 @@ int main(void)
     BaseType_t retVal;
     HAL_StatusTypeDef halStatus;
 
-    /* Initialize low level settings */
+    /* Initialize bsp layer */
     halStatus = bspInit();
     if (halStatus != HAL_OK)
     {
         appErrorHandler();
     }
     consolePrint("BSP: Initialized\n");
+
     /* Initialize display */
     dispInit();
     consolePrint("Display: Initialized\n");
-    /* Test BSP layer */
+
+    /* Test mode to check the bsp correct functionality */
     #if (TEST_BSP == 1)
         consolePrint(" *** Testing mode *** \n");
         testBsp();
@@ -197,10 +211,12 @@ int main(void)
     /* Initialize default dispenser settings */
     dispenserSettings.portions = 1;
     dispenserSettings.sound = DISPENSER_SOUND_ON;
+
     /* Set the servo motor to its default position */
     appServoRotate(SERVO_MOTOR_DEGREES_0, 250);
+
+    /* Double beep to indicate initialization phase is completed */
     mspEnableBuzzerInterrupts();
-    /*Double beep to indicate initialization phase is completed */
     appBeep(100, 100, 2);
 
     /* Heart beat task */
@@ -212,8 +228,10 @@ int main(void)
                          &xTaskHeartBeatHandler);
     if (retVal != pdTRUE)
     {
+        consolePrint("ERROR: Heart beat could not be created\n");
         goto main_out;
     }
+
     /* Display task */
     retVal = xTaskCreate(vTaskDisplay,
                          "task-display",
@@ -223,6 +241,7 @@ int main(void)
                          &xTaskDisplayHandler);
     if (retVal != pdPASS)
     {
+        consolePrint("ERROR: Display task could not be created\n");
         goto main_out;
     }
 

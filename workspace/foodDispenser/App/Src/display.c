@@ -27,6 +27,7 @@
 #define DISP_INDICATOR_W                 20
 #define DISP_INDICATOR_H                 20
 
+/* Sum of options in the init and settings screen */
 #define MAX_OPTIONS                      5
 
 /* Macros for the init screen */
@@ -35,17 +36,19 @@
 #define DISP_SETTINGS_BUTTON_X           30
 #define DISP_SETTINGS_BUTTON_Y           150
 
-/* Macros for the settings screen */
+/* Portion position on the settings screen */
 #define DISP_PORTIONS_BUTTON_X           10
 #define DISP_PORTIONS_BUTTON_Y           25
 #define DISP_PORTIONS_VALUE_X            180
 #define DISP_PORTIONS_VALUE_Y            37
 
+/* Sound position on the settings screen */
 #define DISP_SOUND_BUTTON_X              10
 #define DISP_SOUND_BUTTON_Y              70
 #define DISP_SOUND_VALUE_X               170
 #define DISP_SOUND_VALUE_Y               77
 
+/* Back position on the settings screen */
 #define DISP_BACK_BUTTON_X               65
 #define DISP_BACK_BUTTON_Y               160
 
@@ -98,7 +101,7 @@ static void dispShowVersion(void);
 static void dispInitOptIndicator(void);
 static void dispSetOpIndicator(Options newPos, Options oldPos);
 
-/* Helper functions to handle the backlight */
+/* Backlight helper functions */
 static void dispSetBackLightOff(void);
 static void dispSetBacklightOn(void);
 static void dispBackLightCallback(TimerHandle_t xTimer);
@@ -106,16 +109,17 @@ BaseType_t dispBacklightTimInit(void);
 BaseType_t dispBacklightTimStart(void);
 BaseType_t dispBacklightTimReset(void);
 
-/* Helper functions to display images on the screen */
+/* Display helper functions */
 static void dispShowImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t* image);
 static void dispShowWallPaper(void);
 static void dispShowInitScreen(void);
 static void dispShowSettingsScreen(void);
-
-/* Helper functions to manipulate the screen */
 static void dispCleanScreen(void);
 static void dispFillScreen(Color color);
 
+/*
+ * Show the project version on the screen.
+ */
 static void dispShowVersion(void)
 {
     char buff[5];
@@ -124,6 +128,9 @@ static void dispShowVersion(void)
     tft_ili9341_send_str(TFT_ILI9341_WIDTH - 50, TFT_ILI9341_HEIGHT - 20, buff, Font_11x18, BLACK, WHITE);
 }
 
+/*
+ * Turn the backlight on.
+ */
 static void dispSetBacklightOn(void)
 {
     HAL_GPIO_WritePin(TFT_LED_PORT, TFT_LED_PIN_NUM, GPIO_PIN_SET);
@@ -131,6 +138,9 @@ static void dispSetBacklightOn(void)
     PRINT_DEBUG("Backlight: ON\n");
 }
 
+/*
+ * Turn the backlight off.
+ */
 static void dispSetBackLightOff(void)
 {
     HAL_GPIO_WritePin(TFT_LED_PORT, TFT_LED_PIN_NUM, GPIO_PIN_RESET);
@@ -138,11 +148,17 @@ static void dispSetBackLightOff(void)
     PRINT_DEBUG("Backlight: OFF\n");
 }
 
+/*
+ * Reset the backlight timer.
+ */
 BaseType_t dispBacklightTimReset(void)
 {
     return xTimerReset(xBackLightTimerHandler, BACKLIGHT_NOT_WAIT);
 }
 
+/*
+ * Display the option indicator on the screen.
+ */
 static void dispInitOptIndicator(void)
 {
     /* Default init screen */
@@ -159,6 +175,9 @@ static void dispInitOptIndicator(void)
     indicatorPosition[OPTION_BACK].y = DISP_BACK_BUTTON_Y + (DISP_INDICATOR_H / 2) + DISP_INDICATOR_STROKE;
 }
 
+/*
+ * Set the option indicator in a new position.
+ */
 static void dispSetOpIndicator(Options newPos, Options oldPos)
 {
     /* Clear old position */
@@ -169,16 +188,25 @@ static void dispSetOpIndicator(Options newPos, Options oldPos)
                                DISP_INDICATOR_W - DISP_INDICATOR_STROKE, DISP_INDICATOR_H - DISP_INDICATOR_STROKE, GREEN);
 }
 
+/*
+ * Callback for the backlight timer.
+ */
 static void dispBackLightCallback(TimerHandle_t xTimer)
 {
     dispSetBackLightOff();
 }
 
+/*
+ * Start the backlight timer.
+ */
 BaseType_t dispBacklightTimStart(void)
 {
     return xTimerStart(xBackLightTimerHandler, BACKLIGHT_NOT_WAIT);
 }
 
+/*
+ * Initialize the backlight timer.
+ */
 BaseType_t dispBacklightTimInit(void)
 {
     /* Create one-shot timer to handle the backlight */
@@ -191,17 +219,26 @@ BaseType_t dispBacklightTimInit(void)
     return pdTRUE;
 }
 
+/*
+ * Display an image on the screen.
+ */
 static void dispShowImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t* image)
 {
     ILI9341_DrawImage(x, y, w, h, image);
 }
 
+/*
+ * Display the wallpaper on the screen.
+ */
 static void dispShowWallPaper(void)
 {
     dispShowImage(0, TFT_ILI9341_HEIGHT - BACKGROUND_CAT_H,
                     BACKGROUND_CAT_W, BACKGROUND_CAT_H, (const uint16_t *)background_cat);
 }
 
+/*
+ * Display the init screen.
+ */
 static void dispShowInitScreen(void)
 {
     mspDisableButtonInterrupts();
@@ -216,6 +253,9 @@ static void dispShowInitScreen(void)
     PRINT_DEBUG("Display: Default screen displayed\n");
 }
 
+/*
+ * Display the settings screen.
+ */
 static void dispShowSettingsScreen(void)
 {
     /* Display available options */
@@ -230,26 +270,41 @@ static void dispShowSettingsScreen(void)
     PRINT_DEBUG("Display: Settings screen displayed\n");
 }
 
+/*
+ * Print a message on the screen.
+ */
 void dispPrint(uint16_t x, uint16_t y, const char* str, FontDef font, uint16_t color, uint16_t bgcolor)
 {
     tft_ili9341_send_str(x, y, str, font, color, bgcolor);
 }
 
+/*
+ * Clean the screen.
+ */
 static void dispCleanScreen(void)
 {
     tft_ili9341_fill_rectangle(0, 0, TFT_ILI9341_WIDTH, TFT_ILI9341_HEIGHT - BACKGROUND_CAT_H, WHITE);
 }
 
+/*
+ * Display a rectangle and fills it.
+ */
 void dispFillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color)
 {
     tft_ili9341_fill_rectangle(x, y, w, h, color);
 }
 
+/*
+ * Fill the whole screen.
+ */
 static void dispFillScreen(Color color)
 {
     tft_ili9341_fill_screen(color);
 }
 
+/*
+ * Initialize the display.
+ */
 void dispInit(void)
 {
     /* Initialize the hardware and display with default init screen */
@@ -260,6 +315,9 @@ void dispInit(void)
     dispShowInitScreen();
 }
 
+/*
+ * Handles the settings screen when enter on that option.
+ */
 static void dispScreenSettings(void)
 {
     char buff[4];
@@ -347,6 +405,9 @@ static void dispScreenSettings(void)
     }
 }
 
+/*
+ * Task to handle the display.
+ */
 void vTaskDisplay(void *params)
 {
     BaseType_t status;
@@ -365,6 +426,7 @@ void vTaskDisplay(void *params)
     {
         appErrorHandler();
     }
+
     /* Enable Buttons: Interrupts after first screen is ready */
     mspEnableButtonInterrupts();
     while (1)

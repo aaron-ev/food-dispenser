@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    stm32f4xx_hal_timebase_TIM.c
@@ -15,19 +14,11 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
-/* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_tim.h"
 
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef        htim9;
-/* Private function prototypes -----------------------------------------------*/
-/* Private functions ---------------------------------------------------------*/
 
 /**
   * @brief  This function configures the TIM9 as a time base source.
@@ -124,4 +115,3 @@ void HAL_ResumeTick(void)
   /* Enable TIM9 Update interrupt */
   __HAL_TIM_ENABLE_IT(&htim9, TIM_IT_UPDATE);
 }
-

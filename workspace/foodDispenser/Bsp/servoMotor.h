@@ -1,12 +1,8 @@
 /**
-
   ******************************************************************************
   * @file    servomotor.h
   * @author  Aaron Escoboza
   * @brief   Header file to manage the a servomotor.h
-  ******************************************************************************
-  * @attention
-  *
   ******************************************************************************
   */
 
@@ -18,13 +14,12 @@
 typedef enum
 {
     SERVO_MOTOR_DEGREES_0,
-    SERVO_MOTOR_DEGREES_90,
     SERVO_MOTOR_DEGREES_180
-}ServoPosition;
+}Degrees_E;
 
-HAL_StatusTypeDef servoMotorInit(void);
-void servoMotorStart(void);
 void servoMotorStop(void);
-void servoMotorSetPosition(ServoPosition position);
+void servoMotorStart(void);
+HAL_StatusTypeDef servoMotorInit(void);
+void servoMotorSetDegrees(Degrees_E position);
 
 #endif

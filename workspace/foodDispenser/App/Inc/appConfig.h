@@ -9,28 +9,12 @@
 #ifndef APP_CONFIG__H
 #define APP_CONFIG__H
 
-/* Private defines -----------------------------------------------------------*/
-#define B1_Pin                             GPIO_PIN_13
-#define B1_GPIO_Port                       GPIOC
-#define USART_TX_Pin                       GPIO_PIN_2
-#define USART_TX_GPIO_Port                 GPIOA
-#define USART_RX_Pin                       GPIO_PIN_3
-#define USART_RX_GPIO_Port                 GPIOA
-
-#define LD2_Pin                            GPIO_PIN_5
-#define LD2_GPIO_Port                      GPIOA
-
-#define TMS_Pin                            GPIO_PIN_13
-#define TMS_GPIO_Port                      GPIOA
-#define TCK_Pin                            GPIO_PIN_14
-#define TCK_GPIO_Port                      GPIOA
-
-#define SWO_Pin                            GPIO_PIN_3
-#define SWO_GPIO_Port                      GPIOB
+/* Dispenser settings */
+#define DISPENSER_MAX_PORTIONS              5
 
 /* Task priorities */
-#define HEART_BEAT_PRIORITY_TASK           1
-#define DISPLAY_PRIORITY_TASK              2
+#define HEART_BEAT_PRIORITY_TASK            1
+#define DISP_PRIORITY_TASK                  2
 
 /* Heart beat settings */
 #define HEART_BEAT_LED_PORT                 GPIOC
@@ -43,8 +27,8 @@
 #define BUZZER_GPIO_ALTERNATE               GPIO_AF1_TIM2
 #define BUZZER_TIM_INSTANCE                 TIM2
 #define BUZZER_TIM_CHANNEL                  TIM_CHANNEL_1
-#define BUZZER_TIM_PRESCALER                40  /* tick = 1us*/
-#define BUZZER_TIM_PULSE_VALUE              500 /*freq = 1khz, 1us * 500 * 2 */
+#define BEEP_DEFAULT_TON                    100
+#define BEEP_DEFAULT_TOFF                   BEEP_DEFAULT_TON
 
 /* Servo motor settings */
 #define SERVO_MOTOR_GPIO_INSTANCE           GPIOA
@@ -62,15 +46,13 @@
 #define BUTTON_DOWN_GPIO_PIN                GPIO_PIN_4
 
 /* Backlight settings */
-#define DISPLAY_BACKLIGHT_DEFAULT_PERIOD    100000 /* 1m as a default */
+#define DISP_BACKLIGHT_DEFAULT_PERIOD       100000 /* 1m as a default settings*/
 
-/* Macros for the debug console */
-#define CONSOLE_INSTANCE                       USART1
-#define CONSOLE_TX_PIN                         GPIO_PIN_9
-#define CONSOLE_RX_PIN                         GPIO_PIN_10
-#define CONSOLE_GPIO_PORT                      GPIOA
-#define CONSOLE_BAUDRATE                       9600
+/* Debug console settings */
+#define CONSOLE_INSTANCE                    USART1
+#define CONSOLE_TX_PIN                      GPIO_PIN_9
+#define CONSOLE_RX_PIN                      GPIO_PIN_10
+#define CONSOLE_GPIO_PORT                   GPIOA
+#define CONSOLE_BAUDRATE                    9600
 
-/* Dispenser settings */
-#define DISPENSER_MAX_PORTIONS              5
-#endif /* APP_CONFIG__H */
+#endif

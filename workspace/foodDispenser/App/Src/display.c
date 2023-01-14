@@ -12,53 +12,51 @@
 #include "images.h"
 #include "ili9341_touch.h"
 #include "console.h"
+#include "display.h"
 
-#define DISPLAY_BEEP_DELAY                  100
-#define NO_CLEAR_ON_ENTRY                   0
-#define CLEAR_ALL_ON_EXIT                   0xffffffffUL
-#define DISPLAY_MAX_SETTINGS_OPTIONS        3
-#define DISPLAY_FEED_DELAY                  500
-#define DISPLAY_RECT_INDICATOR_SIZE         20
+/* FreeRTOS helper macros */
+#define NO_CLEAR_ON_ENTRY                0
+#define CLEAR_ALL_ON_EXIT                0xffffffffUL
 
 /* Backlight macros*/
-#define BACKLIGHT_NOT_WAIT                  0
-#define BACKLIGHT_TIMER_ID                  1
+#define BACKLIGHT_NOT_WAIT               0
+#define BACKLIGHT_TIMER_ID               1
 
 /* Indicator coordinates */
-#define DISPLAY_INDICATOR_STROKE            2
-#define DISPLAY_INDICATOR_W                 20
-#define DISPLAY_INDICATOR_H                 20
+#define DISP_INDICATOR_STROKE            2
+#define DISP_INDICATOR_W                 20
+#define DISP_INDICATOR_H                 20
 
-#define BEEP_DEFAULT_TON                    100
-#define BEEP_DEFAULT_TOFF                   BEEP_DEFAULT_TON
-
-#define MAX_OPTIONS                         5
+/* Sum of options in the init and settings screen */
+#define MAX_OPTIONS                      5
 
 /* Macros for the init screen */
-#define DISPLAY_FEED_BUTTON_X               30
-#define DISPLAY_FEED_BUTTON_Y               60
-#define DISPLAY_SETTINGS_BUTTON_X           30
-#define DISPLAY_SETTINGS_BUTTON_Y           150
+#define DISP_FEED_BUTTON_X               30
+#define DISP_FEED_BUTTON_Y               60
+#define DISP_SETTINGS_BUTTON_X           30
+#define DISP_SETTINGS_BUTTON_Y           150
 
-/* Macros for the settings screen */
-#define DISPLAY_PORTIONS_BUTTON_X           10
-#define DISPLAY_PORTIONS_BUTTON_Y           25
-#define DISPLAY_PORTIONS_VALUE_X            180
-#define DISPLAY_PORTIONS_VALUE_Y            37
+/* Portion position on the settings screen */
+#define DISP_PORTIONS_BUTTON_X           10
+#define DISP_PORTIONS_BUTTON_Y           25
+#define DISP_PORTIONS_VALUE_X            180
+#define DISP_PORTIONS_VALUE_Y            37
 
-#define DISPLAY_SOUND_BUTTON_X              10
-#define DISPLAY_SOUND_BUTTON_Y              70
-#define DISPLAY_SOUND_VALUE_X               170
-#define DISPLAY_SOUND_VALUE_Y               77
+/* Sound position on the settings screen */
+#define DISP_SOUND_BUTTON_X              10
+#define DISP_SOUND_BUTTON_Y              70
+#define DISP_SOUND_VALUE_X               170
+#define DISP_SOUND_VALUE_Y               77
 
-#define DISPLAY_BACK_BUTTON_X               65
-#define DISPLAY_BACK_BUTTON_Y               160
+/* Back position on the settings screen */
+#define DISP_BACK_BUTTON_X               65
+#define DISP_BACK_BUTTON_Y               160
 
-#define DISPLAY_POS_FEEDING_X               80
-#define DISPLAY_POS_FEEDING_Y               210
+/* Helper macros to handle the beep */
+#define DISP_BEEP_ONCE                   1
 
 /*
- * Available options for the first screen.
+ * Available options for all screens.
  */
 typedef enum
 {
@@ -69,33 +67,63 @@ typedef enum
     OPTION_SETTINGS,
 } Options;
 
+/*
+ * Coordinates to display images and shapes on the screen.
+ */
 typedef struct
 {
     uint16_t x;
     uint16_t y;
 } Coordinates;
 
-typedef struct
-{
-    Color backgroundColor;
-    uint8_t backlightState;
-} DisplaySettings;
-
+/*
+ * Backlight possible states.
+ */
 typedef enum
 {
     BACKLIGHT_ON,
     BACKLIGHT_OFF,
 } BackLightState;
 
-SPI_HandleTypeDef hspi1;
+/* Helper global variables */
 Coordinates indicatorPosition[MAX_OPTIONS];
+BackLightState backlightState;
 extern DispenserSettings dispenserSettings;
-DisplaySettings displaySettings;
+
 /* freeRTOS handlers */
 TaskHandle_t xTaskDisplayHandler;
 TimerHandle_t xBackLightTimerHandler;
 
-void displayShowProjectVersion(void)
+/* Helper function to initialize the display */
+void displayInit(void);
+
+/* Helper functions to handle the project version */
+static void dispShowVersion(void);
+
+/* Helper functions to handle the option indicator */
+static void displayInitOptIndicator(void);
+static void dispSetOpIndicator(Options newPos, Options oldPos);
+
+/* Backlight helper functions */
+static void dispSetBackLightOff(void);
+static void dispSetBacklightOn(void);
+static void dispBackLightCallback(TimerHandle_t xTimer);
+BaseType_t dispBacklightTimInit(void);
+BaseType_t dispBacklightTimStart(void);
+BaseType_t dispBacklightTimReset(void);
+
+/* Display helper functions */
+static void dispShowImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t* image);
+static void dispShowWallPaper(void);
+static void dispShowInitScreen(void);
+static void dispShowSettingsScreen(void);
+static void dispCleanScreen(void);
+static void dispFillScreen(Color color);
+
+/*
+ * Show the project version on the screen.
+ */
+static void dispShowVersion(void)
 {
     char buff[5];
 
@@ -103,160 +131,197 @@ void displayShowProjectVersion(void)
     tft_ili9341_send_str(TFT_ILI9341_WIDTH - 50, TFT_ILI9341_HEIGHT - 20, buff, Font_11x18, BLACK, WHITE);
 }
 
-void displayBacklightOn(void)
+/*
+ * Turn the backlight on.
+ */
+static void dispSetBacklightOn(void)
 {
     HAL_GPIO_WritePin(TFT_LED_PORT, TFT_LED_PIN_NUM, GPIO_PIN_SET);
-    displaySettings.backlightState = BACKLIGHT_ON;
+    backlightState = BACKLIGHT_ON;
     PRINT_DEBUG("Backlight: ON\n");
 }
 
-void displayBackLightOff(void)
+/*
+ * Turn the backlight off.
+ */
+static void dispSetBackLightOff(void)
 {
     HAL_GPIO_WritePin(TFT_LED_PORT, TFT_LED_PIN_NUM, GPIO_PIN_RESET);
-    displaySettings.backlightState = BACKLIGHT_OFF;
+    backlightState = BACKLIGHT_OFF;
     PRINT_DEBUG("Backlight: OFF\n");
 }
 
-BaseType_t displayRestartBacklightTimer(void)
+/*
+ * Reset the backlight timer.
+ */
+BaseType_t dispBacklightTimReset(void)
 {
-    BaseType_t status = pdTRUE;
-
-    status = xTimerReset(xBackLightTimerHandler, BACKLIGHT_NOT_WAIT);
-    if (status != pdPASS)
-    {
-        status = pdFALSE;
-        errorHandler();
-    }
-    return status;
+    return xTimerReset(xBackLightTimerHandler, BACKLIGHT_NOT_WAIT);
 }
 
-void initIndicatorPos(void)
+/*
+ * Display the option indicator on the screen.
+ */
+static void displayInitOptIndicator(void)
 {
     /* Default init screen */
-    indicatorPosition[OPTION_FEED].x = DISPLAY_FEED_BUTTON_X + (DISPLAY_INDICATOR_W / 2) + DISPLAY_INDICATOR_STROKE;
-    indicatorPosition[OPTION_FEED].y = DISPLAY_FEED_BUTTON_Y + (DISPLAY_INDICATOR_H / 2) + DISPLAY_INDICATOR_STROKE;
-    indicatorPosition[OPTION_SETTINGS].x = DISPLAY_SETTINGS_BUTTON_X + (DISPLAY_INDICATOR_W / 2) + DISPLAY_INDICATOR_STROKE;
-    indicatorPosition[OPTION_SETTINGS].y = DISPLAY_SETTINGS_BUTTON_Y + (DISPLAY_INDICATOR_H / 2) + DISPLAY_INDICATOR_STROKE;
+    indicatorPosition[OPTION_FEED].x = DISP_FEED_BUTTON_X + (DISP_INDICATOR_W / 2) + DISP_INDICATOR_STROKE;
+    indicatorPosition[OPTION_FEED].y = DISP_FEED_BUTTON_Y + (DISP_INDICATOR_H / 2) + DISP_INDICATOR_STROKE;
+    indicatorPosition[OPTION_SETTINGS].x = DISP_SETTINGS_BUTTON_X + (DISP_INDICATOR_W / 2) + DISP_INDICATOR_STROKE;
+    indicatorPosition[OPTION_SETTINGS].y = DISP_SETTINGS_BUTTON_Y + (DISP_INDICATOR_H / 2) + DISP_INDICATOR_STROKE;
     /* Settings screen */
-    indicatorPosition[OPTION_PORTIONS].x = DISPLAY_PORTIONS_BUTTON_X + (DISPLAY_INDICATOR_W / 2) + DISPLAY_INDICATOR_STROKE;
-    indicatorPosition[OPTION_PORTIONS].y = DISPLAY_PORTIONS_BUTTON_Y + (DISPLAY_INDICATOR_H / 2) + DISPLAY_INDICATOR_STROKE;
-    indicatorPosition[OPTION_SOUND].x = DISPLAY_SOUND_BUTTON_X + (DISPLAY_INDICATOR_W / 2) + DISPLAY_INDICATOR_STROKE;
-    indicatorPosition[OPTION_SOUND].y = DISPLAY_SOUND_BUTTON_Y + (DISPLAY_INDICATOR_H / 2) + DISPLAY_INDICATOR_STROKE;
-    indicatorPosition[OPTION_BACK].x = DISPLAY_BACK_BUTTON_X + (DISPLAY_INDICATOR_W / 2) + DISPLAY_INDICATOR_STROKE;
-    indicatorPosition[OPTION_BACK].y = DISPLAY_BACK_BUTTON_Y + (DISPLAY_INDICATOR_H / 2) + DISPLAY_INDICATOR_STROKE;
+    indicatorPosition[OPTION_PORTIONS].x = DISP_PORTIONS_BUTTON_X + (DISP_INDICATOR_W / 2) + DISP_INDICATOR_STROKE;
+    indicatorPosition[OPTION_PORTIONS].y = DISP_PORTIONS_BUTTON_Y + (DISP_INDICATOR_H / 2) + DISP_INDICATOR_STROKE;
+    indicatorPosition[OPTION_SOUND].x = DISP_SOUND_BUTTON_X + (DISP_INDICATOR_W / 2) + DISP_INDICATOR_STROKE;
+    indicatorPosition[OPTION_SOUND].y = DISP_SOUND_BUTTON_Y + (DISP_INDICATOR_H / 2) + DISP_INDICATOR_STROKE;
+    indicatorPosition[OPTION_BACK].x = DISP_BACK_BUTTON_X + (DISP_INDICATOR_W / 2) + DISP_INDICATOR_STROKE;
+    indicatorPosition[OPTION_BACK].y = DISP_BACK_BUTTON_Y + (DISP_INDICATOR_H / 2) + DISP_INDICATOR_STROKE;
 }
 
-
-void displaySetIndicator(Options newPos, Options oldPos)
+/*
+ * Set the option indicator in a new position.
+ */
+static void dispSetOpIndicator(Options newPos, Options oldPos)
 {
     /* Clear old position */
     tft_ili9341_fill_rectangle(indicatorPosition[oldPos].x, indicatorPosition[oldPos].y,
-                               DISPLAY_INDICATOR_W - DISPLAY_INDICATOR_STROKE, DISPLAY_INDICATOR_H - DISPLAY_INDICATOR_STROKE, WHITE);
+                               DISP_INDICATOR_W - DISP_INDICATOR_STROKE, DISP_INDICATOR_H - DISP_INDICATOR_STROKE, WHITE);
     /* Set the new cursor */
     tft_ili9341_fill_rectangle(indicatorPosition[newPos].x, indicatorPosition[newPos].y,
-                               DISPLAY_INDICATOR_W - DISPLAY_INDICATOR_STROKE, DISPLAY_INDICATOR_H - DISPLAY_INDICATOR_STROKE, GREEN);
+                               DISP_INDICATOR_W - DISP_INDICATOR_STROKE, DISP_INDICATOR_H - DISP_INDICATOR_STROKE, GREEN);
 }
 
-void backLightCallback(TimerHandle_t xTimer)
+/*
+ * Callback for the backlight timer.
+ */
+static void dispBackLightCallback(TimerHandle_t xTimer)
 {
-    displayBackLightOff();
+    dispSetBackLightOff();
 }
 
-BaseType_t displayBackLightInit(void)
+/*
+ * Start the backlight timer.
+ */
+BaseType_t dispBacklightTimStart(void)
 {
-    BaseType_t status = pdTRUE;
+    return xTimerStart(xBackLightTimerHandler, BACKLIGHT_NOT_WAIT);
+}
 
+/*
+ * Initialize the backlight timer.
+ */
+BaseType_t dispBacklightTimInit(void)
+{
     /* Create one-shot timer to handle the backlight */
-    xBackLightTimerHandler = xTimerCreate("backLight-timer", pdMS_TO_TICKS(DISPLAY_BACKLIGHT_DEFAULT_PERIOD), pdFALSE, (void *)BACKLIGHT_TIMER_ID, backLightCallback);
+    xBackLightTimerHandler = xTimerCreate("backLight-timer", pdMS_TO_TICKS(DISP_BACKLIGHT_DEFAULT_PERIOD), pdFALSE, (void *)BACKLIGHT_TIMER_ID, dispBackLightCallback);
     if (xBackLightTimerHandler == NULL)
     {
-        // handler no sufficient memory
-        status = pdFALSE;
+        return pdFALSE;
     }
-
-    status = xTimerStart(xBackLightTimerHandler, BACKLIGHT_NOT_WAIT);
-    if (status != pdPASS)
-    {
-        // TODO: Handle error
-        status = pdFALSE;
-    }
-    PRINT_DEBUG("Backlight: Initalized\n");
-    // displayBacklightOn();
-    return status;
+    PRINT_DEBUG("Backlight: Timer created\n");
+    return pdTRUE;
 }
 
-void displayShowImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t* image)
+/*
+ * Display an image on the screen.
+ */
+static void dispShowImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t* image)
 {
     ILI9341_DrawImage(x, y, w, h, image);
 }
 
-void displayBackground(void)
+/*
+ * Display the wallpaper on the screen.
+ */
+static void dispShowWallPaper(void)
 {
-    displayShowImage(0, TFT_ILI9341_HEIGHT - BACKGROUND_CAT_H, BACKGROUND_CAT_W, BACKGROUND_CAT_H,
-                     (const uint16_t *)background_cat);
+    dispShowImage(0, TFT_ILI9341_HEIGHT - BACKGROUND_CAT_H,
+                    BACKGROUND_CAT_W, BACKGROUND_CAT_H, (const uint16_t *)background_cat);
 }
 
-void displayShowInitScreen(void)
+/*
+ * Display the init screen.
+ */
+static void dispShowInitScreen(void)
 {
+    mspDisableButtonInterrupts();
     /* Feed and settings buttons */
-    displayShowImage(DISPLAY_FEED_BUTTON_X, DISPLAY_FEED_BUTTON_Y, BUTTON_FEED_W, BUTTON_FEED_H, (const uint16_t *)button_feed);
-    displayShowImage(DISPLAY_SETTINGS_BUTTON_X, DISPLAY_SETTINGS_BUTTON_Y, BUTTON_SETTINGS_W, BUTTON_SETTINGS_H, (const uint16_t *)button_settings);
+    dispShowImage(DISP_FEED_BUTTON_X, DISP_FEED_BUTTON_Y,
+                    BUTTON_FEED_W, BUTTON_FEED_H, (const uint16_t *)button_feed);
+    dispShowImage(DISP_SETTINGS_BUTTON_X, DISP_SETTINGS_BUTTON_Y,
+                    BUTTON_SETTINGS_W, BUTTON_SETTINGS_H, (const uint16_t *)button_settings);
     /* Set indicator to default feed option*/
-    displaySetIndicator(OPTION_FEED, OPTION_SETTINGS);
+    dispSetOpIndicator(OPTION_FEED, OPTION_SETTINGS);
+    mspEnableButtonInterrupts();
     PRINT_DEBUG("Display: Default screen displayed\n");
 }
 
-void displayShowSettingsScreen(void)
+/*
+ * Display the settings screen.
+ */
+static void dispShowSettingsScreen(void)
 {
     /* Display available options */
-    displayShowImage(DISPLAY_PORTIONS_BUTTON_X, DISPLAY_PORTIONS_BUTTON_Y, BUTTON_PORTIONS_W, BUTTON_PORTIONS_H, (const uint16_t *)button_portions);
-    displayShowImage(DISPLAY_SOUND_BUTTON_X, DISPLAY_SOUND_BUTTON_Y, BUTTON_SOUND_W, BUTTON_SOUND_H, (const uint16_t *)button_sound);
-    displayShowImage(DISPLAY_BACK_BUTTON_X, DISPLAY_BACK_BUTTON_Y, BUTTON_BACK_W, BUTTON_BACK_H, (const uint16_t *)button_back);
+    dispShowImage(DISP_PORTIONS_BUTTON_X, DISP_PORTIONS_BUTTON_Y,
+                    BUTTON_PORTIONS_W, BUTTON_PORTIONS_H, (const uint16_t *)button_portions);
+    dispShowImage(DISP_SOUND_BUTTON_X, DISP_SOUND_BUTTON_Y,
+                    BUTTON_SOUND_W, BUTTON_SOUND_H, (const uint16_t *)button_sound);
+    dispShowImage(DISP_BACK_BUTTON_X, DISP_BACK_BUTTON_Y,
+                    BUTTON_BACK_W, BUTTON_BACK_H, (const uint16_t *)button_back);
     /* Set indicator to default position */
-    displaySetIndicator(OPTION_PORTIONS, OPTION_SOUND);
+    dispSetOpIndicator(OPTION_PORTIONS, OPTION_SOUND);
     PRINT_DEBUG("Display: Settings screen displayed\n");
 }
 
-void displayInit(void)
-{
-    /* Initialize the hardware and display with default settings */
-    tft_ili9341_init();
-    initIndicatorPos();
-}
-
-void feed(uint8_t portions)
-{
-    int i;
-
-    mspDisableButtonInterrupts();
-    if ((portions == 0) || (portions > DISPENSER_MAX_PORTIONS))
-    {
-        dispenserBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 3);
-        return;
-    }
-
-    for (i = 0; i < portions; i++)
-    {
-        appServoRotate(SERVO_MOTOR_DEGREES_180, 250);
-        HAL_Delay(500);
-        appServoRotate(SERVO_MOTOR_DEGREES_0, 250);
-        HAL_Delay(500);
-    }
-    mspEnableButtonInterrupts();
-    PRINT_DEBUG("Feed finished\n");
-}
-
-void displayPrint(uint16_t x, uint16_t y, const char* str, FontDef font, uint16_t color, uint16_t bgcolor)
+/*
+ * Print a message on the screen.
+ */
+void dispPrint(uint16_t x, uint16_t y, const char* str, FontDef font, uint16_t color, uint16_t bgcolor)
 {
     tft_ili9341_send_str(x, y, str, font, color, bgcolor);
 }
 
-void displayCleanScreen(void)
+/*
+ * Clean the screen.
+ */
+static void dispCleanScreen(void)
 {
     tft_ili9341_fill_rectangle(0, 0, TFT_ILI9341_WIDTH, TFT_ILI9341_HEIGHT - BACKGROUND_CAT_H, WHITE);
 }
 
-void screenSettings(void)
+/*
+ * Display a rectangle and fills it.
+ */
+void dispFillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color)
+{
+    tft_ili9341_fill_rectangle(x, y, w, h, color);
+}
+
+/*
+ * Fill the whole screen.
+ */
+static void dispFillScreen(Color color)
+{
+    tft_ili9341_fill_screen(color);
+}
+
+/*
+ * Initialize the display.
+ */
+void displayInit(void)
+{
+    /* Initialize the hardware and display with default init screen */
+    tft_ili9341_init();
+    displayInitOptIndicator();
+    dispFillScreen(WHITE);
+    dispShowWallPaper();
+    dispShowInitScreen();
+}
+
+/*
+ * Handles the settings screen when enter on that option.
+ */
+static void dispScreenSettings(void)
 {
     char buff[4];
     BaseType_t status;
@@ -267,14 +332,13 @@ void screenSettings(void)
     uint8_t index = sizeof(options) - 1; /* Max index by default */
     uint8_t optionSelected = options[index];
 
-    PRINT_DEBUG("Screen settings function\n");
     mspDisableButtonInterrupts();
-    displayShowSettingsScreen();
+    dispShowSettingsScreen();
     /* Update option values */
     sprintf(buff, "%d", dispenserSettings.portions);
-    displayPrint(DISPLAY_PORTIONS_VALUE_X, DISPLAY_PORTIONS_VALUE_Y, buff, Font_16x26, BLACK,WHITE);
+    dispPrint(DISP_PORTIONS_VALUE_X, DISP_PORTIONS_VALUE_Y, buff, Font_16x26, BLACK,WHITE);
     (dispenserSettings.sound == DISPENSER_SOUND_ON) ? sprintf(buff, "ON") : sprintf(buff, "OFF");
-    displayPrint(DISPLAY_SOUND_VALUE_X, DISPLAY_SOUND_VALUE_Y, buff, Font_16x26, BLACK,WHITE);
+    dispPrint(DISP_SOUND_VALUE_X, DISP_SOUND_VALUE_Y, buff, Font_16x26, BLACK,WHITE);
     mspEnableButtonInterrupts();
     while (1)
     {
@@ -284,20 +348,20 @@ void screenSettings(void)
          *                       Block until there is an event.
          */
         xTaskNotifyWaitIndexed(BUTTON_INDEX_NOTIFICATION, NO_CLEAR_ON_ENTRY, CLEAR_ALL_ON_EXIT, &buttonEvent, portMAX_DELAY);
-        status = displayRestartBacklightTimer();
+        status = dispBacklightTimReset();
         if (status != pdTRUE)
         {
-            errorHandler();
+            appErrorHandler();
         }
-        if (displaySettings.backlightState == BACKLIGHT_OFF)
+        if (backlightState == BACKLIGHT_OFF)
         {
-            displayBacklightOn();
+            dispSetBacklightOn();
             continue;
         }
-        /* Handle button ENTER event */
+        /* Handle Buttons: ENTER event */
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionSelected == OPTION_PORTIONS))
         {
-            PRINT_DEBUG("Button ENTER event. Portions option\n");
+            appBeep(DISP_BEEP_ONCE);
             dispenserSettings.portions++;
             if (dispenserSettings.portions > DISPENSER_MAX_PORTIONS)
             {
@@ -305,68 +369,69 @@ void screenSettings(void)
             }
             sprintf(buff, "%d", dispenserSettings.portions);
             /* Display portion value */
-            displayPrint(DISPLAY_PORTIONS_VALUE_X, DISPLAY_PORTIONS_VALUE_Y, buff, Font_16x26, BLACK,WHITE);
+            dispPrint(DISP_PORTIONS_VALUE_X, DISP_PORTIONS_VALUE_Y, buff, Font_16x26, BLACK,WHITE);
+            PRINT_DEBUG("Buttons: ENTER event. Portions:");
+            PRINT_DEBUG(buff);
+            PRINT_DEBUG("\n");
         }
         /* Option sound is selected */
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionSelected == OPTION_SOUND))
         {
-            PRINT_DEBUG("Button ENTER event. Sound option\n");
-            /* Toggle the sound state*/
+            PRINT_DEBUG("Buttons: ENTER event. Sound option\n");
+            appBeep(DISP_BEEP_ONCE);
+            /* Toggle sound state*/
             dispenserSettings.sound ^= 1;
             (dispenserSettings.sound == DISPENSER_SOUND_ON) ? sprintf(buff, "ON") : sprintf(buff, "OFF");
-            tft_ili9341_fill_rectangle(DISPLAY_SOUND_VALUE_X, DISPLAY_SOUND_VALUE_Y, 50, 26, WHITE);
-            displayPrint(DISPLAY_SOUND_VALUE_X, DISPLAY_SOUND_VALUE_Y, buff, Font_16x26, BLACK,WHITE);
+            dispFillRect(DISP_SOUND_VALUE_X, DISP_SOUND_VALUE_Y, 50, 26, WHITE);
+            dispPrint(DISP_SOUND_VALUE_X, DISP_SOUND_VALUE_Y, buff, Font_16x26, BLACK,WHITE);
         }
         /* Option back is selected */
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionSelected == OPTION_BACK))
         {
-            dispenserBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
-            displayCleanScreen();
+            appBeep(DISP_BEEP_ONCE);
             break;
         }
-        /* Handle button UP event */
+        /* Handle Buttons: UP event */
         if (buttonEvent & BUTTON_EVENT_UP && (optionSelected != maxOption))
         {
             optionSelected = options[++index];
-            displaySetIndicator(optionSelected, options[index - 1]);
+            dispSetOpIndicator(optionSelected, options[index - 1]);
+            appBeep(DISP_BEEP_ONCE);
         }
-        if (buttonEvent & BUTTON_EVENT_UP && (optionSelected == maxOption))
-        {
-            dispenserBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 2);
-        }
-        /* Handle button DOWN event */
+        /* Handle Buttons: DOWN event */
         if ((buttonEvent & BUTTON_EVENT_DOWN) && (optionSelected != minOption))
         {
             optionSelected = options[--index];
-            displaySetIndicator(optionSelected, options[index + 1]);
-        }
-        if (buttonEvent & BUTTON_EVENT_DOWN && (optionSelected == minOption))
-        {
-            dispenserBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 2);
+            dispSetOpIndicator(optionSelected, options[index + 1]);
+            appBeep(DISP_BEEP_ONCE);
         }
     }
 }
 
+/*
+ * Task to handle the display.
+ */
 void vTaskDisplay(void *params)
 {
     BaseType_t status;
     uint32_t buttonEvent;
-    Options cursorIndicator = OPTION_FEED;
+    Options optionIndicator = OPTION_FEED;
 
-    tft_ili9341_fill_screen(WHITE);
-    displayBackground();
-    /* Show init screen */
-    displayShowInitScreen();
-    displayBacklightOn();
-    /* Initialize the backlight */
-    status = displayBackLightInit();
+    dispSetBacklightOn();
+    /* Initialize the backlight timer */
+    status = dispBacklightTimInit();
     if (status != pdTRUE)
     {
-        errorHandler();
+        appErrorHandler();
     }
-    /* Enable button interrupts */
-    mspEnableButtonInterrupts();
+    status = dispBacklightTimStart();
+    if (status != pdTRUE)
+    {
+        appErrorHandler();
+    }
 
+    /* Enable Buttons: Interrupts after first screen is ready */
+    mspEnableButtonInterrupts();
     while (1)
     {
         /* Wait until a push button is pressed.
@@ -375,61 +440,54 @@ void vTaskDisplay(void *params)
          *                       Block until there is an event.
          */
         xTaskNotifyWaitIndexed(BUTTON_INDEX_NOTIFICATION, NO_CLEAR_ON_ENTRY, CLEAR_ALL_ON_EXIT, &buttonEvent, portMAX_DELAY);
-        status = displayRestartBacklightTimer();
+        /* Reset the backlight timer every time there is button event */
+        status = dispBacklightTimReset();
         if (status != pdTRUE)
         {
-            errorHandler();
+            appErrorHandler();
         }
-        if (displaySettings.backlightState == BACKLIGHT_OFF)
+        if (backlightState == BACKLIGHT_OFF)
         {
-            displayBacklightOn();
+            /* Coming from a backlight off a push button event does not cause any action
+               so it just continues until another button event.
+            */
+            dispSetBacklightOn();
             continue;
         }
 
         /* Handle button events: ENTER, UP and DOWN */
-        if ((buttonEvent & BUTTON_EVENT_ENTER) && (cursorIndicator == OPTION_FEED))
+        if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionIndicator == OPTION_FEED))
         {
-            PRINT_DEBUG("Button ENTER event\n");
-            dispenserBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
-            displayPrint(DISPLAY_POS_FEEDING_X, DISPLAY_POS_FEEDING_Y, "Feeding...", Font_11x18, BLACK, WHITE);
-            feed(dispenserSettings.portions);
-            tft_ili9341_fill_rectangle(DISPLAY_POS_FEEDING_X, DISPLAY_POS_FEEDING_Y, 105, 20, WHITE);
+            PRINT_DEBUG("Buttons: ENTER event\n");
+            appBeep(DISP_BEEP_ONCE);
+            appFeed(dispenserSettings.portions);
         }
-        if ((buttonEvent & BUTTON_EVENT_ENTER) && (cursorIndicator == OPTION_SETTINGS))
+        if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionIndicator == OPTION_SETTINGS))
         {
-            PRINT_DEBUG("Button ENTER event\n");
-            dispenserBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 3);
-            /* Clean screen */
-            displayCleanScreen();
-            screenSettings();
-            mspEnableButtonInterrupts();
-            displayShowInitScreen();
-            mspEnableButtonInterrupts();
-            cursorIndicator = OPTION_FEED;
+            PRINT_DEBUG("Buttons: ENTER event\n");
+            appBeep(DISP_BEEP_ONCE);
+            /* Clean the push buttons icons and only keep the wallpaper before
+            *  displaying a screen.
+            */
+            dispCleanScreen();
+            dispScreenSettings();
+            dispCleanScreen();
+            dispShowInitScreen();
+            optionIndicator = OPTION_FEED;
         }
-        if ((buttonEvent & BUTTON_EVENT_UP) && (cursorIndicator == OPTION_FEED))
+        if ((buttonEvent & BUTTON_EVENT_UP) && (optionIndicator == OPTION_SETTINGS))
         {
-            PRINT_DEBUG("Button UP event\n");
-            dispenserBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 2);
+            PRINT_DEBUG("Buttons: UP event \n");
+            appBeep(DISP_BEEP_ONCE);
+            dispSetOpIndicator(OPTION_FEED, OPTION_SETTINGS);
+            optionIndicator = OPTION_FEED;
         }
-        if ((buttonEvent & BUTTON_EVENT_UP) && (cursorIndicator == OPTION_SETTINGS))
+        if ((buttonEvent & BUTTON_EVENT_DOWN) && (optionIndicator == OPTION_FEED))
         {
-            PRINT_DEBUG("Button UP event \n");
-            dispenserBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
-            displaySetIndicator(OPTION_FEED, OPTION_SETTINGS);
-            cursorIndicator = OPTION_FEED;
-        }
-        if ((buttonEvent & BUTTON_EVENT_DOWN) && (cursorIndicator == OPTION_FEED))
-        {
-            PRINT_DEBUG("Button DOWN event\n");
-            dispenserBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
-            displaySetIndicator(OPTION_SETTINGS, OPTION_FEED);
-            cursorIndicator = OPTION_SETTINGS;
-        }
-        if ((buttonEvent & BUTTON_EVENT_DOWN) && (cursorIndicator == OPTION_SETTINGS))
-        {
-            PRINT_DEBUG("Button DOWN event\n");
-            dispenserBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 2);
+            PRINT_DEBUG("Buttons: DOWN event\n");
+            appBeep(DISP_BEEP_ONCE);
+            dispSetOpIndicator(OPTION_SETTINGS, OPTION_FEED);
+            optionIndicator = OPTION_SETTINGS;
         }
     }
 }

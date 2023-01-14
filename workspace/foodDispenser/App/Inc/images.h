@@ -1,3 +1,10 @@
+/**
+ ******************************************************************************
+ * @file         images.h
+ * @author       Aaron Escoboza
+ * @brief        Constant values for images displayed on the screen.
+ ******************************************************************************
+ */
 
 #define BUTTON_SETTINGS_W       182
 #define BUTTON_SETTINGS_H       42

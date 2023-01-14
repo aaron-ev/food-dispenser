@@ -71,10 +71,10 @@ void mspEnableButtonInterrupts(void)
     HAL_NVIC_EnableIRQ(EXTI2_IRQn);
     HAL_NVIC_EnableIRQ(EXTI3_IRQn);
     HAL_NVIC_EnableIRQ(EXTI4_IRQn);
-    PRINT_DEBUG("Button interrupts enabled\n");
+    PRINT_DEBUG("Buttons: Interrupts enabled\n");
 }
 
-void mspEnableBuzzerInterrupts(void)
+void mspEnableBuzzerIT(void)
 {
     HAL_NVIC_SetPriority(TIM2_IRQn, 15, 0);
     HAL_NVIC_EnableIRQ(TIM2_IRQn);
@@ -85,7 +85,7 @@ void mspDisableButtonInterrupts(void)
     HAL_NVIC_DisableIRQ(EXTI2_IRQn);
     HAL_NVIC_DisableIRQ(EXTI3_IRQn);
     HAL_NVIC_DisableIRQ(EXTI4_IRQn);
-    PRINT_DEBUG("Button interrupts disabled\n");
+    PRINT_DEBUG("Buttons: Interrupts disabled\n");
 }
 
 void HAL_UART_MspInit(UART_HandleTypeDef* uartHandler)

@@ -20,7 +20,7 @@
 
 #define BUTTON_INDEX_NOTIFICATION           1
 #define DISPENSER_SOUND_ON                  1
-#define DISPENSER_SOUND_OFF                 0
+#define SOUND_OFF                 0
 
 #define PRINT_DEBUG(n)                      consolePrint(n)
 
@@ -36,10 +36,10 @@ typedef struct
 {
     uint8_t sound; /* On or off */
     uint8_t portions;
-}DispenserSettings;
+} DispenserSettings;
 
-void dispenserBeep(uint32_t timeOn, uint32_t timeOff, uint32_t times);
-void appServoRotate(ServoPosition position, uint32_t halDelay);
-void errorHandler(void);
+void appBeep(uint32_t numTimes);
+void appFeed(uint8_t portions);
+void appErrorHandler(void);
 
 #endif

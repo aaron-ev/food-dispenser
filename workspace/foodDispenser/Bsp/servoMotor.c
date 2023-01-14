@@ -1,14 +1,9 @@
-
-
 /**
   ******************************************************************************
   * @file    servomotor.c
   * @author  Aaron Escoboza
   * @brief   Provide servo motor APIs based on a hardware timber configures in
   *          PWM.
-  ******************************************************************************
-  * @attention
-  *
   ******************************************************************************
   */
 
@@ -22,12 +17,11 @@
 #define SERVO_MOTOR_1MS_SIGNAL                  ((SERVO_MOTOR_TIM_BASE_PERIOD * 5) / 100)
 #define SERVO_MOTOR_DELAY                       250
 
-extern void errorHandler(void);
 TIM_HandleTypeDef servoMotorTimHandler = {0};
 
 void servoMotorStart(void);
 void servoMotorStop(void);
-void servoMotorRotate(ServoPosition position);
+void servoMotorRotate(Degrees_E position);
 
 void servoMotorStart(void)
 {
@@ -39,10 +33,24 @@ void servoMotorStop(void)
     HAL_TIM_PWM_Stop(&servoMotorTimHandler, SERVO_MOTOR_TIM_CHANNEL);
 }
 
+void servoMotorSetDegrees(Degrees_E position)
+{
+    if (position == SERVO_MOTOR_DEGREES_0)
+    {
+        __HAL_TIM_SET_COMPARE(&servoMotorTimHandler, SERVO_MOTOR_TIM_CHANNEL,
+                              SERVO_MOTOR_2MS_SIGNAL);
+    }
+    if(position == SERVO_MOTOR_DEGREES_180)
+    {
+        __HAL_TIM_SET_COMPARE(&servoMotorTimHandler, SERVO_MOTOR_TIM_CHANNEL,
+                              SERVO_MOTOR_1MS_SIGNAL);
+    }
+}
+
 HAL_StatusTypeDef servoMotorInit(void)
 {
-    TIM_OC_InitTypeDef servoMotorChannelConfing = {0};
     HAL_StatusTypeDef halStatus;
+    TIM_OC_InitTypeDef servoMotorChannelConfig = {0};
 
     /* TIMER base unit settings: Servo motor */
     servoMotorTimHandler.Instance = SERVO_MOTOR_TIM_INSTANCE;
@@ -51,32 +59,18 @@ HAL_StatusTypeDef servoMotorInit(void)
     halStatus = HAL_TIM_PWM_Init(&servoMotorTimHandler);
     if (halStatus != HAL_OK)
     {
-        errorHandler();
+        return HAL_ERROR;
     }
 
     /* TIMER channel settings: Servo motor */
-    servoMotorChannelConfing.OCMode = TIM_OCMODE_PWM1;
-    servoMotorChannelConfing.OCPolarity = TIM_OCPOLARITY_HIGH;
-    servoMotorChannelConfing.Pulse = SERVO_MOTOR_2MS_SIGNAL;
-    halStatus = HAL_TIM_PWM_ConfigChannel(&servoMotorTimHandler, &servoMotorChannelConfing, SERVO_MOTOR_TIM_CHANNEL);
+    servoMotorChannelConfig.OCMode = TIM_OCMODE_PWM1;
+    servoMotorChannelConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
+    servoMotorChannelConfig.Pulse = SERVO_MOTOR_2MS_SIGNAL;
+    halStatus = HAL_TIM_PWM_ConfigChannel(&servoMotorTimHandler, &servoMotorChannelConfig, SERVO_MOTOR_TIM_CHANNEL);
     if (halStatus != HAL_OK)
     {
-        errorHandler();
+        return HAL_ERROR;
     }
 
-    return halStatus;
-}
-
-void servoMotorSetPosition(ServoPosition position)
-{
-    if (position == SERVO_MOTOR_DEGREES_0)
-    {
-        __HAL_TIM_SET_COMPARE(&servoMotorTimHandler, SERVO_MOTOR_TIM_CHANNEL,
-                              SERVO_MOTOR_2MS_SIGNAL);
-    }
-    if (position == SERVO_MOTOR_DEGREES_180)
-    {
-        __HAL_TIM_SET_COMPARE(&servoMotorTimHandler, SERVO_MOTOR_TIM_CHANNEL,
-                              SERVO_MOTOR_1MS_SIGNAL);
-    }
+    return HAL_OK;
 }

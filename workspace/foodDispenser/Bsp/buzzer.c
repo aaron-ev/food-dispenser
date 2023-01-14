@@ -8,6 +8,9 @@
 
 #include "buzzer.h"
 
+/* Timing settings */
+#define BUZZER_TIM_PRESCALER                40  /* tick = 1us*/
+
 /* Macros to configure the hardware timer */
 #define BUZZER_TIM_PERIOD 0xFFFFFFFF
 
@@ -47,8 +50,8 @@ HAL_StatusTypeDef buzzerStop(void)
  */
 HAL_StatusTypeDef buzzerInit(void)
 {
+    HAL_StatusTypeDef halStatus;
     TIM_OC_InitTypeDef timerOCInit = {0};
-    HAL_StatusTypeDef halStatus = HAL_OK;
 
     /* Timer: Base unit settings */
     buzzerTimHandler.Instance = BUZZER_TIM_INSTANCE;
@@ -59,7 +62,7 @@ HAL_StatusTypeDef buzzerInit(void)
     halStatus = HAL_TIM_OC_Init(&buzzerTimHandler);
     if (halStatus != HAL_OK)
     {
-        errorHandler();
+        return HAL_ERROR;
     }
 
     /* Timer: Channel settings */
@@ -69,12 +72,12 @@ HAL_StatusTypeDef buzzerInit(void)
     halStatus = HAL_TIM_OC_ConfigChannel(&buzzerTimHandler, &timerOCInit, BUZZER_TIM_CHANNEL);
     if (halStatus != HAL_OK)
     {
-        errorHandler();
+        return HAL_ERROR;
     }
 
     /* Clear interrupt to not jump to the interrupt handler */
     __HAL_TIM_CLEAR_IT(&buzzerTimHandler, TIM_IT_UPDATE);
 
-    return halStatus;
+    return HAL_OK;
 
 }

@@ -74,7 +74,7 @@ void mspEnableButtonInterrupts(void)
     PRINT_DEBUG("Buttons: Interrupts enabled\n");
 }
 
-void mspEnableBuzzerInterrupts(void)
+void mspEnableBuzzerIT(void)
 {
     HAL_NVIC_SetPriority(TIM2_IRQn, 15, 0);
     HAL_NVIC_EnableIRQ(TIM2_IRQn);

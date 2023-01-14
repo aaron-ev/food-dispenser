@@ -1,9 +1,11 @@
-
-/**************************************************************************
- * Author: Aaron Escoboza
- * Description: Pet food dispenser based on STM HAL layer and FreeRTOS.
- * Github account: https://github.com/aaron-ev
- **************************************************************************/
+/**
+ ******************************************************************************
+ * @file         main.c
+ * @author       Aaron Escoboza
+ * @brief        Pet food dispenser based on STM HAL layer and FreeRTOS.
+ *               Github account: https://github.com/aaron-ev
+ ******************************************************************************
+ */
 
 #include "appConfig.h"
 #include "main.h"
@@ -18,6 +20,9 @@
 /* Screen position for a string when feeding */
 #define APP_POS_FEEDING_X               60
 #define APP_POS_FEEDING_Y               210
+
+/* Beep macros */
+#define APP_BEEP_DELAY                  100
 
 /* Global variables */
 DispenserSettings dispenserSettings;
@@ -67,23 +72,22 @@ void vTaskHeartBeat(void *params)
 /*
 * Plays a beep.
 */
-void appBeep(uint32_t timeOn, uint32_t timeOff, uint32_t times)
+void appBeep(uint32_t numTimes)
 {
     int i;
 
-    if (times <= 0 || timeOn <= 0 || dispenserSettings.sound == DISPENSER_SOUND_OFF)
+    if (numTimes <= 0 || dispenserSettings.sound == SOUND_OFF)
     {
         return;
     }
-    for ( i = 0; i < times; i++)
+    for ( i = 0; i < numTimes; i++)
     {
-
         buzzerStart();
-        HAL_Delay(timeOn);
+        HAL_Delay(APP_BEEP_DELAY);
         buzzerStop();
-        if (times > 1)
+        if (numTimes > 1)
         {
-            HAL_Delay(timeOff);
+            HAL_Delay(APP_BEEP_DELAY);
         }
     }
 }
@@ -93,30 +97,30 @@ void appBeep(uint32_t timeOn, uint32_t timeOff, uint32_t times)
 */
 static void appTestBspBuzzer(void)
 {
-    appBeep(300, 300, 4);
-    appBeep(200, 200, 3);
-    appBeep(100, 100, 2);
-    appBeep(50, 0, 1);
+    /* Play different use cases */
+    appBeep(4);
+    appBeep(3);
+    appBeep(2);
+    appBeep(1);
 }
 
 /*
 * Rotate the servo motor.
 */
-void appServoRotate(ServoPosition position, uint32_t halDelay)
+void appServoRotate(Degrees_E degrees, uint32_t delay)
 {
-    servoMotorSetPosition(position);
+    servoMotorSetDegrees(degrees);
     servoMotorStart();
-    HAL_Delay(halDelay);
+    HAL_Delay(delay);
     servoMotorStop();
 }
 
 /*
-* Test the servo motor feature.
+* Test the servo motor: Iterate through all degrees
 */
-static void appTestBspServoMotor(void)
+static void appTestBspMotor(void)
 {
     int i;
-
     for (i = 0; i < 3; i++)
     {
         appServoRotate(SERVO_MOTOR_DEGREES_180, 500);
@@ -138,16 +142,16 @@ static void appTestConsole(void)
 }
 
 /*
-* Test the bsp layer.
+* Test the BSP layer.
 */
-static void testBsp(void)
+static void appTestBsp(void)
 {
   consolePrint("Testing: Console\n");
   appTestConsole();
   consolePrint("Testing: Buzzer\n");
   appTestBspBuzzer();
   consolePrint("Testing: Servo motor\n");
-  appTestBspServoMotor();
+  appTestBspMotor();
 }
 
 /*
@@ -188,38 +192,34 @@ int main(void)
     BaseType_t retVal;
     HAL_StatusTypeDef halStatus;
 
-    /* Initialize bsp layer */
+    /* Initialize BSP layer */
     halStatus = bspInit();
     if (halStatus != HAL_OK)
     {
         appErrorHandler();
     }
     consolePrint("BSP: Initialized\n");
-
-    /* Initialize display */
-    dispInit();
+    /* Initialize the display */
+    displayInit();
     consolePrint("Display: Initialized\n");
+    /* Initialize default dispenser settings */
+    dispenserSettings.portions = 1;
+    dispenserSettings.sound = DISPENSER_SOUND_ON;
+    /* Set the servo motor to its default position */
+    appServoRotate(SERVO_MOTOR_DEGREES_0, 250);
+    /* Double beep to indicate initialization phase is completed */
+    mspEnableBuzzerIT();
+    appBeep(2);
 
-    /* Test mode to check the bsp correct functionality */
+    /* Test mode: Check each feature functionality */
     #if (TEST_BSP == 1)
         consolePrint(" *** Testing mode *** \n");
-        testBsp();
+        appTestBsp();
         consolePrint("Testing: Finished\n");
         exit(0);
     #endif
 
-    /* Initialize default dispenser settings */
-    dispenserSettings.portions = 1;
-    dispenserSettings.sound = DISPENSER_SOUND_ON;
-
-    /* Set the servo motor to its default position */
-    appServoRotate(SERVO_MOTOR_DEGREES_0, 250);
-
-    /* Double beep to indicate initialization phase is completed */
-    mspEnableBuzzerInterrupts();
-    appBeep(100, 100, 2);
-
-    /* Heart beat task */
+    /* Create tasks and start the scheduler */
     retVal = xTaskCreate(vTaskHeartBeat,
                          "task-heart-beat",
                          configMINIMAL_STACK_SIZE,
@@ -231,8 +231,6 @@ int main(void)
         consolePrint("ERROR: Heart beat could not be created\n");
         goto main_out;
     }
-
-    /* Display task */
     retVal = xTaskCreate(vTaskDisplay,
                          "task-display",
                          configMINIMAL_STACK_SIZE,
@@ -248,11 +246,11 @@ int main(void)
     vTaskStartScheduler();
 
 main_out:
-    if (xTaskHeartBeatHandler != NULL)
+    if (!xTaskHeartBeatHandler)
     {
         vTaskDelete(xTaskHeartBeatHandler);
     }
-    if (xTaskDisplayHandler != NULL)
+    if (!xTaskDisplayHandler)
     {
         vTaskDelete(xTaskDisplayHandler);
     }

@@ -55,4 +55,4 @@
 #define CONSOLE_GPIO_PORT                   GPIOA
 #define CONSOLE_BAUDRATE                    9600
 
-#endif /* APP_CONFIG__H */
+#endif

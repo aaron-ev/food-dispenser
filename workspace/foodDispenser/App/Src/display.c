@@ -52,6 +52,9 @@
 #define DISP_BACK_BUTTON_X               65
 #define DISP_BACK_BUTTON_Y               160
 
+/* Helper macros to handle the beep */
+#define DISP_BEEP_ONCE                   1
+
 /*
  * Available options for all screens.
  */
@@ -92,13 +95,13 @@ TaskHandle_t xTaskDisplayHandler;
 TimerHandle_t xBackLightTimerHandler;
 
 /* Helper function to initialize the display */
-void dispInit(void);
+void displayInit(void);
 
 /* Helper functions to handle the project version */
 static void dispShowVersion(void);
 
 /* Helper functions to handle the option indicator */
-static void dispInitOptIndicator(void);
+static void displayInitOptIndicator(void);
 static void dispSetOpIndicator(Options newPos, Options oldPos);
 
 /* Backlight helper functions */
@@ -159,7 +162,7 @@ BaseType_t dispBacklightTimReset(void)
 /*
  * Display the option indicator on the screen.
  */
-static void dispInitOptIndicator(void)
+static void displayInitOptIndicator(void)
 {
     /* Default init screen */
     indicatorPosition[OPTION_FEED].x = DISP_FEED_BUTTON_X + (DISP_INDICATOR_W / 2) + DISP_INDICATOR_STROKE;
@@ -305,11 +308,11 @@ static void dispFillScreen(Color color)
 /*
  * Initialize the display.
  */
-void dispInit(void)
+void displayInit(void)
 {
     /* Initialize the hardware and display with default init screen */
     tft_ili9341_init();
-    dispInitOptIndicator();
+    displayInitOptIndicator();
     dispFillScreen(WHITE);
     dispShowWallPaper();
     dispShowInitScreen();
@@ -358,7 +361,7 @@ static void dispScreenSettings(void)
         /* Handle Buttons: ENTER event */
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionSelected == OPTION_PORTIONS))
         {
-            appBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
+            appBeep(DISP_BEEP_ONCE);
             dispenserSettings.portions++;
             if (dispenserSettings.portions > DISPENSER_MAX_PORTIONS)
             {
@@ -375,7 +378,7 @@ static void dispScreenSettings(void)
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionSelected == OPTION_SOUND))
         {
             PRINT_DEBUG("Buttons: ENTER event. Sound option\n");
-            appBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
+            appBeep(DISP_BEEP_ONCE);
             /* Toggle sound state*/
             dispenserSettings.sound ^= 1;
             (dispenserSettings.sound == DISPENSER_SOUND_ON) ? sprintf(buff, "ON") : sprintf(buff, "OFF");
@@ -385,7 +388,7 @@ static void dispScreenSettings(void)
         /* Option back is selected */
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionSelected == OPTION_BACK))
         {
-            appBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
+            appBeep(DISP_BEEP_ONCE);
             break;
         }
         /* Handle Buttons: UP event */
@@ -393,14 +396,14 @@ static void dispScreenSettings(void)
         {
             optionSelected = options[++index];
             dispSetOpIndicator(optionSelected, options[index - 1]);
-            appBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
+            appBeep(DISP_BEEP_ONCE);
         }
         /* Handle Buttons: DOWN event */
         if ((buttonEvent & BUTTON_EVENT_DOWN) && (optionSelected != minOption))
         {
             optionSelected = options[--index];
             dispSetOpIndicator(optionSelected, options[index + 1]);
-            appBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
+            appBeep(DISP_BEEP_ONCE);
         }
     }
 }
@@ -456,13 +459,13 @@ void vTaskDisplay(void *params)
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionIndicator == OPTION_FEED))
         {
             PRINT_DEBUG("Buttons: ENTER event\n");
-            appBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
+            appBeep(DISP_BEEP_ONCE);
             appFeed(dispenserSettings.portions);
         }
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionIndicator == OPTION_SETTINGS))
         {
             PRINT_DEBUG("Buttons: ENTER event\n");
-            appBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
+            appBeep(DISP_BEEP_ONCE);
             /* Clean the push buttons icons and only keep the wallpaper before
             *  displaying a screen.
             */
@@ -475,14 +478,14 @@ void vTaskDisplay(void *params)
         if ((buttonEvent & BUTTON_EVENT_UP) && (optionIndicator == OPTION_SETTINGS))
         {
             PRINT_DEBUG("Buttons: UP event \n");
-            appBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
+            appBeep(DISP_BEEP_ONCE);
             dispSetOpIndicator(OPTION_FEED, OPTION_SETTINGS);
             optionIndicator = OPTION_FEED;
         }
         if ((buttonEvent & BUTTON_EVENT_DOWN) && (optionIndicator == OPTION_FEED))
         {
             PRINT_DEBUG("Buttons: DOWN event\n");
-            appBeep(BEEP_DEFAULT_TON, BEEP_DEFAULT_TOFF, 1);
+            appBeep(DISP_BEEP_ONCE);
             dispSetOpIndicator(OPTION_SETTINGS, OPTION_FEED);
             optionIndicator = OPTION_SETTINGS;
         }

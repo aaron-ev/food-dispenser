@@ -13,7 +13,7 @@
 #include "FreeRTOS.h"
 #include "fonts.h"
 
-void dispInit(void);
+void displayInit(void);
 void dispPrint(uint16_t x, uint16_t y, const char* str,
                FontDef font, uint16_t color, uint16_t bgcolor);
 void dispFillRect(uint16_t x, uint16_t y, uint16_t w,

@@ -11,7 +11,7 @@
 #define __MSP__H
 
 void mspEnableBuzzerIT(void);
-void mspEnableButtonInterrupts(void);
-void mspDisableButtonInterrupts(void);
+void mspEnableButtonIT(void);
+void mspDisableButtonIT(void);
 
 #endif

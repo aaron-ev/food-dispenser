@@ -13,6 +13,7 @@
 #include "ili9341_touch.h"
 #include "console.h"
 #include "display.h"
+#include "timers.h"
 
 /* FreeRTOS helper macros */
 #define NO_CLEAR_ON_ENTRY                0
@@ -55,6 +56,10 @@
 /* Helper macros to handle the beep */
 #define DISP_BEEP_ONCE                   1
 
+/* Debounce timer macros*/
+#define APP_DEBOUNCE_ID                  2
+#define APP_DEBOUNCE_PERIOD              100
+
 /*
  * Available options for all screens.
  */
@@ -89,6 +94,8 @@ typedef enum
 Coordinates indicatorPosition[MAX_OPTIONS];
 BackLightState backlightState;
 extern DispenserSettings dispenserSettings;
+uint8_t debounceTmrActive;
+TimerHandle_t xDebounceTmrHandler;
 
 /* freeRTOS handlers */
 TaskHandle_t xTaskDisplayHandler;
@@ -127,8 +134,9 @@ static void dispShowVersion(void)
 {
     char buff[5];
 
-    sprintf(buff, "v%d.%d", PROJECT_VERSION_MAYOR_NUMBER, PROJECT_VERSION_MINOR_NUMBER);
-    tft_ili9341_send_str(TFT_ILI9341_WIDTH - 50, TFT_ILI9341_HEIGHT - 20, buff, Font_11x18, BLACK, WHITE);
+    sprintf(buff, "v%d.%d", PROJECT_VERSION_MAJOR_NUMBER, PROJECT_VERSION_MINOR_NUMBER);
+    tft_ili9341_send_str(TFT_ILI9341_WIDTH - 50, TFT_ILI9341_HEIGHT - 20,
+                         buff, Font_11x18, BLACK, WHITE);
 }
 
 /*
@@ -138,7 +146,7 @@ static void dispSetBacklightOn(void)
 {
     HAL_GPIO_WritePin(TFT_LED_PORT, TFT_LED_PIN_NUM, GPIO_PIN_SET);
     backlightState = BACKLIGHT_ON;
-    PRINT_DEBUG("Backlight: ON\n");
+    PRINT_DEBUG("DEBUG: Backlight ON\n");
 }
 
 /*
@@ -148,7 +156,7 @@ static void dispSetBackLightOff(void)
 {
     HAL_GPIO_WritePin(TFT_LED_PORT, TFT_LED_PIN_NUM, GPIO_PIN_RESET);
     backlightState = BACKLIGHT_OFF;
-    PRINT_DEBUG("Backlight: OFF\n");
+    PRINT_DEBUG("DEBUG: Backlight OFF\n");
 }
 
 /*
@@ -213,12 +221,13 @@ BaseType_t dispBacklightTimStart(void)
 BaseType_t dispBacklightTimInit(void)
 {
     /* Create one-shot timer to handle the backlight */
-    xBackLightTimerHandler = xTimerCreate("backLight-timer", pdMS_TO_TICKS(DISP_BACKLIGHT_DEFAULT_PERIOD), pdFALSE, (void *)BACKLIGHT_TIMER_ID, dispBackLightCallback);
+    xBackLightTimerHandler = xTimerCreate("backLight-timer", pdMS_TO_TICKS(DISP_BACKLIGHT_DEFAULT_PERIOD),
+                                          pdFALSE, (void *)BACKLIGHT_TIMER_ID, dispBackLightCallback);
     if (xBackLightTimerHandler == NULL)
     {
         return pdFALSE;
     }
-    PRINT_DEBUG("Backlight: Timer created\n");
+    PRINT_DEBUG("DEBUG: backlight: Timer created\n");
     return pdTRUE;
 }
 
@@ -244,16 +253,16 @@ static void dispShowWallPaper(void)
  */
 static void dispShowInitScreen(void)
 {
-    mspDisableButtonInterrupts();
+    mspDisableButtonIT();
     /* Feed and settings buttons */
     dispShowImage(DISP_FEED_BUTTON_X, DISP_FEED_BUTTON_Y,
-                    BUTTON_FEED_W, BUTTON_FEED_H, (const uint16_t *)button_feed);
+                  BUTTON_FEED_W, BUTTON_FEED_H, (const uint16_t *)button_feed);
     dispShowImage(DISP_SETTINGS_BUTTON_X, DISP_SETTINGS_BUTTON_Y,
-                    BUTTON_SETTINGS_W, BUTTON_SETTINGS_H, (const uint16_t *)button_settings);
+                  BUTTON_SETTINGS_W, BUTTON_SETTINGS_H, (const uint16_t *)button_settings);
     /* Set indicator to default feed option*/
     dispSetOpIndicator(OPTION_FEED, OPTION_SETTINGS);
-    mspEnableButtonInterrupts();
-    PRINT_DEBUG("Display: Default screen displayed\n");
+    mspEnableButtonIT();
+    PRINT_DEBUG("DEBUG: Default screen displayed\n");
 }
 
 /*
@@ -270,7 +279,7 @@ static void dispShowSettingsScreen(void)
                     BUTTON_BACK_W, BUTTON_BACK_H, (const uint16_t *)button_back);
     /* Set indicator to default position */
     dispSetOpIndicator(OPTION_PORTIONS, OPTION_SOUND);
-    PRINT_DEBUG("Display: Settings screen displayed\n");
+    PRINT_DEBUG("DEBUG: Settings screen displayed\n");
 }
 
 /*
@@ -323,7 +332,7 @@ void displayInit(void)
  */
 static void dispScreenSettings(void)
 {
-    char buff[4];
+    char buff[15];
     BaseType_t status;
     uint32_t buttonEvent;
     uint8_t options[] = {OPTION_BACK, OPTION_SOUND, OPTION_PORTIONS};
@@ -332,14 +341,14 @@ static void dispScreenSettings(void)
     uint8_t index = sizeof(options) - 1; /* Max index by default */
     uint8_t optionSelected = options[index];
 
-    mspDisableButtonInterrupts();
+    mspDisableButtonIT();
     dispShowSettingsScreen();
     /* Update option values */
     sprintf(buff, "%d", dispenserSettings.portions);
     dispPrint(DISP_PORTIONS_VALUE_X, DISP_PORTIONS_VALUE_Y, buff, Font_16x26, BLACK,WHITE);
     (dispenserSettings.sound == DISPENSER_SOUND_ON) ? sprintf(buff, "ON") : sprintf(buff, "OFF");
     dispPrint(DISP_SOUND_VALUE_X, DISP_SOUND_VALUE_Y, buff, Font_16x26, BLACK,WHITE);
-    mspEnableButtonInterrupts();
+    mspEnableButtonIT();
     while (1)
     {
         /* Wait until a push button is pressed.
@@ -351,7 +360,7 @@ static void dispScreenSettings(void)
         status = dispBacklightTimReset();
         if (status != pdTRUE)
         {
-            appErrorHandler();
+            consolePrint("APP: Backlight timer could not restarted\n");
         }
         if (backlightState == BACKLIGHT_OFF)
         {
@@ -370,18 +379,26 @@ static void dispScreenSettings(void)
             sprintf(buff, "%d", dispenserSettings.portions);
             /* Display portion value */
             dispPrint(DISP_PORTIONS_VALUE_X, DISP_PORTIONS_VALUE_Y, buff, Font_16x26, BLACK,WHITE);
-            PRINT_DEBUG("Buttons: ENTER event. Portions:");
-            PRINT_DEBUG(buff);
-            PRINT_DEBUG("\n");
+            consolePrint("APP: Portions: ");
+            consolePrint(buff);
+            consolePrint("\n");
         }
         /* Option sound is selected */
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionSelected == OPTION_SOUND))
         {
-            PRINT_DEBUG("Buttons: ENTER event. Sound option\n");
             appBeep(DISP_BEEP_ONCE);
             /* Toggle sound state*/
             dispenserSettings.sound ^= 1;
-            (dispenserSettings.sound == DISPENSER_SOUND_ON) ? sprintf(buff, "ON") : sprintf(buff, "OFF");
+            if (dispenserSettings.sound)
+            {
+                consolePrint("APP: Sound ON\n");
+                sprintf(buff, "ON");
+            }
+            else
+            {
+                consolePrint("APP: Sound OFF\n");
+                sprintf(buff, "OFF");
+            }
             dispFillRect(DISP_SOUND_VALUE_X, DISP_SOUND_VALUE_Y, 50, 26, WHITE);
             dispPrint(DISP_SOUND_VALUE_X, DISP_SOUND_VALUE_Y, buff, Font_16x26, BLACK,WHITE);
         }
@@ -394,6 +411,7 @@ static void dispScreenSettings(void)
         /* Handle Buttons: UP event */
         if (buttonEvent & BUTTON_EVENT_UP && (optionSelected != maxOption))
         {
+            PRINT_DEBUG("DEBUG: UP event\n");
             optionSelected = options[++index];
             dispSetOpIndicator(optionSelected, options[index - 1]);
             appBeep(DISP_BEEP_ONCE);
@@ -401,11 +419,37 @@ static void dispScreenSettings(void)
         /* Handle Buttons: DOWN event */
         if ((buttonEvent & BUTTON_EVENT_DOWN) && (optionSelected != minOption))
         {
+            PRINT_DEBUG("DEBUG: DOWN event\n");
             optionSelected = options[--index];
             dispSetOpIndicator(optionSelected, options[index + 1]);
             appBeep(DISP_BEEP_ONCE);
         }
+        xTimerReset(xDebounceTmrHandler, 0);
     }
+}
+
+/*
+ * Callback for the button debouncing timer .
+ */
+static void appDebounceCallback(TimerHandle_t xTimer)
+{
+    PRINT_DEBUG("DEBUG: Debounce callback\n");
+    debounceTmrActive = 0;
+}
+
+/*
+* Init freeRTOS timer to prevent button debouncing.
+*/
+HAL_StatusTypeDef debounceTmrInit(void)
+{
+    xDebounceTmrHandler = xTimerCreate("debouncing-timer", pdMS_TO_TICKS(APP_DEBOUNCE_PERIOD),
+                                  pdFALSE, (void *)APP_DEBOUNCE_ID, appDebounceCallback);
+    if (xDebounceTmrHandler == NULL)
+    {
+        consolePrint("Debounce timer could not be created\n");
+        return HAL_ERROR;
+    }
+    return HAL_OK;
 }
 
 /*
@@ -415,23 +459,35 @@ void vTaskDisplay(void *params)
 {
     BaseType_t status;
     uint32_t buttonEvent;
+    HAL_StatusTypeDef halStatus;
     Options optionIndicator = OPTION_FEED;
+
+    debounceTmrActive = 0;
+    /* Initialize button debounce timer */
+    halStatus = debounceTmrInit();
+    if (halStatus != HAL_OK)
+    {
+        consolePrint("APP: Debounce timer could not be initialize\n");
+        appErrorHandler();
+    }
 
     dispSetBacklightOn();
     /* Initialize the backlight timer */
     status = dispBacklightTimInit();
     if (status != pdTRUE)
     {
+        consolePrint("APP: Backlight timer could not be initialize\n");
         appErrorHandler();
     }
     status = dispBacklightTimStart();
     if (status != pdTRUE)
     {
+        consolePrint("APP: Backlight timer could not be started\n");
         appErrorHandler();
     }
 
     /* Enable Buttons: Interrupts after first screen is ready */
-    mspEnableButtonInterrupts();
+    mspEnableButtonIT();
     while (1)
     {
         /* Wait until a push button is pressed.
@@ -444,7 +500,7 @@ void vTaskDisplay(void *params)
         status = dispBacklightTimReset();
         if (status != pdTRUE)
         {
-            appErrorHandler();
+            PRINT_DEBUG("DEBUG: Backlight timer could not be restarted\n");
         }
         if (backlightState == BACKLIGHT_OFF)
         {
@@ -454,17 +510,16 @@ void vTaskDisplay(void *params)
             dispSetBacklightOn();
             continue;
         }
-
         /* Handle button events: ENTER, UP and DOWN */
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionIndicator == OPTION_FEED))
         {
-            PRINT_DEBUG("Buttons: ENTER event\n");
+            PRINT_DEBUG("DEBUG: ENTER event\n");
             appBeep(DISP_BEEP_ONCE);
             appFeed(dispenserSettings.portions);
         }
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionIndicator == OPTION_SETTINGS))
         {
-            PRINT_DEBUG("Buttons: ENTER event\n");
+            PRINT_DEBUG("DEBUG: ENTER event\n");
             appBeep(DISP_BEEP_ONCE);
             /* Clean the push buttons icons and only keep the wallpaper before
             *  displaying a screen.
@@ -477,14 +532,14 @@ void vTaskDisplay(void *params)
         }
         if ((buttonEvent & BUTTON_EVENT_UP) && (optionIndicator == OPTION_SETTINGS))
         {
-            PRINT_DEBUG("Buttons: UP event \n");
+            PRINT_DEBUG("DEBUG: UP event \n");
             appBeep(DISP_BEEP_ONCE);
             dispSetOpIndicator(OPTION_FEED, OPTION_SETTINGS);
             optionIndicator = OPTION_FEED;
         }
         if ((buttonEvent & BUTTON_EVENT_DOWN) && (optionIndicator == OPTION_FEED))
         {
-            PRINT_DEBUG("Buttons: DOWN event\n");
+            PRINT_DEBUG("DEBUG: DOWN event\n");
             appBeep(DISP_BEEP_ONCE);
             dispSetOpIndicator(OPTION_SETTINGS, OPTION_FEED);
             optionIndicator = OPTION_SETTINGS;

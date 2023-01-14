@@ -9,6 +9,9 @@
 #ifndef APP_CONFIG__H
 #define APP_CONFIG__H
 
+/* Enable debug messages */
+#define DEBUG_PRINT_EN                      0
+
 /* Dispenser settings */
 #define DISPENSER_MAX_PORTIONS              5
 

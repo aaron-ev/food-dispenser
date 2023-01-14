@@ -162,8 +162,8 @@ void appFeed(uint8_t portions)
     int i;
     char buff[15];
 
-    PRINT_DEBUG("APP: Feed started\n");
-    mspDisableButtonInterrupts();
+    consolePrint("APP: Feed started\n");
+    mspDisableButtonIT();
     if ((portions == 0) || (portions > DISPENSER_MAX_PORTIONS))
     {
         return;
@@ -183,8 +183,8 @@ void appFeed(uint8_t portions)
 
     /* Clean the message on the screen */
     dispFillRect(APP_POS_FEEDING_X, APP_POS_FEEDING_Y, 200, 20, WHITE);
-    mspEnableButtonInterrupts();
-    PRINT_DEBUG("APP: Feed finished\n");
+    mspEnableButtonIT();
+    consolePrint("APP: Feed finished\n");
 }
 
 int main(void)
@@ -196,17 +196,16 @@ int main(void)
     halStatus = bspInit();
     if (halStatus != HAL_OK)
     {
+        consolePrint("APP: BSP could not be initialized\n");
         appErrorHandler();
     }
     consolePrint("BSP: Initialized\n");
     /* Initialize the display */
     displayInit();
-    consolePrint("Display: Initialized\n");
+    consolePrint("APP: Display Initialized\n");
     /* Initialize default dispenser settings */
     dispenserSettings.portions = 1;
     dispenserSettings.sound = DISPENSER_SOUND_ON;
-    /* Set the servo motor to its default position */
-    appServoRotate(SERVO_MOTOR_DEGREES_0, 250);
     /* Double beep to indicate initialization phase is completed */
     mspEnableBuzzerIT();
     appBeep(2);
@@ -246,6 +245,7 @@ int main(void)
     vTaskStartScheduler();
 
 main_out:
+    consolePrint("ERROR: Not enough memory\n");
     if (!xTaskHeartBeatHandler)
     {
         vTaskDelete(xTaskHeartBeatHandler);

@@ -34,6 +34,8 @@ void HAL_MspInit(void)
     HAL_NVIC_SetPriority(EXTI2_IRQn, 15, 0);
     HAL_NVIC_SetPriority(EXTI3_IRQn, 15, 0);
     HAL_NVIC_SetPriority(EXTI4_IRQn, 15, 0);
+    /* Buzzer hardware priority should be more important than button priority */
+    HAL_NVIC_SetPriority(TIM2_IRQn, 14, 0);
 }
 
 /*
@@ -66,26 +68,30 @@ void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef *timerHandler)
     HAL_GPIO_Init(SERVO_MOTOR_GPIO_INSTANCE, &servoMotorGpioInit);
 }
 
-void mspEnableButtonInterrupts(void)
+void mspEnableButtonIT(void)
 {
     HAL_NVIC_EnableIRQ(EXTI2_IRQn);
     HAL_NVIC_EnableIRQ(EXTI3_IRQn);
     HAL_NVIC_EnableIRQ(EXTI4_IRQn);
-    PRINT_DEBUG("Buttons: Interrupts enabled\n");
+    PRINT_DEBUG("DEBUG: Button interrupts enabled\n");
 }
 
 void mspEnableBuzzerIT(void)
 {
-    HAL_NVIC_SetPriority(TIM2_IRQn, 15, 0);
     HAL_NVIC_EnableIRQ(TIM2_IRQn);
 }
 
-void mspDisableButtonInterrupts(void)
+void mspDisableBuzzerIT(void)
+{
+    HAL_NVIC_DisableIRQ(TIM2_IRQn);
+}
+
+void mspDisableButtonIT(void)
 {
     HAL_NVIC_DisableIRQ(EXTI2_IRQn);
     HAL_NVIC_DisableIRQ(EXTI3_IRQn);
     HAL_NVIC_DisableIRQ(EXTI4_IRQn);
-    PRINT_DEBUG("Buttons: Interrupts disabled\n");
+    PRINT_DEBUG("DEBUG: Buttons interrupts disabled\n");
 }
 
 void HAL_UART_MspInit(UART_HandleTypeDef* uartHandler)

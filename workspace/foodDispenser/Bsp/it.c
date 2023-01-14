@@ -12,10 +12,14 @@
 #include "stm32f4xx_hal.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "timers.h"
+#include "console.h"
 
 extern TIM_HandleTypeDef htim9;
 extern TIM_HandleTypeDef buzzerTimHandler;
 extern TaskHandle_t xTaskDisplayHandler;
+extern uint8_t debounceTmrActive;
+extern TimerHandle_t xDebounceTmrHandler;
 
 /*
 * Interrupt handler for the buzzer timer.
@@ -78,25 +82,39 @@ void HAL_GPIO_EXTI_Callback(uint16_t pin)
 {
     BaseType_t  pxHigherPriorityTaskWoken = pdFALSE;
 
-    if (pin == GPIO_PIN_0)
+    if (debounceTmrActive)
     {
-        xTaskNotifyIndexedFromISR(xTaskDisplayHandler, BUTTON_INDEX_NOTIFICATION, TOUCH_EVENT, eSetBits, &pxHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(pxHigherPriorityTaskWoken);
+        PRINT_DEBUG("DEBUG: GPIO callback:Debounce timer active \n");
+        return;
     }
-    if (pin == BUTTON_ENTER_GPIO_PIN)
-    {
-        xTaskNotifyIndexedFromISR(xTaskDisplayHandler, BUTTON_INDEX_NOTIFICATION, BUTTON_EVENT_ENTER, eSetBits, &pxHigherPriorityTaskWoken);
-    }
-    if (pin == BUTTON_UP_GPIO_PIN)
-    {
-        xTaskNotifyIndexedFromISR(xTaskDisplayHandler, BUTTON_INDEX_NOTIFICATION, BUTTON_EVENT_UP, eSetBits, &pxHigherPriorityTaskWoken);
-    }
-    if (pin == BUTTON_DOWN_GPIO_PIN)
-    {
-        xTaskNotifyIndexedFromISR(xTaskDisplayHandler, BUTTON_INDEX_NOTIFICATION, BUTTON_EVENT_DOWN, eSetBits, &pxHigherPriorityTaskWoken);
-    }
-    HAL_NVIC_DisableIRQ(EXTI0_IRQn);
-}
 
+    if (xTimerResetFromISR(xDebounceTmrHandler, &pxHigherPriorityTaskWoken) != pdTRUE)
+    {
+        consolePrint("DEBUG: GPIO callback: debounce timer could not be started \n");
+    }
+    debounceTmrActive = 1;
+    PRINT_DEBUG("DEBUG: GPIO callback:Debounce timer started \n");
+
+    switch (pin)
+    {
+        case BUTTON_ENTER_GPIO_PIN:
+            xTaskNotifyIndexedFromISR(xTaskDisplayHandler, BUTTON_INDEX_NOTIFICATION,
+                                      BUTTON_EVENT_ENTER, eSetBits, &pxHigherPriorityTaskWoken);
+            break;
+        case BUTTON_UP_GPIO_PIN:
+                xTaskNotifyIndexedFromISR(xTaskDisplayHandler, BUTTON_INDEX_NOTIFICATION,
+                                          BUTTON_EVENT_UP, eSetBits, &pxHigherPriorityTaskWoken);
+            break;
+        case BUTTON_DOWN_GPIO_PIN:
+                xTaskNotifyIndexedFromISR(xTaskDisplayHandler, BUTTON_INDEX_NOTIFICATION,
+                                          BUTTON_EVENT_DOWN, eSetBits, &pxHigherPriorityTaskWoken);
+            break;
+        default:
+            PRINT_DEBUG("DEBUG: GPIO callback: Pin source unkown\n");
+            break;
+    }
+}
 
 /*
  *  Interrupt handler for the HAL time base.

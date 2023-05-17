@@ -495,7 +495,11 @@ void vTaskDisplay(void *params)
          *                       Clear all events on exit,
          *                       Block until there is an event.
          */
-        xTaskNotifyWaitIndexed(BUTTON_INDEX_NOTIFICATION, NO_CLEAR_ON_ENTRY, CLEAR_ALL_ON_EXIT, &buttonEvent, portMAX_DELAY);
+        xTaskNotifyWaitIndexed(BUTTON_INDEX_NOTIFICATION,
+                               NO_CLEAR_ON_ENTRY,
+                               CLEAR_ALL_ON_EXIT,
+                               &buttonEvent,
+                               portMAX_DELAY);
         /* Reset the backlight timer every time there is button event */
         status = dispBacklightTimReset();
         if (status != pdTRUE)
@@ -510,6 +514,7 @@ void vTaskDisplay(void *params)
             dispSetBacklightOn();
             continue;
         }
+
         /* Handle button events: ENTER, UP and DOWN */
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionIndicator == OPTION_FEED))
         {

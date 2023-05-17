@@ -111,7 +111,7 @@ void appServoRotate(Degrees_E degrees, uint32_t delay)
 {
     servoMotorSetDegrees(degrees);
     servoMotorStart();
-    HAL_Delay(delay);
+    vTaskDelay(pdMS_TO_TICKS(delay));
     servoMotorStop();
 }
 
@@ -162,13 +162,13 @@ void appFeed(uint8_t portions)
     int i;
     char buff[15];
 
-    consolePrint("APP: Feed started\n");
-    mspDisableButtonIT();
     if ((portions == 0) || (portions > DISPENSER_MAX_PORTIONS))
     {
         return;
     }
 
+    consolePrint("APP: Feed started\n");
+    mspDisableButtonIT();
     /* Move the motor */
     for (i = 0; i < portions; i++)
     {
@@ -176,9 +176,9 @@ void appFeed(uint8_t portions)
         dispPrint(APP_POS_FEEDING_X, APP_POS_FEEDING_Y, buff,
                   Font_11x18, BLACK, WHITE);
         appServoRotate(SERVO_MOTOR_DEGREES_180, 250);
-        HAL_Delay(500);
+        vTaskDelay(pdMS_TO_TICKS(500));
         appServoRotate(SERVO_MOTOR_DEGREES_0, 250);
-        HAL_Delay(500);
+        vTaskDelay(pdMS_TO_TICKS(500));
     }
 
     /* Clean the message on the screen */

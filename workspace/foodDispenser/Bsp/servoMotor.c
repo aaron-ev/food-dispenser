@@ -15,7 +15,6 @@
 #define SERVO_MOTOR_2MS_SIGNAL                  ((SERVO_MOTOR_TIM_BASE_PERIOD * 10) / 100)
 #define SERVO_MOTOR_1_5MS_SIGNAL                ((SERVO_MOTOR_TIM_BASE_PERIOD * 7.5) / 100)
 #define SERVO_MOTOR_1MS_SIGNAL                  ((SERVO_MOTOR_TIM_BASE_PERIOD * 5) / 100)
-#define SERVO_MOTOR_DELAY                       250
 
 TIM_HandleTypeDef servoMotorTimHandler = {0};
 
@@ -40,16 +39,20 @@ void servoMotorSetDegrees(Degrees_E position)
         __HAL_TIM_SET_COMPARE(&servoMotorTimHandler, SERVO_MOTOR_TIM_CHANNEL,
                               SERVO_MOTOR_2MS_SIGNAL);
     }
-    if(position == SERVO_MOTOR_DEGREES_180)
+    else if (position == SERVO_MOTOR_DEGREES_180)
     {
         __HAL_TIM_SET_COMPARE(&servoMotorTimHandler, SERVO_MOTOR_TIM_CHANNEL,
                               SERVO_MOTOR_1MS_SIGNAL);
+    }
+    else
+    {
+        //Nothing to do
     }
 }
 
 HAL_StatusTypeDef servoMotorInit(void)
 {
-    HAL_StatusTypeDef halStatus;
+    HAL_StatusTypeDef halStatus = HAL_OK;
     TIM_OC_InitTypeDef servoMotorChannelConfig = {0};
 
     /* TIMER base unit settings: Servo motor */
@@ -59,7 +62,7 @@ HAL_StatusTypeDef servoMotorInit(void)
     halStatus = HAL_TIM_PWM_Init(&servoMotorTimHandler);
     if (halStatus != HAL_OK)
     {
-        return HAL_ERROR;
+        return halStatus;
     }
 
     /* TIMER channel settings: Servo motor */
@@ -69,8 +72,8 @@ HAL_StatusTypeDef servoMotorInit(void)
     halStatus = HAL_TIM_PWM_ConfigChannel(&servoMotorTimHandler, &servoMotorChannelConfig, SERVO_MOTOR_TIM_CHANNEL);
     if (halStatus != HAL_OK)
     {
-        return HAL_ERROR;
+        return halStatus;
     }
 
-    return HAL_OK;
+    return halStatus;
 }

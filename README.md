@@ -23,6 +23,7 @@ have the black pill would be easy to implement the whole project
 * Buzzer (1 kHz square signal)
 * Servomotor to move a gate and dispense food portions. (PWM signal according to tomerpro MG995 servomotor)
 * Three push buttons (Enter, UP and DOWN), debounce issue by software
+* Backlight is turned off after 1 min of inactivity (can be changed in appConfig header)
 
 # Welcome screen 
 The default screen on the project allows you to feed your pet by pressing button enter. The number of portions is configured in settings.

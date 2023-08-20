@@ -443,9 +443,6 @@ void vTaskDisplay(void *params)
         appErrorHandler();
     }
 
-    /* Move servomotor to a default position */
-    appServoRotate(SERVO_MOTOR_DEGREES_0, 500);
-
     dispShowVersion();
 
     /* Enable Buttons: Interrupts after first screen is ready */

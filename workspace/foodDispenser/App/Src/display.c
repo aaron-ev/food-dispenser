@@ -253,6 +253,7 @@ static void dispShowInitScreen(void)
     /* Set indicator to default feed option*/
     dispSetOpIndicator(OPTION_FEED, OPTION_SETTINGS);
     mspEnableButtonIT();
+    dispShowVersion();
     PRINT_DEBUG("DEBUG: Default screen displayed\n");
 }
 
@@ -442,8 +443,6 @@ void vTaskDisplay(void *params)
         consolePrint("APP: Backlight timer could not be started\n");
         appErrorHandler();
     }
-
-    dispShowVersion();
 
     /* Enable Buttons: Interrupts after first screen is ready */
     mspEnableButtonIT();

@@ -7,6 +7,7 @@
 - [App configuration](#app-configuration)
 - [Board project layout](#board-project-layout)
 - [Memory consumption](#memory-consumption)
+- [Demo](#demo)
 
 # Pet food dispenser introduction
 This project is based on the STM32F401 microcontroller and freeRTOS,

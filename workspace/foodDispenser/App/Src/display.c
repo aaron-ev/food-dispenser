@@ -126,7 +126,7 @@ static void dispShowVersion(void)
     char buff[5];
 
     sprintf(buff, "v%d.%d", PROJECT_VERSION_MAJOR_NUMBER, PROJECT_VERSION_MINOR_NUMBER);
-    tft_ili9341_send_str(TFT_ILI9341_WIDTH - 50, TFT_ILI9341_HEIGHT - 20,
+    tft_ili9341_send_str(TFT_ILI9341_WIDTH - 50, 20,
                          buff, Font_11x18, BLACK, WHITE);
 }
 
@@ -426,7 +426,6 @@ void vTaskDisplay(void *params)
 {
     BaseType_t status;
     uint32_t buttonEvent;
-    HAL_StatusTypeDef halStatus;
     Options optionIndicator = OPTION_FEED;
 
     dispSetBacklightOn();
@@ -443,6 +442,11 @@ void vTaskDisplay(void *params)
         consolePrint("APP: Backlight timer could not be started\n");
         appErrorHandler();
     }
+
+    /* Move servomotor to a default position */
+    appServoRotate(SERVO_MOTOR_DEGREES_0, 500);
+
+    dispShowVersion();
 
     /* Enable Buttons: Interrupts after first screen is ready */
     mspEnableButtonIT();

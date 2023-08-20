@@ -14,6 +14,7 @@
 #include "console.h"
 #include "servoMotor.h"
 #include "appConfig.h"
+#include "string.h"
 
 /* Project version */
 #define PROJECT_VERSION_MAJOR_NUMBER        0
@@ -44,5 +45,6 @@ typedef struct
 void appBeep(uint32_t numTimes);
 void appFeed(uint8_t portions);
 void appErrorHandler(void);
+void appServoRotate(Degrees_E degrees, uint32_t delay);
 
 #endif

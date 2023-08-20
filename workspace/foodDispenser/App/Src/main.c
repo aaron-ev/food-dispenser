@@ -135,11 +135,11 @@ static void appTestConsole(void)
 {
     int i;
 
-    for (i= 0; i < 5; i++)
-    {
-        consolePrint("Hello world!\n");
+		for (i= 0; i < 5; i++)
+		{
+			consolePrint("Hello world!\n");
+		}
     }
-}
 
 /*
 * Test the BSP layer.
@@ -200,12 +200,15 @@ int main(void)
         appErrorHandler();
     }
     consolePrint("BSP: Initialized\n");
+
     /* Initialize the display */
     displayInit();
     consolePrint("APP: Display Initialized\n");
+
     /* Initialize default dispenser settings */
     dispenserSettings.portions = 1;
     dispenserSettings.sound = DISPENSER_SOUND_ON;
+
     /* Double beep to indicate initialization phase is completed */
     mspEnableBuzzerIT();
     appBeep(2);
@@ -227,7 +230,7 @@ int main(void)
                          &xTaskHeartBeatHandler);
     if (retVal != pdTRUE)
     {
-        consolePrint("ERROR: Heart beat could not be created\n");
+        consolePrint("ERROR: Heart beat task could not be created\n");
         goto main_out;
     }
     retVal = xTaskCreate(vTaskDisplay,

@@ -10,7 +10,7 @@
 #define APP_CONFIG__H
 
 /* Enable debug messages */
-#define DEBUG_PRINT_EN                      0 /* 1 = Enable , 0 =  Disable */
+#define DEBUG_PRINT_EN                      1 /* 1 = Enable , 0 =  Disable */
 
 /* Dispenser settings */
 #define DISPENSER_MAX_PORTIONS              5

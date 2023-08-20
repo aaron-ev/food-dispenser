@@ -56,10 +56,6 @@
 /* Helper macros to handle the beep */
 #define DISP_BEEP_ONCE                   1
 
-/* Debounce timer macros*/
-#define APP_DEBOUNCE_ID                  2
-#define APP_DEBOUNCE_PERIOD              100
-
 /*
  * Available options for all screens.
  */
@@ -94,15 +90,10 @@ typedef enum
 Coordinates indicatorPosition[MAX_OPTIONS];
 BackLightState backlightState;
 extern DispenserSettings dispenserSettings;
-uint8_t debounceTmrActive;
-TimerHandle_t xDebounceTmrHandler;
 
 /* freeRTOS handlers */
 TaskHandle_t xTaskDisplayHandler;
 TimerHandle_t xBackLightTimerHandler;
-
-/* Helper function to initialize the display */
-void displayInit(void);
 
 /* Helper functions to handle the project version */
 static void dispShowVersion(void);
@@ -424,33 +415,9 @@ static void dispScreenSettings(void)
             dispSetOpIndicator(optionSelected, options[index + 1]);
             appBeep(DISP_BEEP_ONCE);
         }
-        xTimerReset(xDebounceTmrHandler, 0);
     }
 }
 
-/*
- * Callback for the button debouncing timer .
- */
-static void appDebounceCallback(TimerHandle_t xTimer)
-{
-    PRINT_DEBUG("DEBUG: Debounce callback\n");
-    debounceTmrActive = 0;
-}
-
-/*
-* Init freeRTOS timer to prevent button debouncing.
-*/
-HAL_StatusTypeDef debounceTmrInit(void)
-{
-    xDebounceTmrHandler = xTimerCreate("debouncing-timer", pdMS_TO_TICKS(APP_DEBOUNCE_PERIOD),
-                                  pdFALSE, (void *)APP_DEBOUNCE_ID, appDebounceCallback);
-    if (xDebounceTmrHandler == NULL)
-    {
-        consolePrint("Debounce timer could not be created\n");
-        return HAL_ERROR;
-    }
-    return HAL_OK;
-}
 
 /*
  * Task to handle the display.
@@ -461,15 +428,6 @@ void vTaskDisplay(void *params)
     uint32_t buttonEvent;
     HAL_StatusTypeDef halStatus;
     Options optionIndicator = OPTION_FEED;
-
-    debounceTmrActive = 0;
-    /* Initialize button debounce timer */
-    halStatus = debounceTmrInit();
-    if (halStatus != HAL_OK)
-    {
-        consolePrint("APP: Debounce timer could not be initialize\n");
-        appErrorHandler();
-    }
 
     dispSetBacklightOn();
     /* Initialize the backlight timer */

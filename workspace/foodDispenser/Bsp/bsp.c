@@ -54,7 +54,7 @@ void pushButtonsInit(void)
     GPIO_InitTypeDef pushButtonsGpioInit = {0};
 
     /* Push buttons common settings */
-    pushButtonsGpioInit.Mode = GPIO_MODE_IT_RISING;
+    pushButtonsGpioInit.Mode = GPIO_MODE_IT_RISING_FALLING;
     pushButtonsGpioInit.Pull = GPIO_NOPULL;
     pushButtonsGpioInit.Speed = GPIO_SPEED_FREQ_LOW;
     /* Push button UP: GPIO settings */

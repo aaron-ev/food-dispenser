@@ -10,7 +10,7 @@
 #define APP_CONFIG__H
 
 /* Enable debug messages */
-#define DEBUG_PRINT_EN                      0
+#define DEBUG_PRINT_EN                      0 /* 1 = Enable , 0 =  Disable */
 
 /* Dispenser settings */
 #define DISPENSER_MAX_PORTIONS              5
@@ -47,6 +47,7 @@
 #define BUTTON_UP_GPIO_PIN                  GPIO_PIN_3
 #define BUTTON_DOWN_GPIO_PORT               GPIOA
 #define BUTTON_DOWN_GPIO_PIN                GPIO_PIN_4
+#define BUTTON_DEBOUNCE_DELAY               30
 
 /* Backlight settings */
 #define DISP_BACKLIGHT_DEFAULT_PERIOD       100000 /* 1m as a default settings*/

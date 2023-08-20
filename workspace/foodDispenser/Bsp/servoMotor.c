@@ -10,17 +10,17 @@
 #include "servoMotor.h"
 #include "appConfig.h"
 
-#define SERVO_MOTOR_TIM_BASE_PRESCALER          40    /* 1us each tick*/
-#define SERVO_MOTOR_TIM_BASE_PERIOD             20000 /* freq = 50 Hz */
-#define SERVO_MOTOR_2MS_SIGNAL                  ((SERVO_MOTOR_TIM_BASE_PERIOD * 10) / 100)
+/* Prescaler and period calculated based on PB1 = 40MHz*/
+#define SERVO_MOTOR_TIM_BASE_PRESCALER          24
+#define SERVO_MOTOR_TIM_BASE_PERIOD             32000
+#define SERVO_MOTOR_2MS_SIGNAL                  ((SERVO_MOTOR_TIM_BASE_PERIOD * 12.5) / 100)
 #define SERVO_MOTOR_1_5MS_SIGNAL                ((SERVO_MOTOR_TIM_BASE_PERIOD * 7.5) / 100)
-#define SERVO_MOTOR_1MS_SIGNAL                  ((SERVO_MOTOR_TIM_BASE_PERIOD * 5) / 100)
+#define SERVO_MOTOR_1MS_SIGNAL                  ((SERVO_MOTOR_TIM_BASE_PERIOD * 2.5) / 100)
 
 TIM_HandleTypeDef servoMotorTimHandler = {0};
 
 void servoMotorStart(void);
 void servoMotorStop(void);
-void servoMotorRotate(Degrees_E position);
 
 void servoMotorStart(void)
 {
@@ -58,7 +58,7 @@ HAL_StatusTypeDef servoMotorInit(void)
     /* TIMER base unit settings: Servo motor */
     servoMotorTimHandler.Instance = SERVO_MOTOR_TIM_INSTANCE;
     servoMotorTimHandler.Init.Prescaler = SERVO_MOTOR_TIM_BASE_PRESCALER;
-    servoMotorTimHandler.Init.Period = SERVO_MOTOR_TIM_BASE_PERIOD;
+    servoMotorTimHandler.Init.Period = SERVO_MOTOR_TIM_BASE_PERIOD - 1;
     halStatus = HAL_TIM_PWM_Init(&servoMotorTimHandler);
     if (halStatus != HAL_OK)
     {

@@ -48,3 +48,8 @@ In *appConfig.h* you will find C macros to configure the application and periphe
 
 # Memory consumption
 ![Memory consumption](docs/img/memoriConsumption.png)
+
+# Demo
+https://github.com/aaron-ev/food-dispenser/assets/84993491/ca16c7d8-9e9b-4d37-beca-97fde8cc137a
+
+

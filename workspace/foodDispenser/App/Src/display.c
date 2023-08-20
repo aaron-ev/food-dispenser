@@ -446,6 +446,8 @@ void vTaskDisplay(void *params)
 
     /* Enable Buttons: Interrupts after first screen is ready */
     mspEnableButtonIT();
+    appServoRotate(SERVO_MOTOR_DEGREES_0, 250);
+
     while (1)
     {
         /* Wait until a push button is pressed.

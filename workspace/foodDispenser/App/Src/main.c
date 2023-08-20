@@ -169,7 +169,7 @@ void appFeed(uint8_t portions)
 
     consolePrint("APP: Feed started\n");
     mspDisableButtonIT();
-    /* Move the motor */
+
     for (i = 0; i < portions; i++)
     {
         sprintf(buff, "Portion (%d)", i + 1);

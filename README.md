@@ -6,6 +6,7 @@
 - [Settings screen](#settings-screen)
 - [App configuration](#app-configuration)
 - [Board project layout](#board-project-layout)
+- [Memory consumption](#memory-consumption)
 
 # Pet food dispenser introduction
 This project is based on the STM32F401 microcontroller and freeRTOS,
@@ -44,3 +45,6 @@ In *appConfig.h* you will find C macros to configure the application and periphe
 # Board project layout
 
 ![Board project layout](/docs/img/boardProjectLayout.jpg)
+
+# Memory consumption
+![Memory consumption](docs/img/memoriConsumption.png)

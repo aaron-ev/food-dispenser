@@ -121,10 +121,9 @@ void appServoRotate(Degrees_E degrees, uint32_t delay)
 static void appTestBspMotor(void)
 {
     int i;
-    for (i = 0; i < 3; i++)
+    for (i = 0; i < 30; i++)
     {
-        appServoRotate(SERVO_MOTOR_DEGREES_180, 500);
-        appServoRotate(SERVO_MOTOR_DEGREES_0, 500);
+    	appFeed(5);
     }
 }
 
@@ -179,6 +178,7 @@ void appFeed(uint8_t portions)
         vTaskDelay(pdMS_TO_TICKS(500));
         appServoRotate(SERVO_MOTOR_DEGREES_0, 250);
         vTaskDelay(pdMS_TO_TICKS(500));
+        appBeep(1);
     }
 
     /* Clean the message on the screen */
@@ -206,7 +206,7 @@ int main(void)
     consolePrint("APP: Display Initialized\n");
 
     /* Initialize default dispenser settings */
-    dispenserSettings.portions = 1;
+    dispenserSettings.portions = 5;
     dispenserSettings.sound = DISPENSER_SOUND_ON;
 
     /* Double beep to indicate initialization phase is completed */

@@ -142,22 +142,91 @@ static void appTestConsole(void)
 		}
     }
 
+void printTime(Time_s *time)
+{
+    printf("Time: \n"
+            "day: %d\n"
+            "year: %d\n"
+            "month: %d\n"
+            "date: %d\n"
+            "hour: %d\n"
+            "min: %d\n"
+            "sec: %d\n"
+            ,time->day,
+             time->year,
+             time->month,
+             time->date,
+             time->hour,
+             time->min,
+             time->sec
+        );
+}
 
 void appTestRTC(void)
 {
 
-    Time_s timeToSet;
-    Time_s timeToGet = {0};
+    uint8_t i;
+    Time_s time = {0};
+    Time_s newTime = {0};
 
-    timeToSet.day = SUNDAY;
-    timeToSet.year = 23;
-    timeToGet.month = 13;
-    timeToGet.date = 5;
-    timeToSet.hour = 8;
-    timeToSet.min = 1;
-    timeToSet.sec = 1;
-    ds1302_setTime(&timeToSet);
-    ds1302_get_time(&timeToGet);
+    /********************** Testing seconds **********************/
+    /* Test seconds: valid range */
+    printf("RTC test: testing valid range (0 - 59) of seconds\n");
+    for (i = 0; i < 59; i++)
+    {
+        time.sec = i;
+        ds1302_setTime(&time);
+        ds1302_get_time(&newTime);
+        if (newTime.sec != time.sec)
+        {
+        	printf("ERROR: read %d written %d\n", newTime.sec, time.sec);
+        	goto rtc_test_error;
+        }
+    }
+    /********************** Testing minutes **********************/
+    printf("RTC test: testing valid range (0 - 59) of minutes\n");
+    for (i = 0; i < 59; i++)
+    {
+        time.min = i;
+        ds1302_setTime(&time);
+        ds1302_get_time(&newTime);
+        if (newTime.min != time.min)
+        {
+        	printf("ERROR: read %d written %d\n", newTime.min, time.min);
+        	goto rtc_test_error;
+        }
+    }
+    /********************** Testing days **********************/
+    printf("RTC test: testing valid range (1 - 7) of days\n");
+    for (i = 1; i <  8; i++)
+    {
+        time.day = i;
+        ds1302_setTime(&time);
+        ds1302_get_time(&newTime);
+        if (newTime.day != time.day)
+        {
+        	printf("ERROR: read %d written %d\n", newTime.day, time.day);
+        	goto rtc_test_error;
+        }
+    }
+    /********************** Testing years **********************/
+    printf("RTC test: testing valid range (00 - 99) of years\n");
+    for (i = 0; i < 100; i++)
+    {
+        time.year = i;
+        ds1302_setTime(&time);
+        ds1302_get_time(&newTime);
+        if (newTime.year != time.year)
+        {
+        	printf("ERROR: read %d written %d\n", newTime.year, time.year);
+        	goto rtc_test_error;
+        }
+    }
+	printf("RTC TEST PASSED\n");
+	return;
+
+rtc_test_error:
+	printf("RTC TEST FAIALED\n");
 }
 
 /*

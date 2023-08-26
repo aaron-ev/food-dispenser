@@ -9,12 +9,12 @@
 #include "ds1302.h"
 
 /* Definition of sizes */
-#define DS1302_DATA_SIZE           (8)
-#define DS1302_ADDR_SIZE           (8)
-#define DS1302_CMD_SIZE            (8)
+#define DS1302_DATA_SIZE           8
+#define DS1302_ADDR_SIZE           8
+#define DS1302_CMD_SIZE            8
 #define DS1302_FRAME_SIZE          (DS1302_DATA_SIZE + DS1302_ADDR_SIZE)
-#define DS1302_RAM_ADDR_START      (0xC0)
-#define DS1302_RAM_SIZE            (31)
+#define DS1302_RAM_ADDR_START      0xC0
+#define DS1302_RAM_SIZE            31
 
 /* Register definition according to the spec */
 #define DS1302_REG_SEC              0x80
@@ -26,8 +26,8 @@
 #define DS1302_REG_YEAR             0x8C
 #define DS1302_REG_CONTROL          0x8E
 
-#define BCD_TO_DEC(val)            ((val/16*10) + (val%16))
-#define DEC_TO_BCD(val)            ((val/10*16) + (val%10))
+#define BCD_TO_DEC(val)            ((val / 16 * 10) + (val % 16))
+#define DEC_TO_BCD(val)            ((val / 10 * 16) + (val % 10))
 
 
 /**
@@ -236,18 +236,18 @@ void ds1302_get_time(Time_s *time)
     if (time == NULL)
         return;
 
+    time->day = BCD_TO_DEC(read_byte(DS1302_REG_DAY));
     time->year = BCD_TO_DEC(read_byte(DS1302_REG_YEAR));
     time->month = BCD_TO_DEC(read_byte(DS1302_REG_MONTH));
     time->date = BCD_TO_DEC(read_byte(DS1302_REG_DATE));
     time->hour = BCD_TO_DEC(read_byte(DS1302_REG_HOUR));
     time->min = BCD_TO_DEC(read_byte(DS1302_REG_MIN));
     time->sec = BCD_TO_DEC(read_byte(DS1302_REG_SEC));
-    time->day = BCD_TO_DEC(read_byte(DS1302_REG_DAY));
 }
 
 /**
  * @brief set Time_s into calendar registers
- *
+ *        
  * @param time pointer to Time_s structure
  * @return void
  */
@@ -262,13 +262,13 @@ void ds1302_setTime(const Time_s *time)
 
     /* Write Time_s to into registers in BCD format*/
 
-//    write_byte(DS1302_REG_DAY, DEC_TO_BCD(time->day));
-//    write_byte(DS1302_REG_YEAR, DEC_TO_BCD(time->year));
+    write_byte(DS1302_REG_DAY, DEC_TO_BCD(time->day));
+    write_byte(DS1302_REG_YEAR, DEC_TO_BCD(time->year));
     write_byte(DS1302_REG_MONTH, DEC_TO_BCD(time->month));
     write_byte(DS1302_REG_DATE, DEC_TO_BCD(time->date));
-//    write_byte(DS1302_REG_HOUR, DEC_TO_BCD(time->hour));
-//    write_byte(DS1302_REG_MIN, DEC_TO_BCD(time->min));
-//    write_byte(DS1302_REG_SEC, DEC_TO_BCD(time->sec));
+    write_byte(DS1302_REG_HOUR, DEC_TO_BCD(time->hour));
+    write_byte(DS1302_REG_MIN, DEC_TO_BCD(time->min));
+    write_byte(DS1302_REG_SEC, DEC_TO_BCD(time->sec));
 
     /* Disable write by driving protected bit to 1 */
     write_byte(DS1302_REG_CONTROL, 0x80);

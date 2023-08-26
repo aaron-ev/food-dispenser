@@ -24,7 +24,7 @@
  */
 typedef enum
 {
-    MONDAY,
+    MONDAY =  1, /* Valid values 1 - 7*/
     TUESDAY,
     WEDNESDAY,
     THURSDAY,
@@ -38,13 +38,13 @@ typedef enum
  */
 typedef struct
 {
-    Day day;
-    uint8_t year;
-    uint8_t month;
-    uint8_t date;
-    uint8_t hour;
-    uint8_t min;
-    uint8_t sec;
+    Day day; /* Range: enum day values*/
+    uint8_t year; /* Range: 0 - 99 */
+    uint8_t month; /* Range: 1 - 12 */
+    uint8_t date;  /* Range: 1 - 31 */
+    uint8_t hour; /* Range: 1-12/0-23*/
+    uint8_t min; /* Range: 0-59 */
+    uint8_t sec; /* Range: 0-59 */
 }Time_s;
 
 /* Initialize DS1302 device */

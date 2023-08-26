@@ -7,14 +7,12 @@
  */
 
 #include "bsp.h"
-#include "console.h"
-
 UART_HandleTypeDef consoleHandle;
 
 /*
  *  Initialize the system clocks and clocks derived.
  */
-HAL_StatusTypeDef clkInit(void)
+static HAL_StatusTypeDef clkInit(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
@@ -49,7 +47,7 @@ HAL_StatusTypeDef clkInit(void)
     return HAL_OK;
 }
 
-void pushButtonsInit(void)
+static void pushButtonsInit(void)
 {
     GPIO_InitTypeDef pushButtonsGpioInit = {0};
 
@@ -115,24 +113,29 @@ HAL_StatusTypeDef bspInit(void)
     {
         return HAL_ERROR;
     }
+
     /* Configure the system clock */
     halStatus = clkInit();
     if (halStatus != HAL_OK)
     {
         return HAL_ERROR;
     }
-    /* Initialize the console */
+
+    /* Initialize debug console */
     halStatus = consoleInit();
     if (halStatus != HAL_OK)
     {
         return HAL_ERROR;
     }
+
     /* Initialize push buttons */
     pushButtonsInit();
     consolePrint("BSP: Push buttons initialized\n");
+
     /* Initialize heart beat led */
     heartBeatInit();
     consolePrint("BSP: Heart beat initialized\n");
+
     /* Initialize servomotor */
     halStatus = servoMotorInit();
     if (halStatus != HAL_OK)
@@ -140,13 +143,18 @@ HAL_StatusTypeDef bspInit(void)
         appErrorHandler();
     }
     consolePrint("BSP: Servo motor initialized\n");
-    /* Initialize the buzzer */
+
+    /* Initialize buzzer */
     halStatus = buzzerInit();
     if (halStatus != HAL_OK)
     {
         appErrorHandler();
     }
     consolePrint("BSP: Buzzer initialized\n");
+
+    /* Initialize external RTC */
+    ds1302_init();
+    consolePrint("BSP: RCT initialized\n");
 
     return halStatus;
 }

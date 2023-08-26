@@ -18,6 +18,7 @@
 /* Task priorities */
 #define HEART_BEAT_PRIORITY_TASK            1
 #define DISP_PRIORITY_TASK                  2
+#define RTC_PRIORITY_TASK                   2
 
 /* Heart beat settings */
 #define HEART_BEAT_LED_PORT                 GPIOC

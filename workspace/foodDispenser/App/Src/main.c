@@ -12,10 +12,11 @@
 #include "display.h"
 #include "bsp.h"
 #include "console.h"
+#include "stdlib.h"
 #include "string.h"
 
 /* 1 - Enable BSP testing, 0 - Disable BSP testing */
-#define TEST_BSP                        (0)
+#define TEST_BSP                        (1)
 
 /* Screen position for a string when feeding */
 #define APP_POS_FEEDING_X               60
@@ -27,11 +28,12 @@
 /* Global variables */
 DispenserSettings dispenserSettings;
 TaskHandle_t xTaskHeartBeatHandler;
+extern TaskHandle_t xTaskRTCHandler;
 extern TaskHandle_t xTaskDisplayHandler;
 
 /* Extern task functions */
 extern void vTaskDisplay(void *params);
-
+extern void vTaskRTC(void *params);
 /*
 * Callback to increment the timer for the STM HAL layer.
 */
@@ -140,17 +142,36 @@ static void appTestConsole(void)
 		}
     }
 
+
+void appTestRTC(void)
+{
+
+    Time_s timeToSet;
+    Time_s timeToGet = {0};
+
+    timeToSet.day = SUNDAY;
+    timeToSet.year = 23;
+    timeToGet.month = 13;
+    timeToGet.date = 5;
+    timeToSet.hour = 8;
+    timeToSet.min = 1;
+    timeToSet.sec = 1;
+    ds1302_setTime(&timeToSet);
+    ds1302_get_time(&timeToGet);
+}
+
 /*
 * Test the BSP layer.
 */
 static void appTestBsp(void)
 {
-  consolePrint("Testing: Console\n");
-  appTestConsole();
-  consolePrint("Testing: Buzzer\n");
-  appTestBspBuzzer();
-  consolePrint("Testing: Servo motor\n");
-  appTestBspMotor();
+//   consolePrint("Testing: Console\n");
+//   appTestConsole();
+//   consolePrint("Testing: Buzzer\n");
+//   appTestBspBuzzer();
+//   consolePrint("Testing: Servo motor\n");
+//   appTestBspMotor();
+    appTestRTC();
 }
 
 /*
@@ -244,6 +265,17 @@ int main(void)
         consolePrint("ERROR: Display task could not be created\n");
         goto main_out;
     }
+    retVal = xTaskCreate(vTaskRTC,
+                         "task-rtc",
+                         configMINIMAL_STACK_SIZE,
+                         NULL,
+                         RTC_PRIORITY_TASK,
+                         &xTaskDisplayHandler);
+    if (retVal != pdPASS)
+    {
+        consolePrint("ERROR: RTC task could not be created\n");
+        goto main_out;
+    }
 
     vTaskStartScheduler();
 
@@ -254,6 +286,10 @@ main_out:
         vTaskDelete(xTaskHeartBeatHandler);
     }
     if (!xTaskDisplayHandler)
+    {
+        vTaskDelete(xTaskDisplayHandler);
+    }
+    if (!xTaskRTCHandler)
     {
         vTaskDelete(xTaskDisplayHandler);
     }

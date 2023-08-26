@@ -9,6 +9,8 @@
 #include "string.h"
 #include "console.h"
 
+#define CONSOLE_PRINTF int __io_putchar(int ch)
+
 extern UART_HandleTypeDef consoleHandle;
 
 void consolePrint(const char *pData)
@@ -18,4 +20,9 @@ void consolePrint(const char *pData)
         return;
     }
     HAL_UART_Transmit(&consoleHandle, (uint8_t *)pData, strlen(pData), HAL_MAX_DELAY);
+}
+
+CONSOLE_PRINTF
+{
+	HAL_UART_Transmit(&consoleHandle, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
 }

@@ -16,7 +16,7 @@
 #include "string.h"
 
 /* 1 - Enable BSP testing, 0 - Disable BSP testing */
-#define TEST_BSP                        (1)
+#define TEST_BSP                        (0)
 
 /* Screen position for a string when feeding */
 #define APP_POS_FEEDING_X               60
@@ -372,12 +372,12 @@ rtc_test_error:
 */
 static void appTestBsp(void)
 {
-//   consolePrint("Testing: Console\n");
-//   appTestConsole();
-//   consolePrint("Testing: Buzzer\n");
-//   appTestBspBuzzer();
-//   consolePrint("Testing: Servo motor\n");
-//   appTestBspMotor();
+    consolePrint("Testing: Console\n");
+    appTestConsole();
+    consolePrint("Testing: Buzzer\n");
+    appTestBspBuzzer();
+    consolePrint("Testing: Servo motor\n");
+    appTestBspMotor();
     appTestRTC();
 }
 
@@ -420,8 +420,8 @@ int main(void)
     BaseType_t retVal;
     HAL_StatusTypeDef halStatus;
 
+    halStatus = bspInit();
     /* Initialize BSP layer */
-    																																																																																																																																																																																																																																																																																																																																																																																																																																																																									halStatus = bspInit();
     if (halStatus != HAL_OK)
     {
         consolePrint("APP: BSP could not be initialized\n");
@@ -477,7 +477,7 @@ int main(void)
                          configMINIMAL_STACK_SIZE,
                          NULL,
                          RTC_PRIORITY_TASK,
-                         &xTaskDisplayHandler);
+                         &xTaskRTCHandler);
     if (retVal != pdPASS)
     {
         consolePrint("ERROR: RTC task could not be created\n");

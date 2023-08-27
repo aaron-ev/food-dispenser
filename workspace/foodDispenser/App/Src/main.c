@@ -168,6 +168,8 @@ void appTestRTC(void)
     uint8_t i;
     Time_s time = {0};
     Time_s newTime = {0};
+    ClockPeriod currentClockPeriod;
+    ClockSystem currentClockSystem;
 
     /********************** Testing seconds **********************/
     /* Test seconds: valid range */
@@ -210,7 +212,7 @@ void appTestRTC(void)
         }
     }
     /********************** Testing years **********************/
-    printf("RTC test: testing valid range (00 - 99) of years\n");
+    printf("RTC test: testing valid range (0 - 99) of years\n");
     for (i = 0; i < 100; i++)
     {
         time.year = i;
@@ -222,8 +224,144 @@ void appTestRTC(void)
         	goto rtc_test_error;
         }
     }
-	printf("RTC TEST PASSED\n");
-	return;
+    /********************** Testing months **********************/
+    printf("RTC test: testing valid range (1 - 12) of months\n");
+    for (i = 1; i < 13; i++)
+    {
+        time.month = i;
+        ds1302_setTime(&time);
+        ds1302_get_time(&newTime);
+        if (newTime.month != time.month)
+        {
+        	printf("ERROR: read %d written %d\n", newTime.month, time.month);
+        	goto rtc_test_error;
+        }
+    }
+    /********************** Testing dates **********************/
+    printf("RTC test: testing valid range (1 - 31) of dates\n");
+    for (i = 1; i < 32; i++)
+    {
+        time.date = i;
+        ds1302_setTime(&time);
+        ds1302_get_time(&newTime);
+        if (newTime.date != time.date)
+        {
+        	printf("ERROR: read %d written %d\n", newTime.date, time.date);
+        	goto rtc_test_error;
+        }
+    }
+    /********************** Testing hours 1-12 clock system **********************/
+    printf("RTC test: testing valid range (1 - 12) of hours\n");
+    time.clockSystem = CLOCK_SYSTEM_12;
+    for (i = 1; i < 13; i++)
+    {
+        time.hour = i;
+        ds1302_setTime(&time);
+        ds1302_get_time(&newTime);
+        if (newTime.hour != time.hour)
+        {
+            printf("ERROR: read %d written %d\n", newTime.hour, time.hour);
+            goto rtc_test_error;
+        }
+    }
+    /********************** Testing hours 0 - 23 clock system **********************/
+    printf("RTC test: testing valid range (0 - 23) of hours\n");
+    time.clockSystem = CLOCK_SYSTEM_24;
+    for (i = 0; i < 24; i++)
+    {
+        time.hour = i;
+        ds1302_setTime(&time);
+        ds1302_get_time(&newTime);
+        if (newTime.hour != time.hour)
+        {
+            printf("ERROR: read %d written %d\n", newTime.hour, time.hour);
+            goto rtc_test_error;
+        }
+    }
+
+    /********************** Testing period and system clock **********************/
+    printf("RTC test: testing period and system clock\n");
+
+    /* Test clock system 12 and PM period */
+    printf("RTC test: testing clock system 12 and PM period\n");
+    time.clockSystem = CLOCK_SYSTEM_12;
+    time.clockPeriod = CLOCK_PM_PERIOD;
+    time.hour = 1;
+    ds1302_setTime(&time);
+    currentClockPeriod = ds1302_getClockPeriod();
+    if (currentClockPeriod != time.clockPeriod)
+    {
+        printf("ERROR: clock period expected: %d, current: %d\n", time.clockPeriod, currentClockPeriod);
+        goto rtc_test_error;
+    }
+
+    currentClockSystem = ds1302_getClockSystem();
+    if (currentClockSystem != time.clockSystem)
+    {
+        printf("ERROR: clock system expected: %d, current: %d\n", time.clockSystem, currentClockSystem);
+        goto rtc_test_error;
+    }
+
+    /* Test clock system 12 and AM period */
+    printf("RTC test: testing clock system 12 and AM period\n");
+    time.clockSystem = CLOCK_SYSTEM_12;
+    time.clockPeriod = CLOCK_AM_PERIOD;
+    time.hour = 1;
+    ds1302_setTime(&time);
+
+    currentClockPeriod = ds1302_getClockPeriod();
+    if (currentClockPeriod != time.clockPeriod)
+    {
+        printf("ERROR: clock period expected: %d, current: %d\n", time.clockPeriod, currentClockPeriod);
+        goto rtc_test_error;
+    }
+
+    currentClockSystem = ds1302_getClockSystem();
+    if (currentClockSystem != time.clockSystem)
+    {
+        printf("ERROR: clock system expected: %d, current: %d\n", time.clockSystem, currentClockSystem);
+        goto rtc_test_error;
+    }
+
+    /* Test clock system 24 */
+    printf("RTC test: testing clock system 24\n");
+    time.clockSystem = CLOCK_SYSTEM_24;
+    time.hour = 0;
+    ds1302_setTime(&time);
+    currentClockSystem = ds1302_getClockSystem();
+    if (currentClockSystem != time.clockSystem)
+    {
+        printf("ERROR: clock system expected: %d, current: %d\n", time.clockSystem, currentClockSystem);
+        goto rtc_test_error;
+    }
+
+    /* Test ram */
+    printf("RTC test: testing ram write and read \n");
+    uint8_t tmpRamVal;
+    for	(i = 0; i < 31; i++)
+    {
+        ds1302_write_ram(i, i);
+         tmpRamVal = ds1302_read_ram(i);
+        if (tmpRamVal != i)
+        {
+            printf("ERROR: RAM wrom value, expected %d read %d\n", i, tmpRamVal);
+            goto rtc_test_error;
+        }
+    }
+    printf("RTC test: testing ram clear operation \n");
+    ds1302_clear_ram();
+    for	(i = 0; i < 31; i++)
+    {
+        tmpRamVal = ds1302_read_ram(i);
+        if (tmpRamVal != 0)
+        {
+            printf("ERROR: RAM wrom value, expected %d read %d\n", 0, tmpRamVal);
+            goto rtc_test_error;
+        }
+    }
+
+    printf("RTC TEST PASSED\n");
+    return;
 
 rtc_test_error:
 	printf("RTC TEST FAIALED\n");
@@ -283,7 +421,7 @@ int main(void)
     HAL_StatusTypeDef halStatus;
 
     /* Initialize BSP layer */
-    halStatus = bspInit();
+    																																																																																																																																																																																																																																																																																																																																																																																																																																																																									halStatus = bspInit();
     if (halStatus != HAL_OK)
     {
         consolePrint("APP: BSP could not be initialized\n");

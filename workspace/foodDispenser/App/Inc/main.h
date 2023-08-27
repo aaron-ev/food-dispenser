@@ -18,7 +18,7 @@
 
 /* Project version */
 #define PROJECT_VERSION_MAJOR_NUMBER        0
-#define PROJECT_VERSION_MINOR_NUMBER        1
+#define PROJECT_VERSION_MINOR_NUMBER        2
 
 #define BUTTON_INDEX_NOTIFICATION           1
 #define DISPENSER_SOUND_ON                  1

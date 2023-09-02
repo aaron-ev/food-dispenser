@@ -177,7 +177,7 @@ void appTestRTC(void)
     for (i = 0; i < 59; i++)
     {
         time.sec = i;
-        ds1302_setTime(&time);
+        ds1302_set_time(&time);
         ds1302_get_time(&newTime);
         if (newTime.sec != time.sec)
         {
@@ -190,7 +190,7 @@ void appTestRTC(void)
     for (i = 0; i < 59; i++)
     {
         time.min = i;
-        ds1302_setTime(&time);
+        ds1302_set_time(&time);
         ds1302_get_time(&newTime);
         if (newTime.min != time.min)
         {
@@ -203,7 +203,7 @@ void appTestRTC(void)
     for (i = 1; i <  8; i++)
     {
         time.day = i;
-        ds1302_setTime(&time);
+        ds1302_set_time(&time);
         ds1302_get_time(&newTime);
         if (newTime.day != time.day)
         {
@@ -216,7 +216,7 @@ void appTestRTC(void)
     for (i = 0; i < 100; i++)
     {
         time.year = i;
-        ds1302_setTime(&time);
+        ds1302_set_time(&time);
         ds1302_get_time(&newTime);
         if (newTime.year != time.year)
         {
@@ -229,7 +229,7 @@ void appTestRTC(void)
     for (i = 1; i < 13; i++)
     {
         time.month = i;
-        ds1302_setTime(&time);
+        ds1302_set_time(&time);
         ds1302_get_time(&newTime);
         if (newTime.month != time.month)
         {
@@ -242,7 +242,7 @@ void appTestRTC(void)
     for (i = 1; i < 32; i++)
     {
         time.date = i;
-        ds1302_setTime(&time);
+        ds1302_set_time(&time);
         ds1302_get_time(&newTime);
         if (newTime.date != time.date)
         {
@@ -252,11 +252,11 @@ void appTestRTC(void)
     }
     /********************** Testing hours 1-12 clock system **********************/
     printf("RTC test: testing valid range (1 - 12) of hours\n");
-    time.clockSystem = CLOCK_SYSTEM_12;
+    time.clockSystem = DS1302_CLK_SYSTEM_12;
     for (i = 1; i < 13; i++)
     {
         time.hour = i;
-        ds1302_setTime(&time);
+        ds1302_set_time(&time);
         ds1302_get_time(&newTime);
         if (newTime.hour != time.hour)
         {
@@ -266,11 +266,11 @@ void appTestRTC(void)
     }
     /********************** Testing hours 0 - 23 clock system **********************/
     printf("RTC test: testing valid range (0 - 23) of hours\n");
-    time.clockSystem = CLOCK_SYSTEM_24;
+    time.clockSystem = DS1302_CLK_SYSTEM_24;
     for (i = 0; i < 24; i++)
     {
         time.hour = i;
-        ds1302_setTime(&time);
+        ds1302_set_time(&time);
         ds1302_get_time(&newTime);
         if (newTime.hour != time.hour)
         {
@@ -284,18 +284,18 @@ void appTestRTC(void)
 
     /* Test clock system 12 and PM period */
     printf("RTC test: testing clock system 12 and PM period\n");
-    time.clockSystem = CLOCK_SYSTEM_12;
-    time.clockPeriod = CLOCK_PM_PERIOD;
+    time.clockSystem = DS1302_CLK_SYSTEM_12;
+    time.clockPeriod = DS1302_CLK_PM_PERIOD;
     time.hour = 1;
-    ds1302_setTime(&time);
-    currentClockPeriod = ds1302_getClockPeriod();
+    ds1302_set_time(&time);
+    currentClockPeriod = ds1302_get_clock_period();
     if (currentClockPeriod != time.clockPeriod)
     {
         printf("ERROR: clock period expected: %d, current: %d\n", time.clockPeriod, currentClockPeriod);
         goto rtc_test_error;
     }
 
-    currentClockSystem = ds1302_getClockSystem();
+    currentClockSystem = ds1302_get_clock_system();
     if (currentClockSystem != time.clockSystem)
     {
         printf("ERROR: clock system expected: %d, current: %d\n", time.clockSystem, currentClockSystem);
@@ -304,19 +304,19 @@ void appTestRTC(void)
 
     /* Test clock system 12 and AM period */
     printf("RTC test: testing clock system 12 and AM period\n");
-    time.clockSystem = CLOCK_SYSTEM_12;
-    time.clockPeriod = CLOCK_AM_PERIOD;
+    time.clockSystem = DS1302_CLK_SYSTEM_12;
+    time.clockPeriod = DS1302_CLK_AM_PERIOD;
     time.hour = 1;
-    ds1302_setTime(&time);
+    ds1302_set_time(&time);
 
-    currentClockPeriod = ds1302_getClockPeriod();
+    currentClockPeriod = ds1302_get_clock_period();
     if (currentClockPeriod != time.clockPeriod)
     {
         printf("ERROR: clock period expected: %d, current: %d\n", time.clockPeriod, currentClockPeriod);
         goto rtc_test_error;
     }
 
-    currentClockSystem = ds1302_getClockSystem();
+    currentClockSystem = ds1302_get_clock_system();
     if (currentClockSystem != time.clockSystem)
     {
         printf("ERROR: clock system expected: %d, current: %d\n", time.clockSystem, currentClockSystem);
@@ -325,10 +325,10 @@ void appTestRTC(void)
 
     /* Test clock system 24 */
     printf("RTC test: testing clock system 24\n");
-    time.clockSystem = CLOCK_SYSTEM_24;
+    time.clockSystem = DS1302_CLK_SYSTEM_24;
     time.hour = 0;
-    ds1302_setTime(&time);
-    currentClockSystem = ds1302_getClockSystem();
+    ds1302_set_time(&time);
+    currentClockSystem = ds1302_get_clock_system();
     if (currentClockSystem != time.clockSystem)
     {
         printf("ERROR: clock system expected: %d, current: %d\n", time.clockSystem, currentClockSystem);
@@ -372,12 +372,12 @@ rtc_test_error:
 */
 static void appTestBsp(void)
 {
-    consolePrint("Testing: Console\n");
-    appTestConsole();
-    consolePrint("Testing: Buzzer\n");
-    appTestBspBuzzer();
-    consolePrint("Testing: Servo motor\n");
-    appTestBspMotor();
+//    consolePrint("Testing: Console\n");
+//    appTestConsole();
+//    consolePrint("Testing: Buzzer\n");
+//    appTestBspBuzzer();
+//    consolePrint("Testing: Servo motor\n");
+//    appTestBspMotor();
     appTestRTC();
 }
 

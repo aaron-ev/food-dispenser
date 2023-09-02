@@ -11,17 +11,17 @@ void vTaskRTC(void *params)
 {
     char buff[20];
 
-    time.clockSystem = CLOCK_SYSTEM_12;
-    time.clockPeriod = CLOCK_PM_PERIOD;
+    time.clockSystem = DS1302_CLK_SYSTEM_12;
+    time.clockPeriod = DS1302_CLK_PM_PERIOD;
     time.hour = 12;
     time.min = 30;
     time.sec = 1; 
-    ds1302_setTime(&time);
+    ds1302_set_time(&time);
 
     while (1)
     {
         ds1302_get_time(&time);
-        if (time.clockPeriod ==  CLOCK_PM_PERIOD)
+        if (time.clockPeriod ==  DS1302_CLK_PM_PERIOD)
         {
         	sprintf(buff, "%2d:%2d:%2d%2s", time.hour, time.min, time.sec, "PM");
         }

@@ -27,8 +27,9 @@ void HAL_MspInit(void)
     __HAL_RCC_TIM2_CLK_ENABLE();
     __HAL_RCC_TIM5_CLK_ENABLE();
     __HAL_RCC_SPI1_CLK_ENABLE();
-    /* Enable clock for the dconsole */
+    /* Enable clock for UARTS */
     __HAL_RCC_USART1_CLK_ENABLE();
+    __HAL_RCC_USART6_CLK_ENABLE();
     /* Set NVIC priority configuration */
     HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
     HAL_NVIC_SetPriority(EXTI2_IRQn, 15, 0);
@@ -36,6 +37,7 @@ void HAL_MspInit(void)
     HAL_NVIC_SetPriority(EXTI4_IRQn, 15, 0);
     /* Buzzer hardware priority should be more important than button priority */
     HAL_NVIC_SetPriority(TIM2_IRQn, 14, 0);
+    HAL_NVIC_SetPriority(USART1_IRQn, 15, 0);
 }
 
 /*
@@ -101,6 +103,15 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandler)
     if (uartHandler->Instance == CONSOLE_INSTANCE)
     {
         uartGpioInit.Pin = CONSOLE_TX_PIN | CONSOLE_RX_PIN;
+        uartGpioInit.Mode = GPIO_MODE_AF_PP;
+        uartGpioInit.Pull = GPIO_PULLUP;
+        uartGpioInit.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        uartGpioInit.Alternate = GPIO_AF8_USART6;
+        HAL_GPIO_Init(CONSOLE_GPIO_PORT, &uartGpioInit);
+    }
+    if (uartHandler->Instance == BLU2TH_UART_INSTANCE)
+    {
+        uartGpioInit.Pin = BLU2TH_UART_TX_PIN | BLU2TH_UART_RX_PIN;
         uartGpioInit.Mode = GPIO_MODE_AF_PP;
         uartGpioInit.Pull = GPIO_PULLUP;
         uartGpioInit.Speed = GPIO_SPEED_FREQ_VERY_HIGH;

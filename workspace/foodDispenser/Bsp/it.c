@@ -18,6 +18,7 @@
 extern TIM_HandleTypeDef htim9;
 extern TIM_HandleTypeDef buzzerTimHandler;
 extern TaskHandle_t xTaskDisplayHandler;
+extern UART_HandleTypeDef uartHandler;
 
 /* Variables to handle button debouncing */
 typedef struct 
@@ -85,6 +86,14 @@ void EXTI3_IRQHandler(void)
 void EXTI4_IRQHandler(void)
 {
     HAL_GPIO_EXTI_IRQHandler(BUTTON_DOWN_GPIO_PIN);
+}
+
+/*
+ * Interrupt handler for uart device.
+ */
+void USART1_IRQHandler(void)
+{
+    HAL_UART_IRQHandler(&uartHandler);
 }
 
 /*

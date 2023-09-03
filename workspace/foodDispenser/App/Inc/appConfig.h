@@ -53,10 +53,16 @@
 #define DISP_BACKLIGHT_DEFAULT_PERIOD       100000 /* 1m as a default settings*/
 
 /* Debug console settings */
-#define CONSOLE_INSTANCE                    USART1
-#define CONSOLE_TX_PIN                      GPIO_PIN_9
-#define CONSOLE_RX_PIN                      GPIO_PIN_10
+#define CONSOLE_INSTANCE                    USART6
+#define CONSOLE_TX_PIN                      GPIO_PIN_11
+#define CONSOLE_RX_PIN                      GPIO_PIN_12
 #define CONSOLE_GPIO_PORT                   GPIOA
 #define CONSOLE_BAUDRATE                    9600
 
+/* Bluetooth UART settings */
+#define BLU2TH_UART_INSTANCE                USART1
+#define BLU2TH_UART_TX_PIN                  GPIO_PIN_9
+#define BLU2TH_UART_RX_PIN                  GPIO_PIN_10
+#define BLU2TH_UART_GPIO_PORT               GPIOA
+#define BLU2TH_UART_BAUDRATE                38400
 #endif

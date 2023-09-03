@@ -170,6 +170,7 @@ void appTestRTC(void)
     Time_s newTime = {0};
     ClockPeriod currentClockPeriod;
     ClockSystem currentClockSystem;
+    uint8_t buff[DS1302_RAM_SIZE];
 
     /********************** Testing seconds **********************/
     /* Test seconds: valid range */
@@ -344,7 +345,7 @@ void appTestRTC(void)
          tmpRamVal = ds1302_read_ram(i);
         if (tmpRamVal != i)
         {
-            printf("ERROR: RAM wrom value, expected %d read %d\n", i, tmpRamVal);
+            printf("ERROR: RAM wrong value, expected %d read %d\n", i, tmpRamVal);
             goto rtc_test_error;
         }
     }
@@ -355,7 +356,22 @@ void appTestRTC(void)
         tmpRamVal = ds1302_read_ram(i);
         if (tmpRamVal != 0)
         {
-            printf("ERROR: RAM wrom value, expected %d read %d\n", 0, tmpRamVal);
+            printf("ERROR: RAM wrong value, expected %d read %d\n", 0, tmpRamVal);
+            goto rtc_test_error;
+        }
+    }
+    printf("RTC test: testing ram write/read in burst mode \n");
+    for	(i = 0; i < DS1302_RAM_SIZE; i++)
+    {
+    	buff[i] = i;
+    }
+    ds1302_write_ram_burst(DS1302_RAM_SIZE, buff);
+    ds1302_read_ram_burst(DS1302_RAM_SIZE, buff);
+    for	(i = 0; i < DS1302_RAM_SIZE; i++)
+    {
+        if (buff[i] != i)
+        {
+            printf("ERROR: RAM wrong value, expected %d read %d\n", i, buff[i]);
             goto rtc_test_error;
         }
     }

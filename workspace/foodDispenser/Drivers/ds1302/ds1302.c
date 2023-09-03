@@ -22,6 +22,8 @@
 #define DS1302_REG_DAY              0x8A
 #define DS1302_REG_YEAR             0x8C
 #define DS1302_REG_CONTROL          0x8E
+#define D1302_RAM_BURST_MODE        0xFE
+#define D1302_CAL_BURST_MODE        0xBE /* Burst mode for calendar */
 
 /* Macros for handling BCD format data stored in the RTC device */
 #define BCD_TO_DEC(val)             ((val / 16 * 10) + (val % 16))
@@ -410,4 +412,176 @@ ClockPeriod ds1302_get_clock_period(void)
 {
     return (read_data(DS1302_REG_HOUR) & MASK_CLOCK_PERIOD) ?
            DS1302_CLK_PM_PERIOD : DS1302_CLK_AM_PERIOD;
+}
+
+/**
+ * @brief read in burst mode
+ *
+ * @param addr address for ram or calendar
+ * @param len  number of bytes to read
+ * @param buff buffer where data will be stored
+ * @return void
+ */
+static void read_burst(uint8_t addr, uint8_t len, uint8_t *buff)
+{
+    uint8_t i, j;
+
+    /* Make sure LSB bit is high for reading an address */
+    addr |= 0x1;
+    write_cmd(addr);
+
+    set_read_mode();
+    for (i = 0; i < len; i++)
+    {
+        buff[i] = 0;
+        for (j = 0; j < DS1302_DATA_SIZE; j++)
+        {
+            /* Ones come from the MSB to LSB
+            * by shifting data to the right
+            */
+            if (read_data_pin() == GPIO_PIN_SET)
+            {
+                buff[i] |= 0x80;
+            }
+            set_clk_cycle();
+            if (j != (DS1302_DATA_SIZE - 1))
+            {
+                buff[i] >>= 1;
+            }
+        }
+    }
+    set_write_mode();
+    set_idle_state();
+}
+
+/**
+ * @brief write in burst mode
+ *
+ * @param addr address for ram or calendar
+ * @param len number of addresses to write to
+ * @param buff buffer that will write to RTC
+ * @return void
+ */
+static void write_burst(uint8_t addr, uint8_t len, uint8_t *buff)
+{
+    uint8_t i, j;
+
+    write_cmd(addr);
+    /* Write data bit by bit */
+    for (i = 0; i < len; i++)
+    {
+        for (j = 0; j < DS1302_DATA_SIZE; j++)
+        {
+            (buff[i] & 1) ? set_data() : reset_data();
+            set_clk_cycle();
+            buff[i] >>= 1;
+        }
+    }
+    set_idle_state();
+}
+
+/**
+ * @brief Write to RAM in burst mode
+ * @param len Number of addresses to write to 
+ * @param buff Buffer that will write to RTC
+ * @return void
+ */
+void ds1302_write_ram_burst(uint8_t len, uint8_t *buff)
+{
+    if (len > DS1302_RAM_SIZE)
+    { 
+        return;
+    }
+    /* Enable write by driving protected bit to 0*/
+    write_data(DS1302_REG_CONTROL, 0);
+    /* Write addresses for RAM are multiple of 2 */
+    write_burst(D1302_RAM_BURST_MODE, len, buff);
+    /* Disable write by driving protected bit to 1 */
+    write_data(DS1302_REG_CONTROL, 0x80);
+}
+
+/**
+ * @brief Read RAM in burst mode
+ * @param len Number of addresses to read from RTC
+ * @param buff Buffer where data will be stored
+ */
+void ds1302_read_ram_burst(uint8_t len, uint8_t *buff)
+{
+    if (len > DS1302_RAM_SIZE)
+    {
+        return;
+    }
+    memset(buff, 0, 1);
+    read_burst(D1302_RAM_BURST_MODE, len, buff);
+}
+
+/**
+ * @brief Get time from calendar registers in burst mode
+ * @param time pointer to time structure
+ * @return void
+ */
+void ds1302_get_time_burst(Time_s *time)
+{
+    /* In burst mode, 8 bytes needs to be read. Byte 8 is for control reg */
+    uint8_t tmpBuff[8] = {0, 0 , 0, 0, 0, 0 ,0 , 0};
+
+    if (time == NULL)
+    {
+        return;
+    }
+    read_burst(D1302_CAL_BURST_MODE, 8, tmpBuff);
+    time->sec = BCD_TO_DEC(tmpBuff[0] & MASK_SECONDS);
+    time->min = BCD_TO_DEC(tmpBuff[1]);
+    time->date = BCD_TO_DEC(tmpBuff[3]);
+    time->month = BCD_TO_DEC(tmpBuff[4]);
+    time->day = BCD_TO_DEC(tmpBuff[5]);
+    time->year = BCD_TO_DEC(tmpBuff[6]);
+
+    /* Handle hour register */
+    time->hour = (tmpBuff[2] & MASK_CLOCK_SYSTEM) ?
+                 BCD_TO_DEC(tmpBuff[2] & MASK_HOURS_12):
+                 BCD_TO_DEC(tmpBuff[2] & MASK_HOURS_24);
+    time->clockSystem = (tmpBuff[2] & MASK_CLOCK_SYSTEM) ? DS1302_CLK_SYSTEM_12:
+                                                           DS1302_CLK_SYSTEM_24;
+    time->clockPeriod = (tmpBuff[2] & MASK_CLOCK_PERIOD) ? DS1302_CLK_PM_PERIOD:
+                                                           DS1302_CLK_AM_PERIOD;
+}
+
+/**
+ * @brief Set time into calendar registers in burst mode
+ * @param time pointer to time structure
+ * @return void
+ */
+void ds1302_set_time_burst(Time_s *time)
+{
+    /* In burst mode, 8 bytes needs to be read. Byte 8 is for control reg */
+    uint8_t tmpBuff[8];
+
+    if (time == NULL)
+    {
+        return;
+    }
+
+    tmpBuff[0] = time->sec;
+    tmpBuff[1] = time->min;
+    /* Handle hour reg */
+    if (time->clockSystem == DS1302_CLK_SYSTEM_24)
+    {
+        time->hour |= MASK_CLOCK_SYSTEM;
+        if (time->clockPeriod == DS1302_CLK_PM_PERIOD)
+        {
+            time->hour |= MASK_CLOCK_PERIOD;
+        }
+        else
+        {
+            time->hour &= ~(MASK_CLOCK_PERIOD);
+        }
+    }
+    tmpBuff[2] = time->hour;
+    tmpBuff[3] = time->date;
+    tmpBuff[4] = time->month;
+    tmpBuff[5] = time->day;
+    tmpBuff[6] = time->year;
+    tmpBuff[7] = 0;
+    write_burst(D1302_CAL_BURST_MODE, 8, tmpBuff);
 }

@@ -28,9 +28,11 @@
 DispenserSettings dispenserSettings;
 TaskHandle_t xTaskHeartBeatHandler;
 extern TaskHandle_t xTaskDisplayHandler;
+extern TaskHandle_t xTaskBluetoothHandler;
 
 /* Extern task functions */
 extern void vTaskDisplay(void *params);
+extern void vTaskBluetooth(void *parms);
 
 /*
 * Callback to increment the timer for the STM HAL layer.
@@ -244,7 +246,17 @@ int main(void)
         consolePrint("ERROR: Display task could not be created\n");
         goto main_out;
     }
-
+    retVal = xTaskCreate(vTaskBluetooth,
+                         "task-bluetooth",
+                         configMINIMAL_STACK_SIZE,
+                         NULL,
+                         BLUETOOTH_PRIORITY_TASK,
+                         &xTaskBluetoothHandler);
+    if (retVal != pdPASS)
+    {
+        consolePrint("ERROR: Display task could not be created\n");
+        goto main_out;
+    }
     vTaskStartScheduler();
 
 main_out:

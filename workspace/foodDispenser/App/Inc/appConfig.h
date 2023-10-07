@@ -18,6 +18,7 @@
 /* Task priorities */
 #define HEART_BEAT_PRIORITY_TASK            1
 #define DISP_PRIORITY_TASK                  2
+#define BLUETOOTH_PRIORITY_TASK             2
 
 /* Heart beat settings */
 #define HEART_BEAT_LED_PORT                 GPIOC
@@ -64,5 +65,5 @@
 #define BLU2TH_UART_TX_PIN                  GPIO_PIN_9
 #define BLU2TH_UART_RX_PIN                  GPIO_PIN_10
 #define BLU2TH_UART_GPIO_PORT               GPIOA
-#define BLU2TH_UART_BAUDRATE                38400
+#define BLU2TH_UART_BAUDRATE                9600
 #endif

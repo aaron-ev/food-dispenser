@@ -38,6 +38,7 @@ void HAL_MspInit(void)
     /* Buzzer hardware priority should be more important than button priority */
     HAL_NVIC_SetPriority(TIM2_IRQn, 14, 0);
     HAL_NVIC_SetPriority(USART1_IRQn, 15, 0);
+    HAL_NVIC_EnableIRQ(USART1_IRQn);
 }
 
 /*
@@ -116,6 +117,6 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandler)
         uartGpioInit.Pull = GPIO_PULLUP;
         uartGpioInit.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
         uartGpioInit.Alternate = GPIO_AF7_USART1;
-        HAL_GPIO_Init(CONSOLE_GPIO_PORT, &uartGpioInit);
+        HAL_GPIO_Init(BLU2TH_UART_GPIO_PORT, &uartGpioInit);
     }
 }

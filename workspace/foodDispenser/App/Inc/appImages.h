@@ -1,6 +1,6 @@
 /**
  ******************************************************************************
- * @file         images.h
+ * @file         appImages.h
  * @author       Aaron Escoboza
  * @brief        Constant values for images displayed on the screen.
  ******************************************************************************

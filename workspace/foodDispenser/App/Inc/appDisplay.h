@@ -1,7 +1,7 @@
 
 /**
   ******************************************************************************
-  * @file    display.h
+  * @file    appDisplay.h
   * @author  Aaron Escoboza
   * @brief   Header file for the display feature
   ******************************************************************************

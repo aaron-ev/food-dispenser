@@ -8,8 +8,8 @@
  */
 
 #include "appConfig.h"
-#include "main.h"
-#include "display.h"
+#include "appMain.h"
+#include "appDisplay.h"
 #include "bsp.h"
 #include "console.h"
 #include "string.h"
@@ -69,18 +69,15 @@ void vTaskHeartBeat(void *params)
     }
 }
 
-/*
-* Plays a beep.
-*/
-void appBeep(uint32_t numTimes)
+void appBeep(uint8_t numTimes)
 {
     int i;
 
-    if (numTimes <= 0 || dispenserSettings.sound == SOUND_OFF)
+    if (numTimes <= 0 || dispenserSettings.soundState == SOUND_OFF)
     {
         return;
     }
-    for ( i = 0; i < numTimes; i++)
+    for (i = 0; i < numTimes; i++)
     {
         buzzerStart();
         HAL_Delay(APP_BEEP_DELAY);
@@ -93,64 +90,14 @@ void appBeep(uint32_t numTimes)
 }
 
 /*
-* Test the buzzer feature.
+* Rotate servo motor.
 */
-static void appTestBspBuzzer(void)
-{
-    /* Play different use cases */
-    appBeep(4);
-    appBeep(3);
-    appBeep(2);
-    appBeep(1);
-}
-
-/*
-* Rotate the servo motor.
-*/
-void appServoRotate(Degrees_E degrees, uint32_t delay)
+void appServoMotorRotate(ServoMotorDegree degrees)
 {
     servoMotorSetDegrees(degrees);
     servoMotorStart();
-    vTaskDelay(pdMS_TO_TICKS(delay));
+    vTaskDelay(pdMS_TO_TICKS(250));
     servoMotorStop();
-}
-
-/*
-* Test the servo motor: Iterate through all degrees
-*/
-static void appTestBspMotor(void)
-{
-    int i;
-    for (i = 0; i < 30; i++)
-    {
-    	appFeed(5);
-    }
-}
-
-/*
-* Test the console feature.
-*/
-static void appTestConsole(void)
-{
-    int i;
-
-		for (i= 0; i < 5; i++)
-		{
-			consolePrint("Hello world!\n");
-		}
-    }
-
-/*
-* Test the BSP layer.
-*/
-static void appTestBsp(void)
-{
-  consolePrint("Testing: Console\n");
-  appTestConsole();
-  consolePrint("Testing: Buzzer\n");
-  appTestBspBuzzer();
-  consolePrint("Testing: Servo motor\n");
-  appTestBspMotor();
 }
 
 /*
@@ -159,25 +106,26 @@ static void appTestBsp(void)
 void appFeed(uint8_t portions)
 {
     int i;
-    char buff[15];
+     char buff[15];
 
     if ((portions == 0) || (portions > DISPENSER_MAX_PORTIONS))
     {
         return;
     }
 
-    consolePrint("APP: Feed started\n");
     mspDisableButtonIT();
-
     for (i = 0; i < portions; i++)
     {
-        sprintf(buff, "Portion (%d)", i + 1);
-        dispPrint(APP_POS_FEEDING_X, APP_POS_FEEDING_Y, buff,
-                  Font_11x18, BLACK, WHITE);
-        appServoRotate(SERVO_MOTOR_DEGREES_180, 250);
+         sprintf(buff, "Portion (%d)", i + 1);
+         dispPrint(APP_POS_FEEDING_X, APP_POS_FEEDING_Y, buff,
+                   Font_11x18, BLACK, WHITE);
+        appServoMotorRotate(SERVOMOTOR_DEGREES_180);
         vTaskDelay(pdMS_TO_TICKS(500));
-        appServoRotate(SERVO_MOTOR_DEGREES_0, 250);
-        vTaskDelay(pdMS_TO_TICKS(500));
+        appServoMotorRotate(SERVOMOTOR_DEGREES_0);
+        if (portions > 1)
+        {
+            vTaskDelay(pdMS_TO_TICKS(500));
+        }
         appBeep(1);
     }
 
@@ -201,25 +149,17 @@ int main(void)
     }
     consolePrint("BSP: Initialized\n");
 
-    /* Initialize the display */
+    /* Initialize display */
     displayInit();
     consolePrint("APP: Display Initialized\n");
 
-    /* Initialize default dispenser settings */
-    dispenserSettings.portions = 5;
-    dispenserSettings.sound = DISPENSER_SOUND_ON;
+    /* Default dispenser settings */
+    dispenserSettings.numPortions = DISPENSER_DEFAULT_NUM_PORTIONS;
+    dispenserSettings.soundState = DISPENSER_SOUND_ON;
 
     /* Double beep to indicate initialization phase is completed */
     mspEnableBuzzerIT();
     appBeep(2);
-
-    /* Test mode: Check each feature functionality */
-    #if (TEST_BSP == 1)
-        consolePrint(" *** Testing mode *** \n");
-        appTestBsp();
-        consolePrint("Testing: Finished\n");
-        exit(0);
-    #endif
 
     /* Create tasks and start the scheduler */
     retVal = xTaskCreate(vTaskHeartBeat,

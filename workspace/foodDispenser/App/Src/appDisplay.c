@@ -6,13 +6,13 @@
  ******************************************************************************
  */
 
-#include "main.h"
+#include "appMain.h"
 #include "appConfig.h"
 #include "bsp.h"
-#include "images.h"
+#include "appImages.h"
 #include "ili9341_touch.h"
 #include "console.h"
-#include "display.h"
+#include "appDisplay.h"
 #include "timers.h"
 
 /* FreeRTOS helper macros */
@@ -336,9 +336,9 @@ static void dispScreenSettings(void)
     mspDisableButtonIT();
     dispShowSettingsScreen();
     /* Update option values */
-    sprintf(buff, "%d", dispenserSettings.portions);
-    dispPrint(DISP_PORTIONS_VALUE_X, DISP_PORTIONS_VALUE_Y, buff, Font_16x26, BLACK,WHITE);
-    (dispenserSettings.sound == DISPENSER_SOUND_ON) ? sprintf(buff, "ON") : sprintf(buff, "OFF");
+    sprintf(buff, "%d", dispenserSettings.numPortions);
+    dispPrint(DISP_PORTIONS_VALUE_X, DISP_PORTIONS_VALUE_Y, buff, Font_16x26, BLACK, WHITE);
+    (dispenserSettings.soundState == DISPENSER_SOUND_ON) ? sprintf(buff, "ON") : sprintf(buff, "OFF");
     dispPrint(DISP_SOUND_VALUE_X, DISP_SOUND_VALUE_Y, buff, Font_16x26, BLACK,WHITE);
     mspEnableButtonIT();
     while (1)
@@ -363,12 +363,12 @@ static void dispScreenSettings(void)
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionSelected == OPTION_PORTIONS))
         {
             appBeep(DISP_BEEP_ONCE);
-            dispenserSettings.portions++;
-            if (dispenserSettings.portions > DISPENSER_MAX_PORTIONS)
+            dispenserSettings.numPortions++;
+            if (dispenserSettings.numPortions > DISPENSER_MAX_PORTIONS)
             {
-                dispenserSettings.portions = 1;
+                dispenserSettings.numPortions = 1;
             }
-            sprintf(buff, "%d", dispenserSettings.portions);
+            sprintf(buff, "%d", dispenserSettings.numPortions);
             /* Display portion value */
             dispPrint(DISP_PORTIONS_VALUE_X, DISP_PORTIONS_VALUE_Y, buff, Font_16x26, BLACK,WHITE);
             consolePrint("APP: Portions: ");
@@ -380,8 +380,8 @@ static void dispScreenSettings(void)
         {
             appBeep(DISP_BEEP_ONCE);
             /* Toggle sound state*/
-            dispenserSettings.sound ^= 1;
-            if (dispenserSettings.sound)
+            dispenserSettings.soundState ^= 1;
+            if (dispenserSettings.soundState)
             {
                 consolePrint("APP: Sound ON\n");
                 sprintf(buff, "ON");
@@ -446,7 +446,7 @@ void vTaskDisplay(void *params)
 
     /* Enable Buttons: Interrupts after first screen is ready */
     mspEnableButtonIT();
-    appServoRotate(SERVO_MOTOR_DEGREES_0, 250);
+    appServoMotorRotate(SERVOMOTOR_DEGREES_0);
 
     while (1)
     {
@@ -480,7 +480,7 @@ void vTaskDisplay(void *params)
         {
             PRINT_DEBUG("DEBUG: ENTER event\n");
             appBeep(DISP_BEEP_ONCE);
-            appFeed(dispenserSettings.portions);
+            appFeed(dispenserSettings.numPortions);
         }
         if ((buttonEvent & BUTTON_EVENT_ENTER) && (optionIndicator == OPTION_SETTINGS))
         {

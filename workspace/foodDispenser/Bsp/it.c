@@ -7,8 +7,8 @@
  */
 
 #include "appConfig.h"
-#include "main.h"
-#include "buzzer.h"
+#include "appMain.h"
+#include "bspBuzzer.h"
 #include "stm32f4xx_hal.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -50,8 +50,8 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *timerHandler)
 
     if (timerHandler->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
     {
-        ccr1Reg = HAL_TIM_ReadCapturedValue(timerHandler, BUZZER_TIM_CHANNEL);
-        __HAL_TIM_SET_COMPARE(timerHandler, BUZZER_TIM_CHANNEL, (ccr1Reg + BUZZER_TIM_PULSE_VALUE));
+        ccr1Reg = HAL_TIM_ReadCapturedValue(timerHandler, BUZZER_TIMCH);
+        __HAL_TIM_SET_COMPARE(timerHandler, BUZZER_TIMCH, (ccr1Reg + BUZZER_TIM_PULSE_VALUE));
     }
 }
 

@@ -1,6 +1,6 @@
 /**
  ******************************************************************************
- * @file         main.h
+ * @file         appMain.h
  * @author       Aaron Escoboza
  * @brief        Header to contain main definitions
  ******************************************************************************
@@ -11,8 +11,8 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include "console.h"
-#include "servoMotor.h"
+#include "appConsole.h"
+#include "bspServoMotor.h"
 #include "appConfig.h"
 #include "string.h"
 
@@ -38,13 +38,13 @@ typedef enum
 
 typedef struct
 {
-    uint8_t sound; /* On or off */
-    uint8_t portions;
+    uint8_t soundState;
+    uint8_t numPortions;
 } DispenserSettings;
 
-void appBeep(uint32_t numTimes);
-void appFeed(uint8_t portions);
 void appErrorHandler(void);
-void appServoRotate(Degrees_E degrees, uint32_t delay);
+void appBeep(uint8_t numTimes);
+void appFeed(uint8_t numPortions);
+void appServoMotorRotate(ServoMotorDegree degree);
 
 #endif

@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    console.h
+  * @file    appConsole.h
   * @author  Aaron Escoboza
   * @brief   Header file for the console feature
   ******************************************************************************

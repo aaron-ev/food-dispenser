@@ -16,12 +16,13 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "timers.h"
-#include "servoMotor.h"
-#include "buzzer.h"
-#include "main.h"
+#include "bspServoMotor.h"
+#include "bspBuzzer.h"
+#include "appMain.h"
 #include "msp.h"
 #include "tft_ili9341.h"
 
 HAL_StatusTypeDef bspInit(void);
-
+// void (*bspErrorCallback)(void);
+// void bspSetErrorCallback(void *callback);
 #endif

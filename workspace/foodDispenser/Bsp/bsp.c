@@ -107,25 +107,25 @@ HAL_StatusTypeDef consoleInit(void)
 
 HAL_StatusTypeDef bspInit(void)
 {
-    HAL_StatusTypeDef halStatus;
+    HAL_StatusTypeDef halStatus = HAL_OK;
 
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     halStatus = HAL_Init();
     if (halStatus != HAL_OK)
     {
-        return HAL_ERROR;
+        goto error_bsp_init;
     }
     /* Configure the system clock */
     halStatus = clkInit();
     if (halStatus != HAL_OK)
     {
-        return HAL_ERROR;
+        goto error_bsp_init;
     }
     /* Initialize the console */
     halStatus = consoleInit();
     if (halStatus != HAL_OK)
     {
-        return HAL_ERROR;
+        goto error_bsp_init;
     }
     /* Initialize push buttons */
     pushButtonsInit();
@@ -134,19 +134,24 @@ HAL_StatusTypeDef bspInit(void)
     heartBeatInit();
     consolePrint("BSP: Heart beat initialized\n");
     /* Initialize servomotor */
-    halStatus = servoMotorInit();
+    halStatus = servoMotorInit(SERVOMOTOR_GPIOX, SERVOMOTOR_GPIO_PIN,
+                SERVOMOTOR_GPIOXALT, SERVOMOTOR_TIMX, SERVOMOTOR_TIMCH);
     if (halStatus != HAL_OK)
     {
-        appErrorHandler();
+        goto error_bsp_init;
     }
     consolePrint("BSP: Servo motor initialized\n");
     /* Initialize the buzzer */
-    halStatus = buzzerInit();
+    halStatus = buzzerInit(BUZZER_GPIOx, BUZZER_GPIO_PIN,
+                BUZZER_GPIOXALT, BUZZER_TIMX, BUZZER_TIMCH);
     if (halStatus != HAL_OK)
     {
-        appErrorHandler();
+        goto error_bsp_init;
     }
     consolePrint("BSP: Buzzer initialized\n");
 
     return halStatus;
+
+error_bsp_init:
+    return HAL_ERROR;
 }

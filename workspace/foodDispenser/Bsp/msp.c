@@ -8,7 +8,7 @@
 
 #include "stm32f4xx_hal.h"
 #include "appConfig.h"
-#include "main.h"
+#include "appMain.h"
 #include "msp.h"
 
 /*
@@ -50,8 +50,8 @@ void HAL_TIM_OC_MspInit(TIM_HandleTypeDef *timerHandler)
     buzzerGpioInit.Mode = GPIO_MODE_AF_PP;
     buzzerGpioInit.Pull = GPIO_NOPULL;
     buzzerGpioInit.Speed = GPIO_SPEED_FREQ_LOW;
-    buzzerGpioInit.Alternate = BUZZER_GPIO_ALTERNATE;
-    HAL_GPIO_Init(BUZZER_GPIO_INSTANCE, &buzzerGpioInit);
+    buzzerGpioInit.Alternate = BUZZER_GPIOXALT;
+    HAL_GPIO_Init(BUZZER_GPIOx, &buzzerGpioInit);
 }
 
 /*
@@ -62,10 +62,10 @@ void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef *timerHandler)
     GPIO_InitTypeDef servoMotorGpioInit = {0};
 
     /* GPIO settings: ServoMotor */
-    servoMotorGpioInit.Pin = SERVO_MOTOR_GPIO_PIN;
+    servoMotorGpioInit.Pin = SERVOMOTOR_GPIO_PIN;
     servoMotorGpioInit.Mode = GPIO_MODE_AF_PP;
-    servoMotorGpioInit.Alternate = SERVO_MOTOR_GPIO_ALTERNATE;
-    HAL_GPIO_Init(SERVO_MOTOR_GPIO_INSTANCE, &servoMotorGpioInit);
+    servoMotorGpioInit.Alternate = SERVOMOTOR_GPIOXALT;
+    HAL_GPIO_Init(SERVOMOTOR_GPIOX, &servoMotorGpioInit);
 }
 
 void mspEnableButtonIT(void)

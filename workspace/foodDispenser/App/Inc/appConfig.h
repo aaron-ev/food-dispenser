@@ -14,6 +14,7 @@
 
 /* Dispenser settings */
 #define DISPENSER_MAX_PORTIONS              5
+#define DISPENSER_DEFAULT_NUM_PORTIONS      DISPENSER_MAX_PORTIONS
 
 /* Task priorities */
 #define HEART_BEAT_PRIORITY_TASK            1
@@ -25,20 +26,20 @@
 #define HEART_BEAT_BLINK_DELAY              500 /* In ms */
 
 /* Buzzer settings */
-#define BUZZER_GPIO_INSTANCE                GPIOA
+#define BUZZER_GPIOx                GPIOA
 #define BUZZER_GPIO_PIN                     GPIO_PIN_0
-#define BUZZER_GPIO_ALTERNATE               GPIO_AF1_TIM2
-#define BUZZER_TIM_INSTANCE                 TIM2
-#define BUZZER_TIM_CHANNEL                  TIM_CHANNEL_1
+#define BUZZER_GPIOXALT               GPIO_AF1_TIM2
+#define BUZZER_TIMX                 TIM2
+#define BUZZER_TIMCH                  TIM_CHANNEL_1
 #define BEEP_DEFAULT_TON                    100
 #define BEEP_DEFAULT_TOFF                   BEEP_DEFAULT_TON
 
 /* Servo motor settings */
-#define SERVO_MOTOR_GPIO_INSTANCE           GPIOA
-#define SERVO_MOTOR_GPIO_PIN                GPIO_PIN_1
-#define SERVO_MOTOR_GPIO_ALTERNATE          GPIO_AF2_TIM5
-#define SERVO_MOTOR_TIM_INSTANCE            TIM5
-#define SERVO_MOTOR_TIM_CHANNEL             TIM_CHANNEL_2
+#define SERVOMOTOR_GPIOX           GPIOA
+#define SERVOMOTOR_GPIO_PIN                GPIO_PIN_1
+#define SERVOMOTOR_GPIOXALT          GPIO_AF2_TIM5
+#define SERVOMOTOR_TIMX            TIM5
+#define SERVOMOTOR_TIMCH             TIM_CHANNEL_2
 
 /* Push buttons setting */
 #define BUTTON_ENTER_GPIO_PORT              GPIOA
